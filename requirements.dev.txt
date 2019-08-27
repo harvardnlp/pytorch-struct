@@ -1,0 +1,6 @@
+pytest
+pytest-runner
+hypothesis
+flake8
+black
+pep8-naming
