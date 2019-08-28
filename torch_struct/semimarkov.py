@@ -45,8 +45,8 @@ def semimarkov(edge, semiring=LogSemiring):
          marginals: list of N,  b x K x C table
 
     """
-    v = semimarkov_inside(edge, semiring)
-    return torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
+    v, spans = semimarkov_inside(edge, semiring)
+    return torch.autograd.grad(v.sum(dim=0), spans, create_graph=True,
                                 only_inputs=True, allow_unused=False)
 
 

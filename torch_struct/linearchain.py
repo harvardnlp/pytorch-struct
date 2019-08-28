@@ -35,7 +35,7 @@ def linearchain(edge, semiring=LogSemiring):
     """
     v, alpha = linearchain_inside(edge, semiring)
     return torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
-                                only_inputs=True, allow_unused=False)
+                               only_inputs=True, allow_unused=False)
 
 
 ### Tests
