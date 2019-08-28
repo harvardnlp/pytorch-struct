@@ -1,8 +1,9 @@
-# Pytorch-Struct
-
 <center><img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png"></center>
 
-A library of highly-tested, GPU-ready implementations of core structured prediction algorithms. 
+# Pytorch-Struct
+
+
+A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.
 
 ## Install
 
