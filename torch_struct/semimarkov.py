@@ -13,7 +13,6 @@ def semimarkov_inside(edge, semiring=LogSemiring):
          spans: list of N,  b x K x C table
 
     """
-
     batch, N, K, C, _ = edge.shape
     spans = [None for n in range(N+1)]
     alpha = _make_chart((batch, N+1, K, C), edge, semiring)
@@ -26,7 +25,6 @@ def semimarkov_inside(edge, semiring=LogSemiring):
         spans[n-1] = semiring.dot(beta[n-1].view(batch, 1, 1, C),
                                   edge[:, n-1].view(batch, K, C, C))
         alpha[:, n-1] = spans[n-1]
-        # tmp.view(batch, K, C)
         t = max(n - K, -1)
         f1 = torch.arange(n-1, t,-1)
         f2 = torch.arange(1, len(f1)+1)
