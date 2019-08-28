@@ -1,8 +1,12 @@
-# Pytorch Struct
+# Pytorch-Struct
 
-A library of highly-tested, GPU vectorized implementations of core structured prediction algorithms. 
+A library of highly-tested, GPU-ready implementations of core structured prediction algorithms. 
 
-Implement: 
+## Install
+
+## Library
+
+Implemented: 
 
 * Linear Chain CRF / HMM 
 * Semi-Markov CRF / HSMM
