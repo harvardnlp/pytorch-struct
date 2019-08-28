@@ -28,6 +28,14 @@ A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
 def deptree_inside(arc_scores, semiring=LogSemiring):
     """
+    Parameters:
+         arc_scores : b x N x N arc scores with root scores on diagonal.
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         arcs: list of N,  LR x b x N table
+
     """
     arc_scores = _convert(arc_scores)
     batch_size, N, _ = arc_scores.shape
@@ -65,6 +73,37 @@ def deptree_inside(arc_scores, semiring=LogSemiring):
         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
     return alpha[A][C][R, :, 0, N-1], arcs
 
+
+
+def deptree(arc_scores, semiring=LogSemiring):
+    """
+    Parameters:
+         arc_scores : b x N x N arc scores with root scores on diagonal.
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         arcs: list of N,  LR x b x N table
+
+    """
+    batch_size, N, _ = arc_scores.shape
+    N = N + 1
+    v, arcs = deptree_inside(arc_scores, semiring)
+    grads = torch.autograd.grad(v.sum(dim = 0),
+                                arcs[1:],
+                                create_graph=True,
+                                only_inputs=True, allow_unused=False)
+    ret = torch.zeros(batch_size, N, N).cpu()
+    for k, grad in enumerate(grads, 1):
+        f = torch.arange(N-k), torch.arange(k, N)
+        ret[:, f[0], f[1]] = grad[R].cpu()
+        ret[:, f[1], f[0]] = grad[L].cpu()
+    return _unconvert(ret)
+
+
+### Tests
+
+
 def deptree_check(arc_scores, semiring=LogSemiring):
     parses = []
     q = []
@@ -79,6 +118,7 @@ def deptree_check(arc_scores, semiring=LogSemiring):
         parses.append(semiring.times(*[arc_scores[0][parse[i], i]
                                        for i in range(1, N, 1)]))
     return semiring.sum(torch.tensor(parses))
+
 
 def _is_spanning(parse):
     """
@@ -128,18 +168,3 @@ def _is_projective(parse):
                         m2 < h < h2 < m or  h2 < h < m2 < m:
                     return False
     return True
-
-def deptree(arc_scores, semiring=LogSemiring):
-    batch_size, N, _ = arc_scores.shape
-    N = N + 1
-    v, arcs = deptree_inside(arc_scores, semiring)
-    grads = torch.autograd.grad(v.sum(dim = 0),
-                                arcs[1:],
-                                create_graph=True,
-                                only_inputs=True, allow_unused=False)
-    ret = torch.zeros(batch_size, N, N).cpu()
-    for k, grad in enumerate(grads, 1):
-        f = torch.arange(N-k), torch.arange(k, N)
-        ret[:, f[0], f[1]] = grad[R].cpu()
-        ret[:, f[1], f[0]] = grad[L].cpu()
-    return _unconvert(ret)

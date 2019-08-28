@@ -3,6 +3,17 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 def semimarkov_inside(edge, semiring=LogSemiring):
+    """
+    Parameters:
+         edge : b x N x K x C x C semimarkov potentials
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         spans: list of N,  b x K x C table
+
+    """
+
     batch, N, K, C, _ = edge.shape
     spans = [None for n in range(N+1)]
     alpha = _make_chart((batch, N+1, K, C), edge, semiring)
@@ -21,14 +32,25 @@ def semimarkov_inside(edge, semiring=LogSemiring):
         f2 = torch.arange(1, len(f1)+1)
         beta[n] = semiring.sum(alpha[:, f1, f2], dim=1)
 
-    return semiring.sum(beta[N], dim=1)
+    return semiring.sum(beta[N], dim=1), spans
 
 
 def semimarkov(edge, semiring=LogSemiring):
+    """
+    Parameters:
+         edge : b x N x K x C x C semimarkov potentials
+         semiring
+
+    Returns:
+         marginals: list of N,  b x K x C table
+
+    """
     v = semimarkov_inside(edge, semiring)
-    grads = torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
+    return torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
                                 only_inputs=True, allow_unused=False)
-    return grads
+
+
+# Tests
 
 def semimarkov_check(edge, semiring=LogSemiring):
     batch, N, K, C, _ = edge.shape

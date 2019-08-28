@@ -4,10 +4,17 @@ from .helpers import _make_chart
 
 A, B = 0, 1
 def cky_inside(terms, rules, roots, semiring=LogSemiring):
-    # inside step
-    # unary scores : b x n x T
-    # rule scores : b x NT x (NT+T) x (NT+T)
-    # root : b x NT
+    """
+    Parameters:
+         terms : b x n x T
+         rules : b x NT x (NT+T) x (NT+T)
+         root:   b x NT
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         spans: list of N,  b x N x (NT+t)
+    """
     batch_size, N, T  = terms.shape
     _, NT, _, _ = rules.shape
 
@@ -36,12 +43,23 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring):
 
 
 def cky(terms, rules, roots, semiring=LogSemiring):
+    """
+    Parameters:
+         terms : b x n x T
+         rules : b x NT x (NT+T) x (NT+T)
+         root:   b x NT
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         spans: list of N,  b x N x (NT+t) span marginals
+    """
     v, span = cky_inside(terms, rules, roots, semiring=LogSemiring)
-    grads = torch.autograd.grad(v.sum(dim = 0),
-                                span[1:],
-                                create_graph=True,
-                                only_inputs=True, allow_unused=False)
-    return span
+    return torch.autograd.grad(v.sum(dim = 0),
+                               span[1:],
+                               create_graph=True,
+                               only_inputs=True, allow_unused=False)
+
 
 
 ###### Test

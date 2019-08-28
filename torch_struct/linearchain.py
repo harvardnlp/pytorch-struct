@@ -3,6 +3,16 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 def linearchain_inside(edge, semiring=LogSemiring):
+    """
+    Parameters:
+         edge : b x N x C x C semimarkov potentials
+         semiring
+
+    Returns:
+         v: b tensor of total sum
+         alpha: list of N,  b x C table
+
+    """
     batch, N, C, _ = edge.shape
     alpha = [_make_chart((batch, C), edge, semiring)
              for n in range(N+1)]
@@ -10,14 +20,25 @@ def linearchain_inside(edge, semiring=LogSemiring):
     for n in range(1, N + 1):
         alpha[n] = semiring.dot(alpha[n-1].view(batch, 1, C),
                                 edge[:, n-1])
-    return semiring.sum(alpha[N])
+    return semiring.sum(alpha[N]), alpha
 
 
 def linearchain(edge, semiring=LogSemiring):
-    v = linearchain_inside(edge, semiring)
-    grads = torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
+    """
+    Parameters:
+         edge : b x N x C x C semimarkov potentials
+         semiring
+
+    Returns:
+         marginals: list of N,  b x C table
+
+    """
+    v, alpha = linearchain_inside(edge, semiring)
+    return torch.autograd.grad(v.sum(dim=0), alpha, create_graph=True,
                                 only_inputs=True, allow_unused=False)
-    return grads
+
+
+### Tests
 
 def linearchain_check(edge, semiring=LogSemiring):
     batch, N, C, _ = edge.shape

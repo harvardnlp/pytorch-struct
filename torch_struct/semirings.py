@@ -81,7 +81,6 @@ class _Base(Semiring):
 
 
 class StdSemiring(_Base):
-    name = "Semiring.Std"
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -106,24 +105,19 @@ class _BaseLog(Semiring):
 
 
 class LogSemiring(_BaseLog):
-    name = "Semiring.Log"
-
     @staticmethod
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
 
 
-Semiring._register(LogSemiring)
 
 
 class MaxSemiring(_BaseLog):
-    name = "Semiring.Max"
-
-    def plus(self, xs, dim=-1):
+    @staticmethod
+    def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
 
 
-Semiring._register(MaxSemiring)
 
 
 class _SampledLogSumExp(torch.autograd.Function):
@@ -146,10 +140,6 @@ class _SampledLogSumExp(torch.autograd.Function):
 
 
 class SampledSemiring(_BaseLog):
-    name = "Semiring.Sampled"
-
-    def plus(self, xs, dim=-1):
+    @staticmethod
+    def sum(xs, dim=-1):
         return _SampledLogSumExp.apply(xs, dim)
-
-
-Semiring._register(SampledSemiring)
