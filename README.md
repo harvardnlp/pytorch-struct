@@ -9,14 +9,14 @@ A library of tested, GPU implementations of core structured prediction algorithm
 
 ## Library
 
-Implemented: 
+Implemented:
 
-* Linear Chain CRF / HMM 
-* Semi-Markov CRF / HSMM
-* Dependency Parsing 
-* CKY / Context-Free Grammars
+* Linear Chain (CRF / HMM)
+* Semi-Markov (CRF / HSMM)
+* Dependency Parsing (Projective and Non-Projective)
+* CKY (CFG)
 
-Design Strategy: 
+Design Strategy:
 
 1) Minimal code. Entire library is around 200 loc.
 2) All algorithms are implemented for GPU.

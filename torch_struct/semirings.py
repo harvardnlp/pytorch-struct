@@ -14,6 +14,7 @@ class Semiring:
     def dot(cls, *ls):
         return cls.sum(cls.times(*ls))
 
+
 class _Base(Semiring):
     @staticmethod
     def mul(a, b):
@@ -26,6 +27,7 @@ class _Base(Semiring):
     @staticmethod
     def one():
         return 1
+
 
 class StdSemiring(_Base):
     @staticmethod
@@ -52,10 +54,12 @@ class LogSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
 
+
 class MaxSemiring(_BaseLog):
     @staticmethod
     def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
+
 
 class _SampledLogSumExp(torch.autograd.Function):
     @staticmethod
