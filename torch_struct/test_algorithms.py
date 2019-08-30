@@ -4,28 +4,21 @@ from .linearchain import linearchain, linearchain_forward, linearchain_check, hm
 from .semimarkov import semimarkov, semimarkov_forward, semimarkov_check
 from .semirings import LogSemiring, StdSemiring, MaxSemiring
 import torch
-import math
-from hypothesis import given
-from hypothesis.strategies import (
-    sampled_from,
-    lists,
-    data,
-    floats,
-    integers,
-    permutations,
-)
+from hypothesis import given, settings
+from hypothesis.strategies import integers
 
-smint = integers(min_value=2, max_value=5)
-# @given(smint, smint, smint)
-def test_linearchain():
-    batch, N, C = 2, 3, 4
+smint = integers(min_value=2, max_value=4)
+tint = integers(min_value=1, max_value=2)
+
+@given(smint, smint, smint)
+@settings(max_examples=50)
+def test_linearchain(batch, N, C):
     for semiring in [LogSemiring, MaxSemiring]:
         vals = torch.rand(batch, N, C, C)
         semiring = LogSemiring
 
         alpha, _ = linearchain_forward(vals, semiring)
         count = linearchain_check(vals, semiring)
-        print(count.shape, alpha.shape)
         assert torch.isclose(count[0], alpha[0])
 
     vals = torch.rand(batch, N, C, C)
@@ -44,13 +37,10 @@ def test_hmm():
     out = hmm(transition, emission, init, observations)
     linearchain(out)
 
-
-smint = integers(min_value=2, max_value=5)
-
-
-def test_semimarkov():
+@given(smint, smint, smint, smint)
+@settings(max_examples=50)
+def test_semimarkov(N, K, V, C):
     batch = 2
-    N, K, C = 4, 3, 5
     for semiring in [LogSemiring, MaxSemiring]:
         vals = torch.rand(batch, N, K, C, C)
         vals[:, :, 0, :, :] = semiring.zero()
@@ -63,9 +53,9 @@ def test_semimarkov():
     marginals = semimarkov(vals, semiring)
     assert(torch.isclose(score.sum(), marginals.mul(vals).sum()).all())
 
-
-def test_dep():
-    N, batch = 5, 2
+@given(smint)
+def test_dep(N):
+    batch = 2
     for semiring in [LogSemiring, MaxSemiring]:
         scores = torch.rand(batch, N, N)
         top, arcs = deptree_inside(scores, semiring)
@@ -84,22 +74,20 @@ def test_dep_np():
     scores = torch.rand(batch, N, N)
     top, arcs = deptree_nonproj(scores)
 
-
-def test_cky():
-    N = 3
-    batch = 1
-    NT = 4
-    T = 5
-
+@given(smint, tint, tint)
+@settings(max_examples=50)
+def test_cky(N, NT, T):
+    batch = 2
     for semiring in [LogSemiring, MaxSemiring]:
         terms = torch.rand(batch, N, T)
         rules = torch.rand(batch, NT, (NT + T), (NT + T))
         roots = torch.rand(batch, NT)
 
         v2 = cky_check(terms, rules, roots, semiring)
-        v, _ = cky_inside(terms, rules, roots,semiring)
+        v, _ = cky_inside(terms, rules, roots, semiring)
         assert torch.isclose(v[0], v2)
-    # semiring = MaxSemiring
-    # score, _ = cky_inside(terms, rules, roots,semiring)
-    # marginals = cky(terms, rules, roots,semiring)
-    # assert(torch.isclose(score.sum(), marginals.mul(scores).sum()).all())
+    semiring = MaxSemiring
+    score, _ = cky_inside(terms, rules, roots, semiring)
+    (m_term, m_rule, m_root) = cky(terms, rules, roots, semiring)
+    assert(torch.isclose(score.sum(), (m_term.mul(terms).sum() + m_rule.sum(dim=1).sum(dim=1).mul(rules).sum()
+                                       + m_root.mul(roots).sum()).sum()).all())

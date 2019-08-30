@@ -1,6 +1,4 @@
 import torch
-import sys
-
 
 class Semiring:
     @classmethod

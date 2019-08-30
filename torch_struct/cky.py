@@ -4,7 +4,6 @@ from .helpers import _make_chart
 
 A, B = 0, 1
 
-
 def cky_inside(terms, rules, roots, semiring=LogSemiring):
     """
     Compute the inside pass of a CFG using CKY.
@@ -59,22 +58,24 @@ def cky(terms, rules, roots, semiring=LogSemiring):
 
     Returns:
          v: b tensor of total sum
-         spans: b x N x N x (NT+t) span marginals
-                where spans[:, i, d] covers (i, i + d)
+         spans: bxNxT terms, (bxNxNxNTxSxS) rules, bxNT roots
+
     """
     batch_size, N, T = terms.shape
     _, NT, _, _ = rules.shape
     S = NT + T
-    v, (term_use, rule_use, top) = cky_inside(terms, rules, roots, semiring=LogSemiring)
+    v, (term_use, rule_use, top) = cky_inside(terms, rules, roots, semiring=semiring)
     marg = torch.autograd.grad(
         v.sum(dim=0), tuple(rule_use)+ (top, term_use),
         create_graph=True, only_inputs=True, allow_unused=False
     )
 
-    rule_use = marg[:2]
-    rules = torch.zeros(N, N, NT, S, S)
+    rule_use = marg[:-2]
+    rules = torch.zeros(batch_size, N, N, NT, S, S)
     for w in range(len(rule_use)):
-        rules[w, :N-w+1] = rule_use[w]
+        rules[:, w, :N-w-1] = rule_use[w]
+    assert(marg[-1].shape == (batch_size, N, T))
+    assert(marg[-2].shape == (batch_size, NT))
     return (marg[-1], rules, marg[-2])
 
 
