@@ -19,7 +19,7 @@ def test_simple(batch, N, C):
     alpha, _ = linearchain_forward(vals, semiring)
     assert (alpha == pow(C, N + 1)).all()
 
-    sample = linearchain(vals, SampledSemiring)
+    linearchain(vals, SampledSemiring)
 
 
 @given(smint, smint, smint)
