@@ -13,24 +13,25 @@ def semimarkov_forward(edge, semiring=LogSemiring):
 
     Returns:
          v: b tensor of total sum
-         spans: list of N,  b x K x C table
+         spans: list of N,  b x K x C x C table
 
     """
     batch, N, K, C, _ = edge.shape
-    spans = [None for n in range(N + 1)]
-    alpha = _make_chart((batch, N + 1, K, C), edge, semiring)
-
+    spans = [None for _ in range(N)]
+    alpha = [_make_chart((batch,  K, C), edge, semiring) for n in range(N+1)]
     beta = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
     beta[0].data.fill_(semiring.one())
     for n in range(1, N + 1):
-        spans[n - 1] = semiring.dot(
+        spans[n - 1] = semiring.times(
             beta[n - 1].view(batch, 1, 1, C), edge[:, n - 1].view(batch, K, C, C)
         )
-        alpha[:, n - 1] = spans[n - 1]
+        alpha[n-1][:] = semiring.sum(spans[n - 1])
         t = max(n - K, -1)
         f1 = torch.arange(n - 1, t, -1)
         f2 = torch.arange(1, len(f1) + 1)
-        beta[n] = semiring.sum(alpha[:, f1, f2], dim=1)
+        print(n-1, f1, f2)
+        beta[n] = semiring.sum(
+            torch.stack([alpha[a][:,  b] for a, b in zip(f1, f2)]), dim=0)
 
     return semiring.sum(beta[N], dim=1), spans
 
@@ -75,5 +76,4 @@ def semimarkov_check(edge, semiring=LogSemiring):
                             semiring.mul(score, edge[:, n - k, k, c, chain[-1][0]]),
                         )
                     )
-    print(chains[N])
     return semiring.sum(torch.stack([s for (_, s) in chains[N]]), dim=0)

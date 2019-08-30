@@ -25,23 +25,26 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring):
     beta = [_make_chart((batch_size, N, N, NT + T), rules, semiring) for _ in range(2)]
 
     span = [_make_chart((batch_size, N, NT + T), rules, semiring) for _ in range(N)]
+    rule_use = [None for _ in range(N-1)]
+    term_use = terms.requires_grad_(True)
+    beta[A][:, :, 0, NT:] = term_use
+    beta[B][:, :, N - 1, NT:] = term_use
 
-    beta[A][:, :, 0, NT:] = terms
-    beta[B][:, :, N - 1, NT:] = terms
 
     S = NT + T
     for w in range(1, N):
         Y = beta[A][:, : N - w, :w, :].view(batch_size, N - w, w, 1, S, 1)
         Z = beta[B][:, w:, N - w :, :].view(batch_size, N - w, w, 1, 1, S)
         X_Y_Z = rules.view(batch_size, 1, NT, S, S)
-        rulesmid = semiring.times(semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z)
-        rulesmid = rulesmid.view(batch_size, N - w, NT, S * S)
+        rule_use[w-1] = semiring.times(semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z)
+        rulesmid = rule_use[w-1].view(batch_size, N - w, NT, S * S)
         span[w] = semiring.sum(rulesmid, dim=3)
         beta[A][:, : N - w, w, :NT] = span[w]
         beta[B][:, w:N, N - w - 1, :NT] = beta[A][:, : N - w, w, :NT]
 
-    log_Z = semiring.dot(beta[A][:, 0, N - 1, :NT], roots)
-    return log_Z, span
+    top = beta[A][:, 0, N - 1, :NT]
+    log_Z = semiring.dot(top, roots)
+    return log_Z, (term_use, rule_use, top)
 
 
 def cky(terms, rules, roots, semiring=LogSemiring):
@@ -59,11 +62,20 @@ def cky(terms, rules, roots, semiring=LogSemiring):
          spans: b x N x N x (NT+t) span marginals
                 where spans[:, i, d] covers (i, i + d)
     """
-    v, span = cky_inside(terms, rules, roots, semiring=LogSemiring)
+    batch_size, N, T = terms.shape
+    _, NT, _, _ = rules.shape
+    S = NT + T
+    v, (term_use, rule_use, top) = cky_inside(terms, rules, roots, semiring=LogSemiring)
     marg = torch.autograd.grad(
-        v.sum(dim=0), span[1:], create_graph=True, only_inputs=True, allow_unused=False
+        v.sum(dim=0), tuple(rule_use)+ (top, term_use),
+        create_graph=True, only_inputs=True, allow_unused=False
     )
-    return torch.stack(marg, dim=1)
+
+    rule_use = marg[:2]
+    rules = torch.zeros(N, N, NT, S, S)
+    for w in range(len(rule_use)):
+        rules[w, :N-w+1] = rule_use[w]
+    return (marg[-1], rules, marg[-2])
 
 
 ###### Test
@@ -90,8 +102,8 @@ def cky_check(terms, rules, roots, semiring=LogSemiring):
                                     [(x, start, w, end)] + y1 + z1,
                                 )
 
-    for nt in range(NT):
-        print(list(enumerate(nt, 0, N)))
+    # for nt in range(NT):
+    #     print(list(enumerate(nt, 0, N)))
     ls = []
     for nt in range(NT):
         ls += [semiring.times(s, roots[0, nt]) for s, _ in enumerate(nt, 0, N)]

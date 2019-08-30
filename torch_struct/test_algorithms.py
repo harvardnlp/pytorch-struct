@@ -27,8 +27,13 @@ def test_linearchain():
         count = linearchain_check(vals, semiring)
         print(count.shape, alpha.shape)
         assert torch.isclose(count[0], alpha[0])
-        marginals = linearchain(vals, semiring)
 
+    vals = torch.rand(batch, N, C, C)
+    semiring = MaxSemiring
+    score, _ = linearchain_forward(vals, semiring)
+    marginals = linearchain(vals, semiring)
+    print(marginals.shape, vals.shape)
+    assert(torch.isclose(score.sum(), marginals.mul(vals).sum()).all())
 
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
@@ -52,6 +57,11 @@ def test_semimarkov():
         v, _ = semimarkov_forward(vals, semiring)
         count = semimarkov_check(vals, semiring)
         assert torch.isclose(v, count).all()
+    vals = torch.rand(batch, N, K, C, C)
+    semiring = MaxSemiring
+    score, _ = semimarkov_forward(vals, semiring)
+    marginals = semimarkov(vals, semiring)
+    assert(torch.isclose(score.sum(), marginals.mul(vals).sum()).all())
 
 
 def test_dep():
@@ -61,6 +71,11 @@ def test_dep():
         top, arcs = deptree_inside(scores, semiring)
         out = deptree_check(scores, semiring)
         assert torch.isclose(top[0], out)
+
+    semiring = MaxSemiring
+    score, _ = deptree_inside(scores, semiring)
+    marginals = deptree(scores, semiring)
+    assert(torch.isclose(score.sum(), marginals.mul(scores).sum()).all())
 
 
 def test_dep_np():
@@ -82,5 +97,9 @@ def test_cky():
         roots = torch.rand(batch, NT)
 
         v2 = cky_check(terms, rules, roots, semiring)
-        v, _ = cky_inside(terms, rules, roots, semiring)
+        v, _ = cky_inside(terms, rules, roots,semiring)
         assert torch.isclose(v[0], v2)
+    # semiring = MaxSemiring
+    # score, _ = cky_inside(terms, rules, roots,semiring)
+    # marginals = cky(terms, rules, roots,semiring)
+    # assert(torch.isclose(score.sum(), marginals.mul(scores).sum()).all())
