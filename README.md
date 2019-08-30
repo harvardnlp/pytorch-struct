@@ -1,9 +1,11 @@
+
+# Pytorch-Struct
+
 [![Build Status](https://travis-ci.org/harvardnlp/pytorch-struct.svg?branch=master)](https://travis-ci.org/harvardnlp/pytorch-struct)
 [![Coverage Status](https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master)](https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master)
 
 <center><img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png"></center>
 
-# Pytorch-Struct
 
 
 A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.
