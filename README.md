@@ -4,15 +4,21 @@
 [![Build Status](https://travis-ci.org/harvardnlp/pytorch-struct.svg?branch=master)](https://travis-ci.org/harvardnlp/pytorch-struct)
 [![Coverage Status](https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master)](https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master)
 
-<center><img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png"></center>
+<p align="center">
+  <img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png">
+  </p>
 
 
 
-A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.
+A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications. 
+(or an implementation of <a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Inside-Outside and Forward-Backward Algorithms Are Just Backprop"<a/>)
+
 
 ## Getting Started
 
-> pip install . 
+```
+pip install . 
+```
 
 ```python
 import torch_struct
@@ -44,7 +50,7 @@ v, _ = torch.deptree_inside(scores, semiring=torch_struct.MaxSemiring)
 
 ## Library
 
-Implemented:
+Current algorithms implemented:
 
 * Linear Chain (CRF / HMM)
 * Semi-Markov (CRF / HSMM)
@@ -53,11 +59,11 @@ Implemented:
 
 Design Strategy:
 
-1) Minimal code, very small implementatations. 
-2) All algorithms are implemented for GPU.
-3) Only implement forward pass, use gradients for marginals.
+1) Minimal implementatations. Most are 10 lines.
+2) Batched for GPU.
+3) Code can be ported to other backends
 
-Semirings with Gradients
+Semirings:
 
 * Log Marginals
 * Max and MAP computation
