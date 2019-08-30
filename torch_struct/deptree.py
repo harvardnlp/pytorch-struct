@@ -50,8 +50,12 @@ def deptree_inside(arc_scores, semiring=LogSemiring):
     arc_scores = _convert(arc_scores)
     batch_size, N, _ = arc_scores.shape
     DIRS = 2
-    stack = lambda a, b: torch.stack([a, b])
-    sstack = lambda a: torch.stack([a, a])
+
+    def stack(a, b):
+        return torch.stack([a, b])
+
+    def sstack(a):
+        return torch.stack([a, a])
 
     alpha = [
         [_make_chart((DIRS, batch_size, N, N), arc_scores, semiring) for _ in [I, C]]

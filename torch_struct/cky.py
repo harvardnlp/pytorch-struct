@@ -98,7 +98,6 @@ def cky_check(terms, rules, roots, semiring=LogSemiring):
             for w in range(start + 1, end):
                 for y in range(NT) if w != start + 1 else range(NT, NT + T):
                     for z in range(NT) if w != end - 1 else range(NT, NT + T):
-                        children = []
                         for m1, y1 in enumerate(y, start, w):
                             for m2, z1 in enumerate(z, w, end):
                                 yield (

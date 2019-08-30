@@ -2,7 +2,7 @@ from .cky import cky_inside, cky, cky_check
 from .deptree import deptree_inside, deptree, deptree_check, deptree_nonproj
 from .linearchain import linearchain, linearchain_forward, linearchain_check, hmm
 from .semimarkov import semimarkov, semimarkov_forward, semimarkov_check
-from .semirings import LogSemiring, StdSemiring, MaxSemiring
+from .semirings import LogSemiring, MaxSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers
