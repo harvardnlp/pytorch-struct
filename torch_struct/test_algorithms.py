@@ -2,13 +2,24 @@ from .cky import cky_inside, cky, cky_check
 from .deptree import deptree_inside, deptree, deptree_check, deptree_nonproj
 from .linearchain import linearchain, linearchain_forward, linearchain_check, hmm
 from .semimarkov import semimarkov, semimarkov_forward, semimarkov_check
-from .semirings import LogSemiring, MaxSemiring
+from .semirings import LogSemiring, MaxSemiring, StdSemiring, SampledSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 smint = integers(min_value=2, max_value=4)
 tint = integers(min_value=1, max_value=2)
+
+
+@given(smint, smint, smint)
+def test_simple(batch, N, C):
+    vals = torch.ones(batch, N, C, C)
+    semiring = StdSemiring
+
+    alpha, _ = linearchain_forward(vals, semiring)
+    assert (alpha == pow(C, N + 1)).all()
+
+    sample = linearchain(vals, SampledSemiring)
 
 
 @given(smint, smint, smint)
