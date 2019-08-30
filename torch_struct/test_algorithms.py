@@ -10,6 +10,7 @@ from hypothesis.strategies import integers
 smint = integers(min_value=2, max_value=4)
 tint = integers(min_value=1, max_value=2)
 
+
 @given(smint, smint, smint)
 @settings(max_examples=50)
 def test_linearchain(batch, N, C):
@@ -26,7 +27,8 @@ def test_linearchain(batch, N, C):
     score, _ = linearchain_forward(vals, semiring)
     marginals = linearchain(vals, semiring)
     print(marginals.shape, vals.shape)
-    assert(torch.isclose(score.sum(), marginals.mul(vals).sum()).all())
+    assert torch.isclose(score.sum(), marginals.mul(vals).sum()).all()
+
 
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
@@ -36,6 +38,7 @@ def test_hmm():
     observations = torch.randint(0, V, (batch, N))
     out = hmm(transition, emission, init, observations)
     linearchain(out)
+
 
 @given(smint, smint, smint, smint)
 @settings(max_examples=50)
@@ -51,7 +54,8 @@ def test_semimarkov(N, K, V, C):
     semiring = MaxSemiring
     score, _ = semimarkov_forward(vals, semiring)
     marginals = semimarkov(vals, semiring)
-    assert(torch.isclose(score.sum(), marginals.mul(vals).sum()).all())
+    assert torch.isclose(score.sum(), marginals.mul(vals).sum()).all()
+
 
 @given(smint)
 def test_dep(N):
@@ -65,7 +69,7 @@ def test_dep(N):
     semiring = MaxSemiring
     score, _ = deptree_inside(scores, semiring)
     marginals = deptree(scores, semiring)
-    assert(torch.isclose(score.sum(), marginals.mul(scores).sum()).all())
+    assert torch.isclose(score.sum(), marginals.mul(scores).sum()).all()
 
 
 def test_dep_np():
@@ -73,6 +77,7 @@ def test_dep_np():
     batch = 2
     scores = torch.rand(batch, N, N)
     top, arcs = deptree_nonproj(scores)
+
 
 @given(smint, tint, tint)
 @settings(max_examples=50)
@@ -89,5 +94,11 @@ def test_cky(N, NT, T):
     semiring = MaxSemiring
     score, _ = cky_inside(terms, rules, roots, semiring)
     (m_term, m_rule, m_root) = cky(terms, rules, roots, semiring)
-    assert(torch.isclose(score.sum(), (m_term.mul(terms).sum() + m_rule.sum(dim=1).sum(dim=1).mul(rules).sum()
-                                       + m_root.mul(roots).sum()).sum()).all())
+    assert torch.isclose(
+        score.sum(),
+        (
+            m_term.mul(terms).sum()
+            + m_rule.sum(dim=1).sum(dim=1).mul(rules).sum()
+            + m_root.mul(roots).sum()
+        ).sum(),
+    ).all()

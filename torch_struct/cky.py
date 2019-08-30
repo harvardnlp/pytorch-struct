@@ -4,6 +4,7 @@ from .helpers import _make_chart
 
 A, B = 0, 1
 
+
 def cky_inside(terms, rules, roots, semiring=LogSemiring):
     """
     Compute the inside pass of a CFG using CKY.
@@ -24,19 +25,20 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring):
     beta = [_make_chart((batch_size, N, N, NT + T), rules, semiring) for _ in range(2)]
 
     span = [_make_chart((batch_size, N, NT + T), rules, semiring) for _ in range(N)]
-    rule_use = [None for _ in range(N-1)]
+    rule_use = [None for _ in range(N - 1)]
     term_use = terms.requires_grad_(True)
     beta[A][:, :, 0, NT:] = term_use
     beta[B][:, :, N - 1, NT:] = term_use
-
 
     S = NT + T
     for w in range(1, N):
         Y = beta[A][:, : N - w, :w, :].view(batch_size, N - w, w, 1, S, 1)
         Z = beta[B][:, w:, N - w :, :].view(batch_size, N - w, w, 1, 1, S)
         X_Y_Z = rules.view(batch_size, 1, NT, S, S)
-        rule_use[w-1] = semiring.times(semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z)
-        rulesmid = rule_use[w-1].view(batch_size, N - w, NT, S * S)
+        rule_use[w - 1] = semiring.times(
+            semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z
+        )
+        rulesmid = rule_use[w - 1].view(batch_size, N - w, NT, S * S)
         span[w] = semiring.sum(rulesmid, dim=3)
         beta[A][:, : N - w, w, :NT] = span[w]
         beta[B][:, w:N, N - w - 1, :NT] = beta[A][:, : N - w, w, :NT]
@@ -66,16 +68,19 @@ def cky(terms, rules, roots, semiring=LogSemiring):
     S = NT + T
     v, (term_use, rule_use, top) = cky_inside(terms, rules, roots, semiring=semiring)
     marg = torch.autograd.grad(
-        v.sum(dim=0), tuple(rule_use)+ (top, term_use),
-        create_graph=True, only_inputs=True, allow_unused=False
+        v.sum(dim=0),
+        tuple(rule_use) + (top, term_use),
+        create_graph=True,
+        only_inputs=True,
+        allow_unused=False,
     )
 
     rule_use = marg[:-2]
     rules = torch.zeros(batch_size, N, N, NT, S, S)
     for w in range(len(rule_use)):
-        rules[:, w, :N-w-1] = rule_use[w]
-    assert(marg[-1].shape == (batch_size, N, T))
-    assert(marg[-2].shape == (batch_size, NT))
+        rules[:, w, : N - w - 1] = rule_use[w]
+    assert marg[-1].shape == (batch_size, N, T)
+    assert marg[-2].shape == (batch_size, NT)
     return (marg[-1], rules, marg[-2])
 
 

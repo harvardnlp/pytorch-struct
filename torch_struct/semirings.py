@@ -1,5 +1,6 @@
 import torch
 
+
 class Semiring:
     @classmethod
     def times(cls, *ls):

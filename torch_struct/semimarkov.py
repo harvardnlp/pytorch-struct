@@ -18,20 +18,21 @@ def semimarkov_forward(edge, semiring=LogSemiring):
     """
     batch, N, K, C, _ = edge.shape
     spans = [None for _ in range(N)]
-    alpha = [_make_chart((batch,  K, C), edge, semiring) for n in range(N+1)]
+    alpha = [_make_chart((batch, K, C), edge, semiring) for n in range(N + 1)]
     beta = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
     beta[0].data.fill_(semiring.one())
     for n in range(1, N + 1):
         spans[n - 1] = semiring.times(
             beta[n - 1].view(batch, 1, 1, C), edge[:, n - 1].view(batch, K, C, C)
         )
-        alpha[n-1][:] = semiring.sum(spans[n - 1])
+        alpha[n - 1][:] = semiring.sum(spans[n - 1])
         t = max(n - K, -1)
         f1 = torch.arange(n - 1, t, -1)
         f2 = torch.arange(1, len(f1) + 1)
-        print(n-1, f1, f2)
+        print(n - 1, f1, f2)
         beta[n] = semiring.sum(
-            torch.stack([alpha[a][:,  b] for a, b in zip(f1, f2)]), dim=0)
+            torch.stack([alpha[a][:, b] for a, b in zip(f1, f2)]), dim=0
+        )
 
     return semiring.sum(beta[N], dim=1), spans
 
