@@ -5,7 +5,7 @@ from .helpers import _make_chart
 A, B = 0, 1
 
 
-def cky_inside(terms, rules, roots, semiring=LogSemiring):
+def cky_inside(terms, rules, roots, semiring=LogSemiring, lengths=None):
     """
     Compute the inside pass of a CFG using CKY.
 
@@ -19,12 +19,13 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring):
          v: b tensor of total sum
          spans: list of N,  b x N x (NT+t)
     """
-    batch_size, N, T = terms.shape
+    batch, N, T = terms.shape
     _, NT, _, _ = rules.shape
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
+    beta = [_make_chart((batch, N, N, NT + T), rules, semiring) for _ in range(2)]
 
-    beta = [_make_chart((batch_size, N, N, NT + T), rules, semiring) for _ in range(2)]
-
-    span = [_make_chart((batch_size, N, NT + T), rules, semiring) for _ in range(N)]
+    span = [_make_chart((batch, N, NT + T), rules, semiring) for _ in range(N)]
     rule_use = [None for _ in range(N - 1)]
     term_use = terms.requires_grad_(True)
     beta[A][:, :, 0, NT:] = term_use
@@ -32,23 +33,23 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring):
 
     S = NT + T
     for w in range(1, N):
-        Y = beta[A][:, : N - w, :w, :].view(batch_size, N - w, w, 1, S, 1)
-        Z = beta[B][:, w:, N - w :, :].view(batch_size, N - w, w, 1, 1, S)
-        X_Y_Z = rules.view(batch_size, 1, NT, S, S)
+        Y = beta[A][:, : N - w, :w, :].view(batch, N - w, w, 1, S, 1)
+        Z = beta[B][:, w:, N - w :, :].view(batch, N - w, w, 1, 1, S)
+        X_Y_Z = rules.view(batch, 1, NT, S, S)
         rule_use[w - 1] = semiring.times(
             semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z
         )
-        rulesmid = rule_use[w - 1].view(batch_size, N - w, NT, S * S)
+        rulesmid = rule_use[w - 1].view(batch, N - w, NT, S * S)
         span[w] = semiring.sum(rulesmid, dim=3)
         beta[A][:, : N - w, w, :NT] = span[w]
         beta[B][:, w:N, N - w - 1, :NT] = beta[A][:, : N - w, w, :NT]
 
-    top = beta[A][:, 0, N - 1, :NT]
+    top = torch.stack([beta[A][i, 0, l - 1, :NT] for i, l in enumerate(lengths)])
     log_Z = semiring.dot(top, roots)
     return log_Z, (term_use, rule_use, top)
 
 
-def cky(terms, rules, roots, semiring=LogSemiring):
+def cky(terms, rules, roots, semiring=LogSemiring, lengths=None):
     """
     Compute the marginals of a CFG using CKY.
 
@@ -63,10 +64,12 @@ def cky(terms, rules, roots, semiring=LogSemiring):
          spans: bxNxT terms, (bxNxNxNTxSxS) rules, bxNT roots
 
     """
-    batch_size, N, T = terms.shape
+    batch, N, T = terms.shape
     _, NT, _, _ = rules.shape
     S = NT + T
-    v, (term_use, rule_use, top) = cky_inside(terms, rules, roots, semiring=semiring)
+    v, (term_use, rule_use, top) = cky_inside(
+        terms, rules, roots, semiring=semiring, lengths=lengths
+    )
     marg = torch.autograd.grad(
         v.sum(dim=0),
         tuple(rule_use) + (top, term_use),
@@ -76,11 +79,11 @@ def cky(terms, rules, roots, semiring=LogSemiring):
     )
 
     rule_use = marg[:-2]
-    rules = torch.zeros(batch_size, N, N, NT, S, S)
+    rules = torch.zeros(batch, N, N, NT, S, S)
     for w in range(len(rule_use)):
         rules[:, w, : N - w - 1] = rule_use[w]
-    assert marg[-1].shape == (batch_size, N, T)
-    assert marg[-2].shape == (batch_size, NT)
+    assert marg[-1].shape == (batch, N, T)
+    assert marg[-2].shape == (batch, NT)
     return (marg[-1], rules, marg[-2])
 
 
@@ -88,7 +91,7 @@ def cky(terms, rules, roots, semiring=LogSemiring):
 
 
 def cky_check(terms, rules, roots, semiring=LogSemiring):
-    batch_size, N, T = terms.shape
+    batch, N, T = terms.shape
     _, NT, _, _ = rules.shape
 
     def enumerate(x, start, end):

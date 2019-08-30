@@ -34,13 +34,14 @@ def _unconvert(logits):
 A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
 
-def deptree_inside(arc_scores, semiring=LogSemiring):
+def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None):
     """
     Compute the inside pass of a projective dependency CRF.
 
     Parameters:
          arc_scores : b x N x N arc scores with root scores on diagonal.
          semiring
+         lengths: None or b long tensor mask
 
     Returns:
          v: b tensor of total sum
@@ -48,8 +49,10 @@ def deptree_inside(arc_scores, semiring=LogSemiring):
 
     """
     arc_scores = _convert(arc_scores)
-    batch_size, N, _ = arc_scores.shape
+    batch, N, _ = arc_scores.shape
     DIRS = 2
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
 
     def stack(a, b):
         return torch.stack([a, b])
@@ -58,10 +61,10 @@ def deptree_inside(arc_scores, semiring=LogSemiring):
         return torch.stack([a, a])
 
     alpha = [
-        [_make_chart((DIRS, batch_size, N, N), arc_scores, semiring) for _ in [I, C]]
+        [_make_chart((DIRS, batch, N, N), arc_scores, semiring) for _ in [I, C]]
         for _ in range(2)
     ]
-    arcs = [_make_chart((DIRS, batch_size, N), arc_scores, semiring) for _ in range(N)]
+    arcs = [_make_chart((DIRS, batch, N), arc_scores, semiring) for _ in range(N)]
 
     # Inside step. assumes first token is root symbol
     alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
@@ -85,28 +88,31 @@ def deptree_inside(arc_scores, semiring=LogSemiring):
             ),
         )
         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
-    return alpha[A][C][R, :, 0, N - 1], arcs
+    return (
+        torch.stack([alpha[A][C][R, i, 0, l - 1] for i, l in enumerate(lengths)]),
+        arcs,
+    )
 
 
-def deptree(arc_scores, semiring=LogSemiring):
+def deptree(arc_scores, semiring=LogSemiring, lengths=None):
     """
     Compute the marginals of a projective dependency CRF.
 
     Parameters:
          arc_scores : b x N x N arc scores with root scores on diagonal.
          semiring
-
+         lengths
     Returns:
          arc_marginals : b x N x N.
 
     """
-    batch_size, N, _ = arc_scores.shape
+    batch, N, _ = arc_scores.shape
     N = N + 1
-    v, arcs = deptree_inside(arc_scores, semiring)
+    v, arcs = deptree_inside(arc_scores, semiring, lengths)
     grads = torch.autograd.grad(
         v.sum(dim=0), arcs[1:], create_graph=True, only_inputs=True, allow_unused=False
     )
-    ret = torch.zeros(batch_size, N, N).cpu()
+    ret = torch.zeros(batch, N, N).cpu()
     for k, grad in enumerate(grads, 1):
         f = torch.arange(N - k), torch.arange(k, N)
         ret[:, f[0], f[1]] = grad[R].cpu()
@@ -163,7 +169,7 @@ def deptree_check(arc_scores, semiring=LogSemiring, non_proj=False):
     parses = []
     q = []
     arc_scores = _convert(arc_scores)
-    batch_size, N, _ = arc_scores.shape
+    batch, N, _ = arc_scores.shape
     for mid in itertools.product(range(N + 1), repeat=N - 1):
         parse = [-1] + list(mid)
         if not _is_spanning(parse):

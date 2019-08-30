@@ -22,8 +22,8 @@ def test_simple(batch, N, C):
     linearchain(vals, SampledSemiring)
 
 
-@given(smint, smint, smint)
-@settings(max_examples=50)
+@given(smint, smint, tint)
+@settings(max_examples=25)
 def test_linearchain(batch, N, C):
     for semiring in [LogSemiring, MaxSemiring]:
         vals = torch.rand(batch, N, C, C)
@@ -69,6 +69,7 @@ def test_semimarkov(N, K, V, C):
 
 
 @given(smint)
+@settings(max_examples=25)
 def test_dep(N):
     batch = 2
     for semiring in [LogSemiring, MaxSemiring]:

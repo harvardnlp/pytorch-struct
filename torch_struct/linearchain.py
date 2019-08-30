@@ -3,7 +3,7 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 
-def linearchain_forward(edge, semiring=LogSemiring):
+def linearchain_forward(edge, semiring=LogSemiring, lengths=None):
     """
     Compute the forward pass of a linear chain CRF.
 
@@ -11,6 +11,7 @@ def linearchain_forward(edge, semiring=LogSemiring):
          edge : b x N x C x C markov potentials
                     (n-1 x z_n x z_{n-1})
          semiring
+         lengths: None or b long tensor mask
 
     Returns:
          v: b tensor of total sum
@@ -18,6 +19,8 @@ def linearchain_forward(edge, semiring=LogSemiring):
 
     """
     batch, N, C, _ = edge.shape
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
     alpha = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
     edge_store = [None for _ in range(N)]
     alpha[0].data.fill_(semiring.one())
@@ -25,8 +28,9 @@ def linearchain_forward(edge, semiring=LogSemiring):
         edge_store[n - 1] = semiring.times(
             alpha[n - 1].view(batch, 1, C), edge[:, n - 1]
         )
-        alpha[n] = semiring.sum(edge_store[n - 1])
-    return semiring.sum(alpha[N]), edge_store
+        alpha[n][:] = semiring.sum(edge_store[n - 1])
+    v = semiring.sum(torch.stack([alpha[l][i] for i, l in enumerate(lengths)]), dim=-1)
+    return v, edge_store
 
 
 def linearchain(edge, semiring=LogSemiring):

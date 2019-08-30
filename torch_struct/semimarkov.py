@@ -3,13 +3,14 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 
-def semimarkov_forward(edge, semiring=LogSemiring):
+def semimarkov_forward(edge, semiring=LogSemiring, lengths=None):
     """
     Compute the forward pass of a semimarkov CRF.
 
     Parameters:
          edge : b x N x K x C x C semimarkov potentials
          semiring
+         lengths: None or b long tensor mask
 
     Returns:
          v: b tensor of total sum
@@ -17,6 +18,8 @@ def semimarkov_forward(edge, semiring=LogSemiring):
 
     """
     batch, N, K, C, _ = edge.shape
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
     spans = [None for _ in range(N)]
     alpha = [_make_chart((batch, K, C), edge, semiring) for n in range(N + 1)]
     beta = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
@@ -33,11 +36,11 @@ def semimarkov_forward(edge, semiring=LogSemiring):
         beta[n] = semiring.sum(
             torch.stack([alpha[a][:, b] for a, b in zip(f1, f2)]), dim=0
         )
+    v = semiring.sum(torch.stack([beta[l][i] for i, l in enumerate(lengths)]), dim=1)
+    return v, spans
 
-    return semiring.sum(beta[N], dim=1), spans
 
-
-def semimarkov(edge, semiring=LogSemiring):
+def semimarkov(edge, semiring=LogSemiring, lengths=None):
     """
     Compute the marginals of a semimarkov CRF.
 
@@ -49,7 +52,7 @@ def semimarkov(edge, semiring=LogSemiring):
          marginals: b x N x K x C table
 
     """
-    v, spans = semimarkov_forward(edge, semiring)
+    v, spans = semimarkov_forward(edge, semiring, lengths)
     marg = torch.autograd.grad(
         v.sum(dim=0), spans, create_graph=True, only_inputs=True, allow_unused=False
     )
