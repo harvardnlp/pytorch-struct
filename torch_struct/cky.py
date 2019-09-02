@@ -5,7 +5,9 @@ from .helpers import _make_chart
 A, B = 0, 1
 
 
-def cky_inside(terms, rules, roots, semiring=LogSemiring, lengths=None):
+def cky_inside(
+    terms, rules, roots, semiring=LogSemiring, lengths=None, force_grad=False
+):
     """
     Compute the inside pass of a CFG using CKY.
 
@@ -23,9 +25,14 @@ def cky_inside(terms, rules, roots, semiring=LogSemiring, lengths=None):
     _, NT, _, _ = rules.shape
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
-    beta = [_make_chart((batch, N, N, NT + T), rules, semiring) for _ in range(2)]
+    beta = [
+        _make_chart((batch, N, N, NT + T), rules, semiring, force_grad)
+        for _ in range(2)
+    ]
 
-    span = [_make_chart((batch, N, NT + T), rules, semiring) for _ in range(N)]
+    span = [
+        _make_chart((batch, N, NT + T), rules, semiring, force_grad) for _ in range(N)
+    ]
     rule_use = [None for _ in range(N - 1)]
     term_use = terms.requires_grad_(True)
     beta[A][:, :, 0, NT:] = term_use

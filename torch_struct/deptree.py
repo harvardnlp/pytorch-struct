@@ -34,7 +34,7 @@ def _unconvert(logits):
 A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
 
-def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None):
+def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None, force_grad=False):
     """
     Compute the inside pass of a projective dependency CRF.
 
@@ -49,10 +49,12 @@ def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None):
 
     """
     arc_scores = _convert(arc_scores)
-    batch, N, _ = arc_scores.shape
+    batch, N, N2 = arc_scores.shape
+    assert N == N2, "Non-square potentials"
     DIRS = 2
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
+    assert max(lengths) <= N, "Length longer than N"
 
     def stack(a, b):
         return torch.stack([a, b])
@@ -61,10 +63,16 @@ def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None):
         return torch.stack([a, a])
 
     alpha = [
-        [_make_chart((DIRS, batch, N, N), arc_scores, semiring) for _ in [I, C]]
+        [
+            _make_chart((DIRS, batch, N, N), arc_scores, semiring, force_grad)
+            for _ in [I, C]
+        ]
         for _ in range(2)
     ]
-    arcs = [_make_chart((DIRS, batch, N), arc_scores, semiring) for _ in range(N)]
+    arcs = [
+        _make_chart((DIRS, batch, N), arc_scores, semiring, force_grad)
+        for _ in range(N)
+    ]
 
     # Inside step. assumes first token is root symbol
     alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
@@ -108,7 +116,7 @@ def deptree(arc_scores, semiring=LogSemiring, lengths=None):
     """
     batch, N, _ = arc_scores.shape
     N = N + 1
-    v, arcs = deptree_inside(arc_scores, semiring, lengths)
+    v, arcs = deptree_inside(arc_scores, semiring, lengths, force_grad=True)
     grads = torch.autograd.grad(
         v.sum(dim=0), arcs[1:], create_graph=True, only_inputs=True, allow_unused=False
     )

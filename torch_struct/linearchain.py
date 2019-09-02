@@ -3,7 +3,7 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 
-def linearchain_forward(edge, semiring=LogSemiring, lengths=None):
+def linearchain_forward(edge, semiring=LogSemiring, lengths=None, force_grad=False):
     """
     Compute the forward pass of a linear chain CRF.
 
@@ -18,10 +18,16 @@ def linearchain_forward(edge, semiring=LogSemiring, lengths=None):
          inside: list of N,  b x C x C table
 
     """
-    batch, N, C, _ = edge.shape
+    batch, N, C, C2 = edge.shape
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
-    alpha = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
+    assert max(lengths) <= N, "Length longer than edge scores"
+    assert C == C2, "Transition shape doesn't match"
+
+    alpha = [
+        _make_chart((batch, C), edge, semiring, force_grad=force_grad)
+        for n in range(N + 1)
+    ]
     edge_store = [None for _ in range(N)]
     alpha[0].data.fill_(semiring.one())
     for n in range(1, N + 1):
@@ -33,7 +39,7 @@ def linearchain_forward(edge, semiring=LogSemiring, lengths=None):
     return v, edge_store
 
 
-def linearchain(edge, semiring=LogSemiring):
+def linearchain(edge, semiring=LogSemiring, lengths=None):
     """
     Compute the marginals of a linear chain CRF.
 
@@ -41,12 +47,12 @@ def linearchain(edge, semiring=LogSemiring):
          edge : b x N x C x C markov potentials
                     (t x z_t x z_{t-1})
          semiring
-
+         lengths: None or b long tensor mask
     Returns:
          marginals: b x N x C x C table
 
     """
-    v, alpha = linearchain_forward(edge, semiring)
+    v, alpha = linearchain_forward(edge, semiring, force_grad=True)
     marg = torch.autograd.grad(
         v.sum(dim=0), alpha, create_graph=True, only_inputs=True, allow_unused=False
     )

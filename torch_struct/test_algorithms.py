@@ -41,6 +41,14 @@ def test_linearchain(batch, N, C):
     assert torch.isclose(score.sum(), marginals.mul(vals).sum()).all()
 
 
+@given(smint, smint, smint)
+def test_params(batch, N, C):
+    vals = torch.ones(batch, N, C, C, requires_grad=True)
+    semiring = StdSemiring
+    alpha, _ = linearchain_forward(vals, semiring)
+    alpha.sum().backward()
+
+
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
     transition = torch.rand(C, C)
@@ -84,6 +92,13 @@ def test_dep(N):
     assert torch.isclose(score.sum(), marginals.mul(scores).sum()).all()
 
 
+def test_dep_params():
+    batch, N = 2, 2
+    scores = torch.rand(batch, N, N, requires_grad=True)
+    top, arcs = deptree_inside(scores)
+    top.sum().backward()
+
+
 def test_dep_np():
     N = 5
     batch = 2
@@ -114,3 +129,14 @@ def test_cky(N, NT, T):
             + m_root.mul(roots).sum()
         ).sum(),
     ).all()
+
+
+@given(smint, tint, tint)
+@settings(max_examples=3)
+def test_cky_params(N, NT, T):
+    batch = 2
+    terms = torch.rand(batch, N, T)
+    rules = torch.rand(batch, NT, (NT + T), (NT + T), requires_grad=True)
+    roots = torch.rand(batch, NT, requires_grad=True)
+    v, _ = cky_inside(terms, rules, roots)
+    v.sum().backward()

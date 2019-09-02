@@ -3,7 +3,7 @@ from .semirings import LogSemiring
 from .helpers import _make_chart
 
 
-def semimarkov_forward(edge, semiring=LogSemiring, lengths=None):
+def semimarkov_forward(edge, semiring=LogSemiring, lengths=None, force_grad=False):
     """
     Compute the forward pass of a semimarkov CRF.
 
@@ -17,12 +17,17 @@ def semimarkov_forward(edge, semiring=LogSemiring, lengths=None):
          spans: list of N,  b x K x C x C table
 
     """
-    batch, N, K, C, _ = edge.shape
+    batch, N, K, C, C2 = edge.shape
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
+    assert max(lengths) <= N, "Length longer than edge scores"
+    assert C == C2, "Transition shape doesn't match"
+
     spans = [None for _ in range(N)]
-    alpha = [_make_chart((batch, K, C), edge, semiring) for n in range(N + 1)]
-    beta = [_make_chart((batch, C), edge, semiring) for n in range(N + 1)]
+    alpha = [
+        _make_chart((batch, K, C), edge, semiring, force_grad) for n in range(N + 1)
+    ]
+    beta = [_make_chart((batch, C), edge, semiring, force_grad) for n in range(N + 1)]
     beta[0].data.fill_(semiring.one())
     for n in range(1, N + 1):
         spans[n - 1] = semiring.times(
@@ -33,7 +38,7 @@ def semimarkov_forward(edge, semiring=LogSemiring, lengths=None):
         f1 = torch.arange(n - 1, t, -1)
         f2 = torch.arange(1, len(f1) + 1)
         print(n - 1, f1, f2)
-        beta[n] = semiring.sum(
+        beta[n][:] = semiring.sum(
             torch.stack([alpha[a][:, b] for a, b in zip(f1, f2)]), dim=0
         )
     v = semiring.sum(torch.stack([beta[l][i] for i, l in enumerate(lengths)]), dim=1)
@@ -52,7 +57,7 @@ def semimarkov(edge, semiring=LogSemiring, lengths=None):
          marginals: b x N x K x C table
 
     """
-    v, spans = semimarkov_forward(edge, semiring, lengths)
+    v, spans = semimarkov_forward(edge, semiring, lengths, force_grad=True)
     marg = torch.autograd.grad(
         v.sum(dim=0), spans, create_graph=True, only_inputs=True, allow_unused=False
     )
