@@ -30,7 +30,7 @@ scores = torch.rand(N, 100, 100, requires_grad=True)
 marginals = struct.deptree(scores)
 
 # Tree Argmax
-argmax = struct.deptree(scores, seminring=struct.MaxSemiring)
+argmax = struct.deptree(scores, semiring=struct.MaxSemiring)
 max_score = torch.mul(argmax, scores)
 
 # Tree Counts
@@ -38,7 +38,7 @@ ones = torch.ones(N, 100, 100)
 ntrees = struct.deptree(ones, semiring=struct.StdSemiring)
 
 # Tree Sample
-sample = struct.deptree(scores, seminring=struct.SampledSemiring)
+sample = struct.deptree(scores, semiring=struct.SampledSemiring)
 
 # Tree Partition
 v, _ = struct.deptree_inside(scores)
