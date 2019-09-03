@@ -83,6 +83,41 @@ def hmm(transition, emission, init, observations):
     return scores
 
 
+def linearchain_fromseq(sequence, C):
+    """
+    Convert a sequence representation to edges
+
+    Parameters:
+         sequence : b x (N+1) long tensor in [0, C-1]
+    Returns:
+         edge : b x N x C x C markov indicators
+                    (t x z_t x z_{t-1})
+    """
+    batch, N = sequence.shape
+    labels = torch.zeros(batch, N - 1, C, C).long()
+    for n in range(1, N):
+        labels[torch.arange(batch), n - 1, sequence[:, n], sequence[:, n - 1]] = 1
+    return labels
+
+
+def linearchain_toseq(edge):
+    """
+    Convert edges to sequence representation.
+
+    Parameters:
+         edge : b x N x C x C markov indicators
+                    (t x z_t x z_{t-1})
+    Returns:
+         sequence : b x (N+1) long tensor in [0, C-1]
+    """
+    batch, N, C, _ = edge.shape
+    labels = torch.zeros(batch, N + 1).long()
+    on = edge.nonzero()
+    for i in range(on.shape[0]):
+        labels[on[i][0], on[i][1]] = on[i][3]
+    return labels
+
+
 ### Tests
 def linearchain_check(edge, semiring=LogSemiring):
     batch, N, C, _ = edge.shape
@@ -96,4 +131,14 @@ def linearchain_check(edge, semiring=LogSemiring):
                 )
         chains = new_chains
 
+    edges = linearchain_fromseq(torch.stack([torch.tensor(c) for (c, _) in chains]), C)
+    a = (
+        torch.einsum("ancd,bncd->bancd", edges.float(), edge)
+        .sum(dim=2)
+        .sum(dim=2)
+        .sum(dim=2)
+    )
+    a = semiring.sum(a, dim=1)
+    b = semiring.sum(torch.stack([s for (_, s) in chains]), dim=0)
+    assert torch.isclose(a, b).all()
     return semiring.sum(torch.stack([s for (_, s) in chains]), dim=0)

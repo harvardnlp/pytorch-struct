@@ -128,6 +128,22 @@ def deptree(arc_scores, semiring=LogSemiring, lengths=None):
     return _unconvert(ret)
 
 
+def deptree_fromseq(sequence):
+    """
+    Convert a sequence representation to arcs
+
+    Parameters:
+         sequence : b x N long tensor in [0, N-1]
+    Returns:
+         arcs : b x N x N arc indicators
+    """
+    batch, N = sequence.shape
+    labels = torch.zeros(batch, N + 1, N + 1).long()
+    for n in range(1, N):
+        labels[torch.arange(batch), sequence[:, n], n] = 1
+    return _convert(labels)
+
+
 def deptree_nonproj(arc_scores, eps=1e-5):
     """
     Compute the marginals of a non-projective dependency tree using the
