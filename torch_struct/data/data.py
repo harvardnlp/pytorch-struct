@@ -1,5 +1,6 @@
 
 import torchtext
+import torch
 
 def token_pre(tokenizer, q):
     st = " ".join(q)
