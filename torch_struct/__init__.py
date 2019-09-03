@@ -1,6 +1,7 @@
 from .cky import cky_inside, cky
-from .deptree import deptree_inside, deptree, deptree_nonproj
-from .linearchain import linearchain, linearchain_forward, hmm
+from .deptree import deptree_inside, deptree, deptree_nonproj, deptree_toseq, deptree_fromseq
+from .linearchain import linearchain, linearchain_forward, hmm, linearchain_fromseq,   linearchain_toseq
+
 from .semimarkov import semimarkov, semimarkov_forward
 from .semirings import LogSemiring, StdSemiring, SampledSemiring, MaxSemiring
 
