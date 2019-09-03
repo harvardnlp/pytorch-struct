@@ -17,6 +17,7 @@ from .linearchain import (
 from .semimarkov import semimarkov, semimarkov_forward
 from .semirings import LogSemiring, StdSemiring, SampledSemiring, MaxSemiring
 
+
 version = "0.0.1"
 
 # For flake8 compatibility.
