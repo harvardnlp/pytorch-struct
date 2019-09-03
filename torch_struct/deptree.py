@@ -53,7 +53,7 @@ def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None, force_grad=Fa
     assert N == N2, "Non-square potentials"
     DIRS = 2
     if lengths is None:
-        lengths = torch.LongTensor([N] * batch)
+        lengths = torch.LongTensor([N-1] * batch)
     assert max(lengths) <= N, "Length longer than N"
 
     def stack(a, b):
@@ -97,7 +97,7 @@ def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None, force_grad=Fa
         )
         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
     return (
-        torch.stack([alpha[A][C][R, i, 0, l - 1] for i, l in enumerate(lengths)]),
+        torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)]),
         arcs,
     )
 
