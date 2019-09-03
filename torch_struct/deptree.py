@@ -128,7 +128,7 @@ def deptree(arc_scores, semiring=LogSemiring, lengths=None):
     return _unconvert(ret)
 
 
-def deptree_fromseq(sequence):
+def deptree_fromseq(sequence, lengths=None):
     """
     Convert a sequence representation to arcs
 
@@ -138,9 +138,13 @@ def deptree_fromseq(sequence):
          arcs : b x N x N arc indicators
     """
     batch, N = sequence.shape
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
     labels = torch.zeros(batch, N + 1, N + 1).long()
     for n in range(1, N):
         labels[torch.arange(batch), sequence[:, n], n] = 1
+    for b in range(batch):
+        labels[b, lengths[b]:, lengths[b]:] = 0
     return _convert(labels)
 
 

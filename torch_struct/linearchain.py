@@ -83,20 +83,26 @@ def hmm(transition, emission, init, observations):
     return scores
 
 
-def linearchain_fromseq(sequence, C):
+def linearchain_fromseq(sequence, C, lengths=None):
     """
     Convert a sequence representation to edges
 
     Parameters:
          sequence : b x (N+1) long tensor in [0, C-1]
+         C : number of states
+         lengths: b long tensor of N values
     Returns:
          edge : b x N x C x C markov indicators
                     (t x z_t x z_{t-1})
     """
     batch, N = sequence.shape
     labels = torch.zeros(batch, N - 1, C, C).long()
+    if lengths is None:
+        lengths = torch.LongTensor([N] * batch)
     for n in range(1, N):
         labels[torch.arange(batch), n - 1, sequence[:, n], sequence[:, n - 1]] = 1
+    for b in range(batch):
+        labels[b, lengths[b]:, :, :] = 0
     return labels
 
 
