@@ -8,7 +8,7 @@ def linearchain_forward(edge, semiring=LogSemiring, lengths=None, force_grad=Fal
     Compute the forward pass of a linear chain CRF.
 
     Parameters:
-         edge : b x N x C x C markov potentials
+         edge : b x (N-1) x C x C markov potentials
                     (n-1 x z_n x z_{n-1})
          semiring
          lengths: None or b long tensor mask
@@ -18,7 +18,8 @@ def linearchain_forward(edge, semiring=LogSemiring, lengths=None, force_grad=Fal
          inside: list of N,  b x C x C table
 
     """
-    batch, N, C, C2 = edge.shape
+    batch, N_1, C, C2 = edge.shape
+    N = N_1 + 1
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
     assert max(lengths) <= N, "Length longer than edge scores"
@@ -26,16 +27,16 @@ def linearchain_forward(edge, semiring=LogSemiring, lengths=None, force_grad=Fal
 
     alpha = [
         _make_chart((batch, C), edge, semiring, force_grad=force_grad)
-        for n in range(N + 1)
+        for n in range(N)
     ]
-    edge_store = [None for _ in range(N)]
+    edge_store = [_make_chart((batch, C, C), edge, semiring, force_grad=force_grad) for n in range(N_1)]
     alpha[0].data.fill_(semiring.one())
-    for n in range(1, N + 1):
-        edge_store[n - 1] = semiring.times(
+    for n in range(1, N):
+        edge_store[n - 1][:] = semiring.times(
             alpha[n - 1].view(batch, 1, C), edge[:, n - 1]
         )
         alpha[n][:] = semiring.sum(edge_store[n - 1])
-    v = semiring.sum(torch.stack([alpha[l][i] for i, l in enumerate(lengths)]), dim=-1)
+    v = semiring.sum(torch.stack([alpha[l-1][i] for i, l in enumerate(lengths)]), dim=-1)
     return v, edge_store
 
 
@@ -44,12 +45,12 @@ def linearchain(edge, semiring=LogSemiring, lengths=None):
     Compute the marginals of a linear chain CRF.
 
     Parameters:
-         edge : b x N x C x C markov potentials
+         edge : b x (N-1) x C x C markov potentials
                     (t x z_t x z_{t-1})
          semiring
          lengths: None or b long tensor mask
     Returns:
-         marginals: b x N x C x C table
+         marginals: b x (N-1) x C x C table
 
     """
     v, alpha = linearchain_forward(edge, semiring, lengths=lengths, force_grad=True)
@@ -71,15 +72,17 @@ def hmm(transition, emission, init, observations):
         observations: b x N between [0, V-1]
 
     Returns:
-        edges: b x N x C x C
+        edges: b x (N-1) x C x C
     """
     V, C = emission.shape
     batch, N = observations.shape
-    scores = torch.ones(batch, N, C, C).type_as(emission)
+    scores = torch.ones(batch, N - 1, C, C).type_as(emission)
     scores[:, :, :, :] *= transition.view(1, 1, C, C)
     scores[:, 0, :, :] *= init.view(1, 1, C)
     obs = emission[observations.view(batch * N), :]
-    scores[:, :, :, :] *= obs.view(batch, N, 1, C)
+    scores[:, :, :, :] *= obs.view(batch, N, C, 1)[:, 1:]
+    scores[:, 0, :, :] *= obs.view(batch, N, 1, C)[:, 0]
+
     return scores
 
 
@@ -88,11 +91,11 @@ def linearchain_fromseq(sequence, C, lengths=None):
     Convert a sequence representation to edges
 
     Parameters:
-         sequence : b x (N+1) long tensor in [0, C-1]
+         sequence : b x N long tensor in [0, C-1]
          C : number of states
          lengths: b long tensor of N values
     Returns:
-         edge : b x N x C x C markov indicators
+         edge : b x (N-1) x C x C markov indicators
                     (t x z_t x z_{t-1})
     """
     batch, N = sequence.shape
@@ -111,13 +114,14 @@ def linearchain_toseq(edge):
     Convert edges to sequence representation.
 
     Parameters:
-         edge : b x N x C x C markov indicators
+         edge : b x (N-1) x C x C markov indicators
                     (t x z_t x z_{t-1})
     Returns:
-         sequence : b x (N+1) long tensor in [0, C-1]
+         sequence : b x N long tensor in [0, C-1]
     """
-    batch, N, C, _ = edge.shape
-    labels = torch.zeros(batch, N + 1).long()
+    batch, N_1, C, _ = edge.shape
+    N = N_1 + 1
+    labels = torch.zeros(batch, N).long()
     on = edge.nonzero()
     for i in range(on.shape[0]):
         labels[on[i][0], on[i][1]] = on[i][3]
