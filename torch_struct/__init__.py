@@ -9,6 +9,8 @@ version = "0.0.1"
 # For flake8 compatibility.
 __all__ = [
     linearchain,
+    linearchain_fromseq,
+    linearchain_toseq,
     linearchain_forward,
     hmm,
     semimarkov,
@@ -16,6 +18,8 @@ __all__ = [
     cky_inside,
     cky,
     deptree_inside,
+    deptree_fromseq,
+    deptree_toseq,
     deptree,
     deptree_nonproj,
     LogSemiring,
