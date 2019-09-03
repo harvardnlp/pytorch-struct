@@ -57,7 +57,7 @@ def SubTokenizedField(tokenizer):
     FIELD.is_target = False
     return FIELD
 
-def TokenBucket(train):
+def TokenBucket(train, batch_size):
     def batch_size_fn(x, _, size):
         return size + max(len(x.word[0]), 5)
     return torchtext.data.BucketIterator(train,
@@ -65,7 +65,7 @@ def TokenBucket(train):
         sort=False,
         sort_within_batch=True,
         shuffle=True,
-        batch_size=1500,
+        batch_size=batch_size,
         sort_key=lambda x: len(x.word[0]),
         repeat=True,
         batch_size_fn=batch_size_fn,

@@ -141,8 +141,8 @@ def deptree_fromseq(sequence, lengths=None):
     if lengths is None:
         lengths = torch.LongTensor([N] * batch)
     labels = torch.zeros(batch, N + 1, N + 1).long()
-    for n in range(1, N):
-        labels[torch.arange(batch), sequence[:, n], n] = 1
+    for n in range(1, N+1):
+        labels[torch.arange(batch), sequence[:, n-1], n] = 1
     for b in range(batch):
         labels[b, lengths[b]+1:, :] = 0
         labels[b, :, lengths[b]+1:] = 0
