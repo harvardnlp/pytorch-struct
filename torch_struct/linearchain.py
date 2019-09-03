@@ -105,7 +105,7 @@ def linearchain_fromseq(sequence, C, lengths=None):
     for n in range(1, N):
         labels[torch.arange(batch), n - 1, sequence[:, n], sequence[:, n - 1]] = 1
     for b in range(batch):
-        labels[b, lengths[b]:, :, :] = 0
+        labels[b, lengths[b]-1:, :, :] = 0
     return labels
 
 
