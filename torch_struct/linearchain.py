@@ -52,7 +52,7 @@ def linearchain(edge, semiring=LogSemiring, lengths=None):
          marginals: b x N x C x C table
 
     """
-    v, alpha = linearchain_forward(edge, semiring, force_grad=True)
+    v, alpha = linearchain_forward(edge, semiring, lengths=lengths, force_grad=True)
     marg = torch.autograd.grad(
         v.sum(dim=0), alpha, create_graph=True, only_inputs=True, allow_unused=False
     )
