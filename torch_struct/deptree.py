@@ -145,7 +145,7 @@ def deptree_fromseq(sequence, lengths=None):
         labels[torch.arange(batch), sequence[:, n], n] = 1
     for b in range(batch):
         labels[b, lengths[b]:, lengths[b]:] = 0
-    return _convert(labels)
+    return _unconvert(labels)
 
 
 def deptree_toseq(arcs):
