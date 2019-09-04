@@ -87,7 +87,7 @@ def test_generic_lengths(data, seed):
 
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree]))
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree, CKY]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -95,7 +95,7 @@ def test_params(data, seed):
         vals = (v.requires_grad_(True) for v in vals)
     else:
         vals.requires_grad_(True)
-    torch.autograd.set_detect_anomaly(True)
+    # torch.autograd.set_detect_anomaly(True)
     semiring = StdSemiring
     alpha = model(semiring).sum(vals)
     alpha.sum().backward()

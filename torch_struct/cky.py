@@ -36,16 +36,15 @@ class CKY(_Struct):
             for w in range(N - 1)
         ]
         top = self._make_chart(1, (batch, NT), rules, force_grad)[0]
-        term_use = self._make_chart(1, (batch, N, T), rules, force_grad)[
-            0
-        ].requires_grad_(True)
-        term_use[:] = terms
+        term_use = self._make_chart(1, (batch, N, T), terms, force_grad)[0]
+        term_use[:] = terms + 0.0
         beta[A][:, :, 0, NT:] = term_use
         beta[B][:, :, N - 1, NT:] = term_use
 
         for w in range(1, N):
             Y = beta[A][:, : N - w, :w, :].view(batch, N - w, w, 1, S, 1)
             Z = beta[B][:, w:, N - w :, :].view(batch, N - w, w, 1, 1, S)
+            Y, Z = Y.clone(), Z.clone()
             X_Y_Z = rules.view(batch, 1, NT, S, S)
             rule_use[w - 1][:] = semiring.times(
                 semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z
@@ -77,7 +76,9 @@ class CKY(_Struct):
         batch, N, T = terms.shape
         _, NT, _, _ = rules.shape
         S = NT + T
-        v, (term_use, rule_use, top) = self._dp(scores, lengths=lengths)
+        v, (term_use, rule_use, top) = self._dp(
+            scores, lengths=lengths, force_grad=True
+        )
         marg = torch.autograd.grad(
             v.sum(dim=0),
             tuple(rule_use) + (top, term_use),
