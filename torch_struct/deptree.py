@@ -1,7 +1,6 @@
 import torch
-from .semirings import LogSemiring
-from .helpers import _make_chart
 import itertools
+from .helpers import _Struct
 
 
 def _convert(logits):
@@ -34,136 +33,173 @@ def _unconvert(logits):
 A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
 
-def deptree_inside(arc_scores, semiring=LogSemiring, lengths=None, force_grad=False):
-    """
-    Compute the inside pass of a projective dependency CRF.
+class DepTree(_Struct):
+    def sum(self, arc_scores, lengths=None):
+        """
+        Compute the inside pass of a projective dependency CRF.
 
-    Parameters:
-         arc_scores : b x N x N arc scores with root scores on diagonal.
-         semiring
-         lengths: None or b long tensor mask
+        Parameters:
+            arc_scores : b x N x N arc scores with root scores on diagonal.
+            semiring
+            lengths: None or b long tensor mask
 
-    Returns:
-         v: b tensor of total sum
-         arcs: list of N,  LR x b x N table
+        Returns:
+            v: b tensor of total sum
+            arcs: list of N,  LR x b x N table
 
-    """
-    arc_scores = _convert(arc_scores)
-    batch, N, N2 = arc_scores.shape
-    assert N == N2, "Non-square potentials"
-    DIRS = 2
-    if lengths is None:
-        lengths = torch.LongTensor([N-1] * batch)
-    assert max(lengths) <= N, "Length longer than N"
+        """
+        return self._dp(arc_scores, lengths)[0]
 
-    def stack(a, b):
-        return torch.stack([a, b])
+    def _dp(self, arc_scores, lengths=None, force_grad=False):
+        semiring = self.semiring
+        arc_scores = _convert(arc_scores)
+        batch, N, N2 = arc_scores.shape
 
-    def sstack(a):
-        return torch.stack([a, a])
+        assert N == N2, "Non-square potentials"
+        DIRS = 2
+        if lengths is None:
+            lengths = torch.LongTensor([N - 1] * batch)
+        assert max(lengths) <= N, "Length longer than N"
+        for b in range(batch):
+            arc_scores[b, lengths[b] + 1 :, :] = semiring.zero()
+            arc_scores[b, :, lengths[b] + 1 :] = semiring.zero()
 
-    alpha = [
-        [
-            _make_chart((DIRS, batch, N, N), arc_scores, semiring, force_grad)
-            for _ in [I, C]
+        def stack(a, b):
+            return torch.stack([a, b])
+
+        def sstack(a):
+            return torch.stack([a, a])
+
+        alpha = [
+            self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
+            for _ in range(2)
         ]
-        for _ in range(2)
-    ]
-    arcs = [
-        _make_chart((DIRS, batch, N), arc_scores, semiring, force_grad)
-        for _ in range(N)
-    ]
+        arcs = self._make_chart(N, (DIRS, batch, N), arc_scores, force_grad)
 
-    # Inside step. assumes first token is root symbol
-    alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
-    alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
+        # Inside step. assumes first token is root symbol
+        alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
+        alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
 
-    for k in range(1, N):
-        f = torch.arange(N - k), torch.arange(k, N)
-        arcs[k] = semiring.dot(
-            sstack(alpha[A][C][R, :, : N - k, :k]),
-            sstack(alpha[B][C][L, :, k:, N - k :]),
-            stack(arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]]).unsqueeze(-1),
+        for k in range(1, N):
+            f = torch.arange(N - k), torch.arange(k, N)
+            arcs[k] = semiring.dot(
+                sstack(alpha[A][C][R, :, : N - k, :k]),
+                sstack(alpha[B][C][L, :, k:, N - k :]),
+                stack(arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]]).unsqueeze(
+                    -1
+                ),
+            )
+            alpha[A][I][:, :, : N - k, k] = arcs[k]
+            alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
+            alpha[A][C][:, :, : N - k, k] = semiring.dot(
+                stack(
+                    alpha[A][C][L, :, : N - k, :k],
+                    alpha[A][I][R, :, : N - k, 1 : k + 1],
+                ),
+                stack(
+                    alpha[B][I][L, :, k:, N - k - 1 : N - 1],
+                    alpha[B][C][R, :, k:, N - k :],
+                ),
+            )
+            alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
+        return (
+            torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)]),
+            arcs,
         )
-        alpha[A][I][:, :, : N - k, k] = arcs[k]
-        alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
-        alpha[A][C][:, :, : N - k, k] = semiring.dot(
-            stack(
-                alpha[A][C][L, :, : N - k, :k], alpha[A][I][R, :, : N - k, 1 : k + 1]
-            ),
-            stack(
-                alpha[B][I][L, :, k:, N - k - 1 : N - 1], alpha[B][C][R, :, k:, N - k :]
-            ),
+
+    def marginals(self, arc_scores, lengths=None):
+        """
+        Compute the marginals of a projective dependency CRF.
+
+        Parameters:
+            arc_scores : b x N x N arc scores with root scores on diagonal.
+            semiring
+            lengths
+        Returns:
+            arc_marginals : b x N x N.
+
+        """
+        batch, N, _ = arc_scores.shape
+        N = N + 1
+        v, arcs = self._dp(arc_scores, lengths, force_grad=True)
+        grads = torch.autograd.grad(
+            v.sum(dim=0),
+            arcs[1:],
+            create_graph=True,
+            only_inputs=True,
+            allow_unused=False,
         )
-        alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
-    return (
-        torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)]),
-        arcs,
-    )
+        ret = torch.zeros(batch, N, N).cpu()
+        for k, grad in enumerate(grads, 1):
+            f = torch.arange(N - k), torch.arange(k, N)
+            ret[:, f[0], f[1]] = grad[R].cpu()
+            ret[:, f[1], f[0]] = grad[L].cpu()
+        return _unconvert(ret)
 
+    @staticmethod
+    def to_parts(sequence, extra=None, lengths=None):
+        """
+        Convert a sequence representation to arcs
 
-def deptree(arc_scores, semiring=LogSemiring, lengths=None):
-    """
-    Compute the marginals of a projective dependency CRF.
+        Parameters:
+            sequence : b x N long tensor in [0, N] (indexing is +1)
+        Returns:
+            arcs : b x N x N arc indicators
+        """
+        batch, N = sequence.shape
+        if lengths is None:
+            lengths = torch.LongTensor([N] * batch)
+        labels = torch.zeros(batch, N + 1, N + 1).long()
+        for n in range(1, N + 1):
+            labels[torch.arange(batch), sequence[:, n - 1], n] = 1
+        for b in range(batch):
+            labels[b, lengths[b] + 1 :, :] = 0
+            labels[b, :, lengths[b] + 1 :] = 0
+        return _unconvert(labels)
 
-    Parameters:
-         arc_scores : b x N x N arc scores with root scores on diagonal.
-         semiring
-         lengths
-    Returns:
-         arc_marginals : b x N x N.
+    @staticmethod
+    def from_parts(arcs):
+        """
+        Convert a arc representation to sequence
 
-    """
-    batch, N, _ = arc_scores.shape
-    N = N + 1
-    v, arcs = deptree_inside(arc_scores, semiring, lengths, force_grad=True)
-    grads = torch.autograd.grad(
-        v.sum(dim=0), arcs[1:], create_graph=True, only_inputs=True, allow_unused=False
-    )
-    ret = torch.zeros(batch, N, N).cpu()
-    for k, grad in enumerate(grads, 1):
-        f = torch.arange(N - k), torch.arange(k, N)
-        ret[:, f[0], f[1]] = grad[R].cpu()
-        ret[:, f[1], f[0]] = grad[L].cpu()
-    return _unconvert(ret)
+        Parameters:
+            arcs : b x N x N arc indicators
+        Returns:
+            sequence : b x N long tensor in [0, N] (indexing is +1)
+        """
+        batch, N, _ = arcs.shape
+        labels = torch.zeros(batch, N).long()
+        on = arcs.nonzero()
+        for i in range(on.shape[0]):
+            if on[i][1] == on[i][2]:
+                labels[on[i][0], on[i][2]] = 0
+            else:
+                labels[on[i][0], on[i][2]] = on[i][1] + 1
+        return labels, None
 
+    @staticmethod
+    def _rand():
+        b = torch.randint(2, 4, (1,))
+        N = torch.randint(2, 4, (1,))
+        return torch.rand(b, N, N), (b.item(), N.item())
 
-def deptree_fromseq(sequence, lengths=None):
-    """
-    Convert a sequence representation to arcs
-
-    Parameters:
-         sequence : b x N long tensor in [0, N-1]
-    Returns:
-         arcs : b x N x N arc indicators
-    """
-    batch, N = sequence.shape
-    if lengths is None:
-        lengths = torch.LongTensor([N] * batch)
-    labels = torch.zeros(batch, N + 1, N + 1).long()
-    for n in range(1, N+1):
-        labels[torch.arange(batch), sequence[:, n-1], n] = 1
-    for b in range(batch):
-        labels[b, lengths[b]+1:, :] = 0
-        labels[b, :, lengths[b]+1:] = 0
-    return _unconvert(labels)
-
-
-def deptree_toseq(arcs):
-    """
-    Convert a arc representation to sequence
-
-    Parameters:
-         arcs : b x N x N arc indicators
-    Returns:
-         sequence : b x N long tensor in [0, N-1]
-    """
-    batch, N, _ = arcs.shape
-    labels = torch.zeros(batch, N).long()
-    on = arcs.nonzero()
-    for i in range(on.shape[0]):
-        labels[on[i][0], on[i][2]] = on[i][1]
-    return labels
+    def enumerate(self, arc_scores, non_proj=False):
+        semiring = self.semiring
+        parses = []
+        q = []
+        arc_scores = _convert(arc_scores)
+        batch, N, _ = arc_scores.shape
+        for mid in itertools.product(range(N + 1), repeat=N - 1):
+            parse = [-1] + list(mid)
+            if not _is_spanning(parse):
+                continue
+            if not non_proj and not _is_projective(parse):
+                continue
+            q.append(parse)
+            parses.append(
+                semiring.times(*[arc_scores[:, parse[i], i] for i in range(1, N, 1)])
+            )
+        return semiring.sum(torch.stack(parses, dim=-1))
 
 
 def deptree_nonproj(arc_scores, eps=1e-5):
@@ -209,24 +245,6 @@ def deptree_nonproj(arc_scores, eps=1e-5):
 
 
 ### Tests
-
-
-def deptree_check(arc_scores, semiring=LogSemiring, non_proj=False):
-    parses = []
-    q = []
-    arc_scores = _convert(arc_scores)
-    batch, N, _ = arc_scores.shape
-    for mid in itertools.product(range(N + 1), repeat=N - 1):
-        parse = [-1] + list(mid)
-        if not _is_spanning(parse):
-            continue
-        if not non_proj and not _is_projective(parse):
-            continue
-        q.append(parse)
-        parses.append(
-            semiring.times(*[arc_scores[0][parse[i], i] for i in range(1, N, 1)])
-        )
-    return semiring.sum(torch.tensor(parses))
 
 
 def _is_spanning(parse):
