@@ -13,6 +13,8 @@ A library of tested, GPU implementations of core structured prediction algorithm
 (or an implementation of <a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Inside-Outside and Forward-Backward Algorithms Are Just Backprop"<a/>)
 
 
+## Getting Started
+
 
 ```python
 !pip install -qU git+https://github.com/harvardnlp/pytorch-struct
@@ -24,83 +26,48 @@ A library of tested, GPU implementations of core structured prediction algorithm
 import torch
 from torch_struct import DepTree, LinearChain, MaxSemiring, SampledSemiring
 import matplotlib.pyplot as plt
+def show(x): plt.imshow(x.detach())
 ```
 
 
 ```python
+# Make some data.
 vals = torch.zeros(2, 10, 10) + 1e-5
-vals[:, :5, :5] = torch.rand(5) 
+vals[:, :5, :5] = torch.rand(5)
 vals[:, 5:, 5:] = torch.rand(5) 
 vals = vals.log()
-plt.imshow(vals[0])
+show(vals[0])
 ```
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c2ee80320>
-
-
-
-
-![png](README_files/README_3_1.png)
+![png](README_files/README_4_0.png)
 
 
 
 ```python
-plt.imshow(vals.softmax(-1)[0])
-```
-
-
-
-
-    <matplotlib.image.AxesImage at 0x7f4c2e7355f8>
-
-
-
-
-![png](README_files/README_4_1.png)
-
-
-
-```python
-# Marginals
+# Compute marginals
 marginals = DepTree().marginals(vals)
-plt.imshow(marginals[0].detach())
+show(marginals[0])
 ```
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c2e71e2b0>
-
-
-
-
-![png](README_files/README_5_1.png)
+![png](README_files/README_5_0.png)
 
 
 
 ```python
-# Argmax
+# Compute argmax
 argmax = DepTree(MaxSemiring).marginals(vals)
-plt.imshow(argmax.detach()[0])
+show(argmax.detach()[0])
 ```
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c29e6acf8>
-
-
-
-
-![png](README_files/README_6_1.png)
+![png](README_files/README_6_0.png)
 
 
 
 ```python
-# Scoring and enumeration (forward / inside)
+# Compute scoring and enumeration (forward / inside)
 log_partition = DepTree().sum(vals)
 max_score = DepTree(MaxSemiring).sum(vals)
 max_score = DepTree().score(argmax, vals)
@@ -108,31 +75,24 @@ max_score = DepTree().score(argmax, vals)
 
 
 ```python
-# Sampling 
+# Compute samples 
 sample = DepTree(SampledSemiring).marginals(vals)
-plt.imshow(sample.detach()[0])
+show(sample.detach()[0])
 ```
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c29e56198>
-
-
-
-
-![png](README_files/README_8_1.png)
+![png](README_files/README_8_0.png)
 
 
 
 ```python
 # Padding/Masking built into library.
-
-marginals = DepTree().marginals(vals,
-                                lengths=torch.tensor([10, 7]))
-plt.imshow(marginals[0].detach())
+marginals = DepTree().marginals(
+    vals,
+    lengths=torch.tensor([10, 7]))
+show(marginals[0])
 plt.show()
-plt.imshow(marginals[1].detach())
+show(marginals[1])
 ```
 
 
@@ -140,14 +100,7 @@ plt.imshow(marginals[1].detach())
 
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c2857d6a0>
-
-
-
-
-![png](README_files/README_9_2.png)
+![png](README_files/README_9_1.png)
 
 
 
@@ -161,18 +114,11 @@ chain[:, -1,9, :] = 1
 chain = chain.log()
 
 marginals = LinearChain().marginals(chain)
-plt.imshow(marginals.detach()[0].sum(-1))
+show(marginals.detach()[0].sum(-1))
 ```
 
 
-
-
-    <matplotlib.image.AxesImage at 0x7f4c28504940>
-
-
-
-
-![png](README_files/README_10_1.png)
+![png](README_files/README_10_0.png)
 
 
 ## Library
@@ -183,6 +129,8 @@ Current algorithms implemented:
 * Semi-Markov (CRF / HSMM)
 * Dependency Parsing (Projective and Non-Projective)
 * CKY (CFG)
+
+* Integration with `torchtext` and `pytorch-transformers` 
 
 Design Strategy:
 
@@ -196,3 +144,12 @@ Semirings:
 * Max and MAP computation
 * Sampling through specialized backprop
 
+
+
+
+## Examples
+
+* BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertTagger.ipynb">Part-of-Speech</a> 
+* BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertDependencies.ipynb">Dependency Parsing</a>
+* Unsupervised Learning (to come)
+* Structured VAE (to come)
