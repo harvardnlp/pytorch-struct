@@ -153,3 +153,4 @@ Semirings:
 * BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertDependencies.ipynb">Dependency Parsing</a>
 * Unsupervised Learning (to come)
 * Structured VAE (to come)
+* Structured attention (to come)
