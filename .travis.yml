@@ -21,7 +21,7 @@ matrix:
     - env: LINT_CHECK
       python: "3.6"
       install: pip install flake8 pep8-naming
-      script: cd torch_struct/;flake8 --ignore "N801, E203, E266, E501, W503, F812, E741, N803, N806" .
+      script: cd torch_struct/;flake8 --ignore "N801, E203, E266, E501, W503, F812, E741, N803, N802, N806" .
     - python: "3.6"
       script:
         - coverage run --source=torch_struct setup.py test
