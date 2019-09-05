@@ -69,11 +69,4 @@ Semirings:
 * Max and MAP computation
 * Sampling through specialized backprop
 
-# Applications
 
-Application Example (to come):
-
-* Structured Attention
-* EM training
-* Stuctured VAE
-* Posterior Regularization
