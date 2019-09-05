@@ -21,30 +21,30 @@ pip install .
 ```
 
 ```python
-import torch_struct as struct
+from torch_struct import DepTree, MaxSemiring, SampledSemiring, StdSemiring
 import torch
 batch, N = 10,  100
 scores = torch.rand(N, 100, 100, requires_grad=True)
 
 # Tree marginals
-marginals = struct.deptree(scores)
+marginals = DepTree.marginals(scores)
 
 # Tree Argmax
-argmax = struct.deptree(scores, semiring=struct.MaxSemiring)
-max_score = torch.mul(argmax, scores)
+argmax = DepTree(MaxSemiring).marginals(scores)
+max_score = DepTree.score(scores, argmax)
 
 # Tree Counts
 ones = torch.ones(N, 100, 100)
-ntrees = struct.deptree(ones, semiring=struct.StdSemiring)
+ntrees = DepTree(StdSemiring).marginals(ones)
 
 # Tree Sample
-sample = struct.deptree(scores, semiring=struct.SampledSemiring)
+sample = DepTree(SampledSemiring).marginals(scores)
 
 # Tree Partition
-v, _ = struct.deptree_inside(scores)
+log_partition = DepTree().sum(scores)
 
 # Tree Max
-v, _ = struct.deptree_inside(scores, semiring=struct.MaxSemiring)
+max_score = DepTree(MaxSemiring).sum(scores)
 
 ```
 
@@ -68,8 +68,6 @@ Semirings:
 * Log Marginals
 * Max and MAP computation
 * Sampling through specialized backprop
-
-Example: https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/Examples.ipynb
 
 # Applications
 
