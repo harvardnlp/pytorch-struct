@@ -199,8 +199,8 @@ class DepTree(_Struct):
         v = alpha[A][C][R, :, 0, 0]
         left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
         right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
-
-        ret = torch.zeros(batch, N, N)
+        print("here")
+        ret = torch.zeros(batch, N, N).type_as(left)
         for k in range(N):
             for d in range(N - k):
                 ret[:, k + d, k] = semiring.div_exp(
