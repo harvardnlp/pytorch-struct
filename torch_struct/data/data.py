@@ -59,7 +59,7 @@ def SubTokenizedField(tokenizer):
     return FIELD
 
 
-def TokenBucket(train, batch_size):
+def TokenBucket(train, batch_size, device='cuda:0'):
     def batch_size_fn(x, _, size):
         return size + max(len(x.word[0]), 5)
 
@@ -73,5 +73,5 @@ def TokenBucket(train, batch_size):
         sort_key=lambda x: len(x.word[0]),
         repeat=True,
         batch_size_fn=batch_size_fn,
-        device="cuda:0",
+        device=device,
     )
