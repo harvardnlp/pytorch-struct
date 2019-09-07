@@ -200,9 +200,11 @@ class DepTree(_Struct):
         left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
         right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
         ret = torch.zeros(batch, N, N).type_as(left)
-        f = torch.arange(N - k), torch.arange(k, N)
-        ret[:, k, f[1]] = right[:, k, f[0]]
-        ret[:, k, f[0]] = left[:, k, f[1]]                
+        for k in range(N):
+            f = torch.arange(N - k), torch.arange(k, N)
+            ret[:, f[1], k] = left[:, k, f[0]]
+            ret[:, k, f[1]] = right[:, k, f[0]]
+
         ret = semiring.div_exp(ret - arc_scores,  v.view(batch, 1, 1))
         return _unconvert(ret)
 
