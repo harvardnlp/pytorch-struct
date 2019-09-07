@@ -51,7 +51,7 @@ class _Struct:
             for _ in range(N)
         ]
 
-    def sum(self, edge, lengths=None, _autograd=False):
+    def sum(self, edge, lengths=None, _autograd=True):
         """
         Compute the (semiring) sum over all structures model.
 
@@ -72,7 +72,7 @@ class _Struct:
         else:
             return DPManual.apply(self, edge, lengths)
 
-    def marginals(self, edge, lengths=None, _autograd=False):
+    def marginals(self, edge, lengths=None, _autograd=True):
         """
         Compute the marginals of a structured model.
 
