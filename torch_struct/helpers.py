@@ -66,7 +66,7 @@ class _Struct:
         if (
             _autograd
             or self.semiring is not LogSemiring
-            or "_dp_backward" not in self.__dict__
+            or not hasattr(self, "_dp_backward")
         ):
             return self._dp(edge, lengths)[0]
         else:
@@ -87,7 +87,7 @@ class _Struct:
         if (
             _autograd
             or self.semiring is not LogSemiring
-            or "_dp_backward" not in self.__dict__
+            or not hasattr(self, "_dp_backward")
         ):
             marg = torch.autograd.grad(
                 v.sum(dim=0),
