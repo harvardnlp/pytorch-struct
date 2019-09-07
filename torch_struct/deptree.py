@@ -87,7 +87,6 @@ class DepTree(_Struct):
             )
             alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
         v = torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)])
-        print(v)
         return (v, arcs[1:], alpha)
 
     def _check_potentials(self, arc_scores, lengths=None):
