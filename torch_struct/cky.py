@@ -1,5 +1,5 @@
 import torch
-from .helpers import _Struct, DPManual
+from .helpers import _Struct
 from .semirings import LogSemiring
 from torch.autograd import Function
 
@@ -8,7 +8,8 @@ A, B = 0, 1
 class DPManual2(Function):
     @staticmethod
     def forward(ctx, obj, terms, rules, roots, lengths):
-        v, _, alpha = obj._dp((terms, rules, roots), lengths, False)
+        with torch.no_grad():
+            v, _, alpha = obj._dp((terms, rules, roots), lengths, False)
         ctx.obj = obj
         ctx.lengths = lengths
         ctx.alpha = alpha
@@ -19,8 +20,10 @@ class DPManual2(Function):
     @staticmethod
     def backward(ctx, grad_v):
         terms, rules, roots = ctx.saved_tensors
-        marginals = ctx.obj._dp_backward((terms, rules, roots), ctx.lengths, ctx.alphactx.v)
-        return None, marginals, None
+        with torch.no_grad():
+            marginals = ctx.obj._dp_backward((terms, rules, roots),
+                                             ctx.lengths, ctx.alpha, ctx.v)
+        return None, marginals[0], marginals[1].sum(1).sum(1), marginals[2], None
 
 
 

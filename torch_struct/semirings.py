@@ -10,6 +10,11 @@ class Semiring:
         return cur
 
     @classmethod
+    def plus(cls, *ls):
+        return cls.sum(torch.stack(ls), dim=0)
+
+    
+    @classmethod
     def dot(cls, *ls):
         return cls.sum(cls.times(*ls))
 

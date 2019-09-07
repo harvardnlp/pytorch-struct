@@ -2,10 +2,18 @@ import torch
 from .semirings import LogSemiring
 from torch.autograd import Function
 
+
+def roll(a, b, N, k, gap=0):
+    return (a[:, :N - (k+gap), (k+gap):], \
+            b[:,  k+gap:, : N-(k+gap)])
+
+
+
 class DPManual(Function):
     @staticmethod
     def forward(ctx, obj, input, lengths):
-        v, _, alpha = obj._dp(input, lengths, False)
+        with torch.no_grad():
+            v, _, alpha = obj._dp(input, lengths, False)
         ctx.obj = obj
         ctx.lengths = lengths
         ctx.alpha = alpha
@@ -21,7 +29,8 @@ class DPManual(Function):
         input = ctx.saved_tensors
         if len(input) == 1:
             input = input[0]
-        marginals = ctx.obj._dp_backward(input, ctx.lengths, ctx.alpha)
+        with torch.no_grad():
+            marginals = ctx.obj._dp_backward(input, ctx.lengths, ctx.alpha)
         return None, marginals, None
 
 
@@ -43,3 +52,41 @@ class _Struct:
             )
             for _ in range(N)
         ]
+
+
+    def sum(self, edge, lengths=None, _autograd=False):
+        """
+        Compute the (semiring) sum over all structures model.
+
+        Parameters:
+            params : generic params (see class)
+            lengths: None or b long tensor mask
+
+        Returns:
+            v: b tensor of total sum
+
+        """
+        if _autograd or not self.semiring is LogSemiring and "_dp_backward" in dir(self):
+            return self._dp(edge, lengths)[0]
+        else:
+            return DPManual.apply(self, edge, lengths)
+
+    def marginals(self, edge, lengths=None, _autograd=False):
+        """
+        Compute the marginals of a structured model.
+
+        Parameters:
+            params : generic params (see class)
+            lengths: None or b long tensor mask
+        Returns:
+            marginals: b x (N-1) x C x C table
+
+        """
+        v, edge, alpha = self._dp(edge, lengths=lengths, force_grad=True)
+        if _autograd or not self.semiring is LogSemiring and "_dp_backward" in dir(self):
+            marg = torch.autograd.grad(
+                v.sum(dim=0), edge, create_graph=True, only_inputs=True, allow_unused=False
+            )
+            return self._arrange_marginals(marg)
+        else:
+            return self._dp_backward(edge, lengths, alpha)
