@@ -3,8 +3,18 @@ from .helpers import _Struct
 
 
 class LinearChain(_Struct):
-    def _dp(self, edge, lengths=None, force_grad=False):
-        semiring = self.semiring
+    """
+    Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
+    and anything with chain-like dynamics.
+
+
+    Potentials are of the form:
+
+            edge : b x (N-1) x C x C markov potentials
+                        (n-1 x z_n x z_{n-1})
+    """
+
+    def _check_potentials(self, edge, lengths=None):
         batch, N_1, C, C2 = edge.shape
         N = N_1 + 1
         if lengths is None:
@@ -12,10 +22,14 @@ class LinearChain(_Struct):
         assert max(lengths) <= N, "Length longer than edge scores"
         assert max(lengths) == N, "One length must be at least N"
         assert C == C2, "Transition shape doesn't match"
+        return batch, N, C, lengths
 
-        alpha = self._make_chart(N, (batch, C), edge, force_grad=force_grad)
+    def _dp(self, edge, lengths=None, force_grad=False):
+        semiring = self.semiring
+        batch, N, C, lengths = self._check_potentials(edge, lengths)
 
-        edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad=force_grad)
+        alpha = self._make_chart(N, (batch, C), edge, force_grad)
+        edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
         alpha[0].data.fill_(semiring.one())
         for n in range(1, N):
@@ -23,43 +37,45 @@ class LinearChain(_Struct):
                 alpha[n - 1].view(batch, 1, C), edge[:, n - 1]
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
+        ret = [alpha[l - 1][i] for i, l in enumerate(lengths)]
+        v = semiring.sum(torch.stack(ret))
+        return v, edge_store, alpha
+
+    def _dp_backward(self, edge, lengths, alpha_in, v=None):
+        semiring = self.semiring
+        batch, N, C, lengths = self._check_potentials(edge, lengths)
+
+        alpha = self._make_chart(N, (batch, C), edge, force_grad=False)
+        edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad=False)
+
+        for n in range(N - 1, 0, -1):
+            for b, l in enumerate(lengths):
+                alpha[l - 1][b].data.fill_(semiring.one())
+
+            edge_store[n - 1][:] = semiring.times(
+                alpha[n].view(batch, C, 1), edge[:, n - 1]
+            )
+            alpha[n - 1][:] = semiring.sum(edge_store[n - 1], dim=-2)
         v = semiring.sum(
-            torch.stack([alpha[l - 1][i] for i, l in enumerate(lengths)]), dim=-1
+            torch.stack([alpha[0][i] for i, l in enumerate(lengths)]), dim=-1
         )
-        return v, edge_store
+        edge_marginals = self._make_chart(
+            1, (batch, N - 1, C, C), edge, force_grad=False
+        )[0]
 
-    def sum(self, edge, lengths=None):
-        """
-        Compute the forward pass of a linear chain CRF.
+        for n in range(N - 1):
+            edge_marginals[:, n] = semiring.div_exp(
+                semiring.times(
+                    alpha_in[n].view(batch, 1, C),
+                    edge[:, n],
+                    alpha[n + 1].view(batch, C, 1),
+                ),
+                v.view(batch, 1, 1),
+            )
 
-        Parameters:
-            edge : b x (N-1) x C x C markov potentials
-                        (n-1 x z_n x z_{n-1})
-            lengths: None or b long tensor mask
+        return edge_marginals
 
-        Returns:
-            v: b tensor of total sum
-            inside: list of N,  b x C x C table
-
-        """
-        return self._dp(edge, lengths)[0]
-
-    def marginals(self, edge, lengths=None):
-        """
-        Compute the marginals of a linear chain CRF.
-
-        Parameters:
-            edge : b x (N-1) x C x C markov potentials
-                        (t x z_t x z_{t-1})
-            lengths: None or b long tensor mask
-        Returns:
-            marginals: b x (N-1) x C x C table
-
-        """
-        v, alpha = self._dp(edge, lengths=lengths, force_grad=True)
-        marg = torch.autograd.grad(
-            v.sum(dim=0), alpha, create_graph=True, only_inputs=True, allow_unused=False
-        )
+    def _arrange_marginals(self, marg):
         return torch.stack(marg, dim=1)
 
     # Adapters
