@@ -124,8 +124,9 @@ class DepTree(_Struct):
         for k in range(N - 1, -1, -1):
             # Initialize
             for b, l in enumerate(lengths):
-                alpha[A][C][R, b, 0, l] = semiring.one()
-                alpha[B][C][R, b, l, N - l - 1] = semiring.one()
+                if l == k:
+                    alpha[A][C][R, b, 0, l] = semiring.one()
+                    alpha[B][C][R, b, l, N - l - 1] = semiring.one()
 
             if N - k - 1 > 0:
                 # R completes
