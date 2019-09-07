@@ -199,16 +199,11 @@ class DepTree(_Struct):
         v = alpha[A][C][R, :, 0, 0]
         left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
         right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
-
         ret = torch.zeros(batch, N, N).type_as(left)
-        for k in range(N):
-            for d in range(N - k):
-                ret[:, k + d, k] = semiring.div_exp(
-                    left[:, k, d] - arc_scores[:, k + d, k], v.view(batch)
-                )
-                ret[:, k, k + d] = semiring.div_exp(
-                    right[:, k, d] - arc_scores[:, k, k + d], v.view(batch)
-                )
+        f = torch.arange(N - k), torch.arange(k, N)
+        ret[:, k, f[1]] = right[:, k, f[0]]
+        ret[:, k, f[0]] = left[:, k, f[1]]                
+        ret = semiring.div_exp(ret - arc_scores,  v.view(batch, 1, 1))
         return _unconvert(ret)
 
     def _arrange_marginals(self, grads):
