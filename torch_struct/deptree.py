@@ -195,12 +195,12 @@ class DepTree(_Struct):
                 # Compute reverses
                 alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
 
-        print("here")
+
         v = alpha[A][C][R, :, 0, 0]
         left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
         right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
         ret = torch.zeros(batch, N, N).type_as(left)
-        for k in range(N):
+        for k in torch.arange(N):
             f = torch.arange(N - k), torch.arange(k, N)
             ret[:, f[1], k] = left[:, k, f[0]]
             ret[:, k, f[1]] = right[:, k, f[0]]
