@@ -127,26 +127,27 @@ class DepTree(_Struct):
                 alpha[A][C][R, b, 0, l] = semiring.one()
                 alpha[B][C][R, b, l, N - l - 1] = semiring.one()
 
-            # R completes
-            # I -> C* C
-            # I -> C* C
-            # C -> I C*
-            a = semiring.dot(
-                *roll(
-                    stack(alpha[A][I][R], alpha[A][I][L]),
-                    sstack(alpha_in[A][C][L]),
-                    N,
-                    k,
-                    1,
+            if N - k - 1 > 0:
+                # R completes
+                # I -> C* C
+                # I -> C* C
+                # C -> I C*
+                a = semiring.sum(semiring.times(
+                    *roll(
+                        stack(alpha[A][I][R], alpha[A][I][L]),
+                        sstack(alpha_in[A][C][L]),
+                        N,
+                        k,
+                        1,
+                    )).view(batch, N-k-1, -1), dim=-1
                 )
-            )
+
+
+                alpha[A][C][R, :, : N - k - 1, k] = semiring.plus(
+                    a, alpha[A][C][R, :, : N - k - 1, k]
+                )
 
             c = semiring.dot(*roll(alpha_in[B][I][R], alpha[B][C][R], N, k, 0))
-
-            alpha[A][C][R, :, : N - k - 1, k] = semiring.plus(
-                semiring.sum(a), alpha[A][C][R, :, : N - k - 1, k]
-            )
-
             alpha[A][C][R][:, : N - k, k] = semiring.plus(
                 alpha[A][C][R][:, : N - k, k], c
             )
@@ -155,21 +156,22 @@ class DepTree(_Struct):
             # I -> C* C
             # I -> C* C
             # C -> I C*
-            a = semiring.dot(
-                *roll(
-                    sstack(alpha_in[B][C][R]),
-                    stack(alpha[B][I][L], alpha[B][I][R]),
-                    N,
-                    k,
-                    1,
+            if N - k - 1 > 0:
+                a = semiring.sum(semiring.times(
+                    *roll(
+                        sstack(alpha_in[B][C][R]),
+                        stack(alpha[B][I][L], alpha[B][I][R]),
+                        N,
+                        k,
+                        1,
+                    )).view(batch, N-k-1, -1), dim=-1
                 )
-            )
+                alpha[A][C][L, :, 1 : N - k, k] = semiring.plus(
+                    a, alpha[A][C][L, :, 1 : N - k, k]
+                )
 
             c = semiring.dot(*roll(alpha[A][C][L], alpha_in[A][I][L], N, k, 0))
 
-            alpha[A][C][L, :, 1 : N - k, k] = semiring.plus(
-                semiring.sum(a), alpha[A][C][L, :, 1 : N - k, k]
-            )
             alpha[A][C][L][:, : N - k, k] = semiring.plus(
                 c, alpha[A][C][L][:, : N - k, k]
             )
