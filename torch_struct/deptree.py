@@ -196,6 +196,7 @@ class DepTree(_Struct):
                 # Compute reverses
                 alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
 
+        print("here")
         v = alpha[A][C][R, :, 0, 0]
         left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
         right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
