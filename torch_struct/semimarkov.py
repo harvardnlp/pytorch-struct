@@ -3,21 +3,10 @@ from .helpers import _Struct
 
 
 class SemiMarkov(_Struct):
-    def sum(self, edge, lengths=None, force_grad=False):
-        """
-        Compute the forward pass of a semimarkov CRF.
-
-        Parameters:
-            edge : b x N x K x C x C semimarkov potentials
-            lengths: None or b long tensor mask
-
-        Returns:
-            v: b tensor of total sum
-            spans: list of N,  b x K x C x C table
-
-        """
-        return self._dp(edge, lengths)[0]
-
+    """
+    edge : b x N x K x C x C semimarkov potentials
+    """
+    
     def _dp(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
         batch, N_1, K, C, C2 = edge.shape
@@ -47,7 +36,7 @@ class SemiMarkov(_Struct):
         v = semiring.sum(
             torch.stack([beta[l - 1][i] for i, l in enumerate(lengths)]), dim=1
         )
-        return v, spans
+        return v, spans, beta
 
     @staticmethod
     def _rand():
@@ -57,24 +46,10 @@ class SemiMarkov(_Struct):
         C = torch.randint(2, 4, (1,))
         return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
 
-    def marginals(self, edge, lengths=None):
-        """
-        Compute the marginals of a semimarkov CRF.
 
-        Parameters:
-            edge : b x N x K x C x C semimarkov potentials
-            semiring
-
-        Returns:
-            marginals: b x N x K x C table
-
-        """
-        v, spans = self._dp(edge, lengths, force_grad=True)
-        marg = torch.autograd.grad(
-            v.sum(dim=0), spans, create_graph=True, only_inputs=True, allow_unused=False
-        )
+    def _arrange_marginals(self, marg):
         return torch.stack(marg, dim=1)
-
+    
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
         """

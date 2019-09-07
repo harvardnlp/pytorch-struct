@@ -9,6 +9,7 @@ def roll(a, b, N, k, gap=0):
 
 
 
+
 class DPManual(Function):
     @staticmethod
     def forward(ctx, obj, input, lengths):
@@ -66,7 +67,7 @@ class _Struct:
             v: b tensor of total sum
 
         """
-        if _autograd or not self.semiring is LogSemiring and "_dp_backward" in dir(self):
+        if _autograd or not self.semiring is LogSemiring or "_dp_backward" not in self.__dict__:
             return self._dp(edge, lengths)[0]
         else:
             return DPManual.apply(self, edge, lengths)
@@ -83,7 +84,7 @@ class _Struct:
 
         """
         v, edge, alpha = self._dp(edge, lengths=lengths, force_grad=True)
-        if _autograd or not self.semiring is LogSemiring and "_dp_backward" in dir(self):
+        if _autograd or not self.semiring is LogSemiring or "_dp_backward" not in self.__dict__:
             marg = torch.autograd.grad(
                 v.sum(dim=0), edge, create_graph=True, only_inputs=True, allow_unused=False
             )
