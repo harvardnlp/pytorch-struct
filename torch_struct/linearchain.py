@@ -1,24 +1,20 @@
 import torch
-from .helpers import _Struct, DPManual
-from torch.autograd import Function
-from .semirings import LogSemiring
+from .helpers import _Struct
 
 
 class LinearChain(_Struct):
     """
-    Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models, 
-    and anything with chain-like dynamics.     
+    Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
+    and anything with chain-like dynamics.
 
 
     Potentials are of the form:
 
             edge : b x (N-1) x C x C markov potentials
                         (n-1 x z_n x z_{n-1})
-
-    
     """
 
-    def _check_potentials(self, edge, lengths = None):
+    def _check_potentials(self, edge, lengths=None):
         batch, N_1, C, C2 = edge.shape
         N = N_1 + 1
         if lengths is None:
@@ -31,7 +27,7 @@ class LinearChain(_Struct):
     def _dp(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
         batch, N, C, lengths = self._check_potentials(edge, lengths)
-        
+
         alpha = self._make_chart(N, (batch, C), edge, force_grad)
         edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
@@ -52,28 +48,32 @@ class LinearChain(_Struct):
         alpha = self._make_chart(N, (batch, C), edge, force_grad=False)
         edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad=False)
 
-        for n in range(N-1, 0, -1):
+        for n in range(N - 1, 0, -1):
             for b, l in enumerate(lengths):
-                alpha[l-1][b].data.fill_(semiring.one())
+                alpha[l - 1][b].data.fill_(semiring.one())
 
-            edge_store[n-1][:] = semiring.times(
-                alpha[n].view(batch, C, 1), edge[:, n-1]
+            edge_store[n - 1][:] = semiring.times(
+                alpha[n].view(batch, C, 1), edge[:, n - 1]
             )
-            alpha[n - 1][:] = semiring.sum(edge_store[n-1], dim=-2)
+            alpha[n - 1][:] = semiring.sum(edge_store[n - 1], dim=-2)
         v = semiring.sum(
             torch.stack([alpha[0][i] for i, l in enumerate(lengths)]), dim=-1
         )
-        edge_marginals = self._make_chart(1, (batch, N-1, C, C), edge, force_grad=False)[0]
+        edge_marginals = self._make_chart(
+            1, (batch, N - 1, C, C), edge, force_grad=False
+        )[0]
 
-        for n in range(N-1):
-            edge_marginals[:, n] = semiring.div_exp(semiring.times(alpha_in[n].view(batch,  1, C),
-                                                                   edge[:, n],
-                                                                   alpha[n+1].view(batch,  C, 1)),
-                                                    v.view(batch, 1, 1))
+        for n in range(N - 1):
+            edge_marginals[:, n] = semiring.div_exp(
+                semiring.times(
+                    alpha_in[n].view(batch, 1, C),
+                    edge[:, n],
+                    alpha[n + 1].view(batch, C, 1),
+                ),
+                v.view(batch, 1, 1),
+            )
 
         return edge_marginals
-
-
 
     def _arrange_marginals(self, marg):
         return torch.stack(marg, dim=1)

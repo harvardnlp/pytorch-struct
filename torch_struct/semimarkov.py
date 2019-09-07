@@ -6,7 +6,7 @@ class SemiMarkov(_Struct):
     """
     edge : b x N x K x C x C semimarkov potentials
     """
-    
+
     def _dp(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
         batch, N_1, K, C, C2 = edge.shape
@@ -46,10 +46,9 @@ class SemiMarkov(_Struct):
         C = torch.randint(2, 4, (1,))
         return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
 
-
     def _arrange_marginals(self, marg):
         return torch.stack(marg, dim=1)
-    
+
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
         """

@@ -24,7 +24,8 @@ def test_simple(batch, N, C):
 def test_fb_m():
     vals = torch.rand(2, 4, 5, 5)
     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
-    marginals = LinearChain(MaxSemiring)._dp_backward(vals, None, alpha)
+    LinearChain(MaxSemiring)._dp_backward(vals, None, alpha)
+
 
 @given(data())
 def test_fb(data):
@@ -38,12 +39,14 @@ def test_fb(data):
     marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
     v, _, alpha = model()._dp(vals, lengths=lengths)
     marginals = model()._dp_backward(vals, lengths, alpha, v)
-    
+
     if isinstance(marginals, tuple):
         for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:])):
-            assert(torch.isclose(m1, m2).all()), (torch.isclose(m1, m2) == False).nonzero()
+            assert torch.isclose(m1, m2).all(), (
+                not torch.isclose(m1, m2)
+            ).nonzero()
     else:
-        assert(torch.isclose(marginals, marginals2).all())
+        assert torch.isclose(marginals, marginals2).all()
 
 
 @given(data())

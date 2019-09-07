@@ -4,10 +4,7 @@ from torch.autograd import Function
 
 
 def roll(a, b, N, k, gap=0):
-    return (a[:, :N - (k+gap), (k+gap):], \
-            b[:,  k+gap:, : N-(k+gap)])
-
-
+    return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
 
 
 class DPManual(Function):
@@ -54,7 +51,6 @@ class _Struct:
             for _ in range(N)
         ]
 
-
     def sum(self, edge, lengths=None, _autograd=False):
         """
         Compute the (semiring) sum over all structures model.
@@ -67,7 +63,11 @@ class _Struct:
             v: b tensor of total sum
 
         """
-        if _autograd or not self.semiring is LogSemiring or "_dp_backward" not in self.__dict__:
+        if (
+            _autograd
+            or self.semiring is not LogSemiring
+            or "_dp_backward" not in self.__dict__
+        ):
             return self._dp(edge, lengths)[0]
         else:
             return DPManual.apply(self, edge, lengths)
@@ -84,9 +84,17 @@ class _Struct:
 
         """
         v, edge, alpha = self._dp(edge, lengths=lengths, force_grad=True)
-        if _autograd or not self.semiring is LogSemiring or "_dp_backward" not in self.__dict__:
+        if (
+            _autograd
+            or self.semiring is not LogSemiring
+            or "_dp_backward" not in self.__dict__
+        ):
             marg = torch.autograd.grad(
-                v.sum(dim=0), edge, create_graph=True, only_inputs=True, allow_unused=False
+                v.sum(dim=0),
+                edge,
+                create_graph=True,
+                only_inputs=True,
+                allow_unused=False,
             )
             return self._arrange_marginals(marg)
         else:

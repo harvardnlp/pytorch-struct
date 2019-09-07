@@ -13,7 +13,6 @@ class Semiring:
     def plus(cls, *ls):
         return cls.sum(torch.stack(ls), dim=0)
 
-    
     @classmethod
     def dot(cls, *ls):
         return cls.sum(cls.times(*ls))
@@ -38,8 +37,10 @@ class StdSemiring(_Base):
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
 
+    @staticmethod
     def div_exp(a, b):
         return a.exp().div(b.exp())
+
 
 class _BaseLog(Semiring):
     @staticmethod
