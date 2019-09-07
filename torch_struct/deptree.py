@@ -1,7 +1,7 @@
 import torch
 import itertools
-from .helpers import _Struct
-
+from .helpers import _Struct, DPManual
+from .semirings import LogSemiring
 
 def _convert(logits):
     "move root arcs from diagonal"
@@ -34,7 +34,7 @@ A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
 
 class DepTree(_Struct):
-    def sum(self, arc_scores, lengths=None):
+    def sum(self, arc_scores, lengths=None, _autograd=False):
         """
         Compute the inside pass of a projective dependency CRF.
 
@@ -48,7 +48,10 @@ class DepTree(_Struct):
             arcs: list of N,  LR x b x N table
 
         """
-        return self._dp(arc_scores, lengths)[0]
+        if _autograd or not self.semiring is LogSemiring:
+            return self._dp(arc_scores, lengths)[0]
+        else:
+            return DPManual.apply(self, *scores, lengths)
 
     def _dp(self, arc_scores, lengths=None, force_grad=False):
         semiring = self.semiring
@@ -105,9 +108,142 @@ class DepTree(_Struct):
         return (
             torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)]),
             arcs,
+            alpha
         )
 
-    def marginals(self, arc_scores, lengths=None):
+    def _dp_backward(self, arc_scores, lengths, alpha_in, v = None, force_grad=False):
+        semiring = self.semiring
+        arc_scores = _convert(arc_scores)
+        batch, N, N2 = arc_scores.shape
+
+        assert N == N2, "Non-square potentials"
+        DIRS = 2
+        if lengths is None:
+            lengths = torch.LongTensor([N - 1] * batch)
+        assert max(lengths) <= N, "Length longer than N"
+        for b in range(batch):
+            arc_scores[b, lengths[b] + 1 :, :] = semiring.zero()
+            arc_scores[b, :, lengths[b] + 1 :] = semiring.zero()
+
+        def stack(*a):
+            return torch.stack(a)
+
+        def sstack(a):
+            return torch.stack([a, a])
+
+        alpha = [
+            self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
+            for _ in range(2)
+        ]
+        arcs = self._make_chart(N, (DIRS, batch, N), arc_scores, force_grad)
+
+
+        for k in range(N-1, -1, -1):
+            for b, l in enumerate(lengths):
+                alpha[A][C][R, b, 0, l] = semiring.one()
+                alpha[B][C][R, b, l, N-l-1] = semiring.one()
+
+            a = semiring.dot(
+                alpha[A][I][R, :, :N - (k+1), (k+1):],
+                alpha_in[A][C][L,:,  k+1:, : N-(k+1)],
+                arc_scores[:, :N-(k+1), k+1:]
+            )
+
+            b = semiring.dot(
+                alpha[A][I][L, :, :N - (k+1), k+1:],
+                alpha_in[A][C][L, :, k+1:, : N-(k+1)],
+                arc_scores.transpose(1,2)[:, :N-(k+1), k+1:]
+            )
+
+
+
+            alpha[A][C][R, :, :N-k-1, k] = semiring.sum(stack(a, b,
+                                                              alpha[A][C][R, :, :N-k-1, k]), dim=0)
+
+            a =  semiring.dot(
+                alpha[B][I][L, :, k+1:, :N - k-1],
+                alpha_in[B][C][R, :, :N-k-1, k+1:],
+                arc_scores.transpose(1,2)[:, 1:N-(k), k+1:]
+
+            )
+            b = semiring.dot(
+                alpha[B][I][R, :, k+1:, :N-k-1],
+                alpha_in[B][C][R, :, :N-k-1, k+1:],
+                arc_scores[:, 1:N-(k), k+1:]
+            )
+
+            alpha[A][C][L, :, 1:N-k, k] = \
+                    semiring.sum(stack(a, b,
+                                       alpha[A][C][L, :, 1:N-k, k]), dim=0)
+
+
+            alpha[B][C][L, :, 1:N-k, N - k - 1] = alpha[A][C][L, :, 1: N - k, k]
+            alpha[B][C][R, :, :N-k-1, N - k - 1] = alpha[A][C][R, :, : N - k-1, k]
+
+            print("C", k,  alpha[A][C][:, 0, :, k].nonzero())
+
+
+
+            alpha[A][I][R][:, :N-k, k] = semiring.dot(
+                alpha[A][C][R, :,       :N-k, k:],
+                alpha_in[A][C][R, :, k:,         :N-k]
+            )
+
+            alpha[A][I][L][:, :N-k, k] = semiring.dot(
+                alpha[B][C][L, :,    k:,         :N - (k)],
+                alpha_in[B][C][L, :,    :N-k, k:]
+            )
+
+            alpha[A][C][R][:, :N-k, k] = semiring.sum(stack(alpha[A][C][R][:, :N-k, k],
+
+                                                            semiring.dot(
+                                                                alpha[B][C][R, :, k:, :N - k],
+                                                                alpha_in[B][I][R, :, :N-k, k:]
+                                                            )), dim =0)
+
+            alpha[A][C][L][:, :N-k, k] =semiring.sum(stack(
+                alpha[A][C][L][:, :N-k, k],
+                semiring.dot(
+                    alpha[A][C][L, :, :N - k, k:],
+                    alpha_in[A][I][L, :, k:, : N-k]
+                )), dim=0)
+
+
+            alpha[B][C][:, :, :N-k, N - k - 1] = alpha[A][C][:, :, : N - k, k]
+
+            alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
+            print("IC", k, alpha[A][C][:, 0, :, k].nonzero())
+            print("I", k, alpha[A][I][:, 0, :, k].nonzero())
+
+
+        print("COMP", alpha[A][C][:, :, :, :].nonzero())
+        v = alpha[A][C][R, 0, 1, 0]
+        print("finsh", v)
+
+
+        left = semiring.div_exp(semiring.times(alpha[A][I][L, :, :, :],
+                                               alpha_in[A][I][L, :, :, :]),
+                                v.view(batch, 1, 1))
+
+        right = semiring.div_exp(semiring.times(alpha[A][I][R, :, :, :],
+                                                alpha_in[A][I][R, :, :, :]),
+                                 v.view(batch, 1, 1))
+        ret = torch.zeros(batch, N, N)
+        print(left, right, alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
+        for k in range(N):
+            for d in range(N-k):
+                ret[:, k+d, k] = left[:, k, d]
+                ret[:, k, k+d] = right[:, k, d]
+        return _unconvert(ret)
+
+
+        # return (
+        #     torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)]),
+        #     arcs,
+        # )
+
+
+    def marginals(self, arc_scores, lengths=None, _autograd=False):
         """
         Compute the marginals of a projective dependency CRF.
 
@@ -121,20 +257,24 @@ class DepTree(_Struct):
         """
         batch, N, _ = arc_scores.shape
         N = N + 1
-        v, arcs = self._dp(arc_scores, lengths, force_grad=True)
-        grads = torch.autograd.grad(
-            v.sum(dim=0),
-            arcs[1:],
-            create_graph=True,
-            only_inputs=True,
-            allow_unused=False,
-        )
-        ret = torch.zeros(batch, N, N).cpu()
-        for k, grad in enumerate(grads, 1):
-            f = torch.arange(N - k), torch.arange(k, N)
-            ret[:, f[0], f[1]] = grad[R].cpu()
-            ret[:, f[1], f[0]] = grad[L].cpu()
-        return _unconvert(ret)
+        v, arcs, alpha = self._dp(arc_scores, lengths, force_grad=True)
+
+        if _autograd or not self.semiring is LogSemiring:
+            grads = torch.autograd.grad(
+                v.sum(dim=0),
+                arcs[1:],
+                create_graph=True,
+                only_inputs=True,
+                allow_unused=False,
+            )
+            ret = torch.zeros(batch, N, N).cpu()
+            for k, grad in enumerate(grads, 1):
+                f = torch.arange(N - k), torch.arange(k, N)
+                ret[:, f[0], f[1]] = grad[R].cpu()
+                ret[:, f[1], f[0]] = grad[L].cpu()
+            return _unconvert(ret)
+        else:
+            return self._dp_backward(arc_scores, lengths, alpha)
 
     @staticmethod
     def to_parts(sequence, extra=None, lengths=None):

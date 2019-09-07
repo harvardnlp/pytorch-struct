@@ -1,5 +1,28 @@
 import torch
 from .semirings import LogSemiring
+from torch.autograd import Function
+
+class DPManual(Function):
+    @staticmethod
+    def forward(ctx, obj, input, lengths):
+        v, _, alpha = obj._dp(input, lengths, False)
+        ctx.obj = obj
+        ctx.lengths = lengths
+        ctx.alpha = alpha
+
+        if isinstance(input, tuple):
+            ctx.save_for_backward(*input)
+        else:
+            ctx.save_for_backward(input)
+        return v
+
+    @staticmethod
+    def backward(ctx, grad_v):
+        input = ctx.saved_tensors
+        if len(input) == 1:
+            input = input[0]
+        marginals = ctx.obj._dp_backward(input, ctx.lengths, ctx.alpha)
+        return None, marginals, None
 
 
 class _Struct:

@@ -33,6 +33,8 @@ class StdSemiring(_Base):
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
 
+    def div_exp(a, b):
+        return a.exp().div(b.exp())
 
 class _BaseLog(Semiring):
     @staticmethod
@@ -47,6 +49,10 @@ class _BaseLog(Semiring):
     def one():
         return 0.0
 
+    @staticmethod
+    def div_exp(a, b):
+        return a.exp().div(b.exp())
+
 
 class LogSemiring(_BaseLog):
     @staticmethod
@@ -58,6 +64,10 @@ class MaxSemiring(_BaseLog):
     @staticmethod
     def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
+
+    @staticmethod
+    def div_exp(a, b):
+        return a == b
 
 
 class _SampledLogSumExp(torch.autograd.Function):

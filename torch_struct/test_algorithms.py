@@ -21,6 +21,36 @@ def test_simple(batch, N, C):
     LinearChain(SampledSemiring).sum(vals)
 
 
+def test_fb_m():
+    vals = torch.rand(2, 4, 5, 5)
+    v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
+    marginals = LinearChain(MaxSemiring)._dp_backward(vals, None, alpha)
+
+@given(data())
+def test_fb(data):
+    model = data.draw(sampled_from([DepTree]))
+    torch.manual_seed(1)
+    vals, (batch, N) = model._rand()
+
+
+    lengths = torch.tensor(
+        [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
+    )
+    vals, (batch, N) = torch.ones(1, 2, 2), (1, 2)
+    lengths = None
+    marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
+    v, _, alpha = model()._dp(vals, lengths=lengths)
+    print(v)
+    marginals = model()._dp_backward(vals, lengths, alpha, v)
+
+    if isinstance(marginals, tuple):
+        for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:]) ):
+            print((torch.isclose(m1, m2) == False).nonzero())
+            assert(torch.isclose(m1, m2).all()), (torch.isclose(m1, m2) == False).nonzero()
+    else:
+        assert(torch.isclose(marginals, marginals2).all())
+
+
 @given(data())
 @settings(max_examples=50, deadline=None)
 def test_generic(data):
@@ -96,7 +126,7 @@ def test_params(data, seed):
     else:
         vals.requires_grad_(True)
     # torch.autograd.set_detect_anomaly(True)
-    semiring = StdSemiring
+    semiring = LogSemiring
     alpha = model(semiring).sum(vals)
     alpha.sum().backward()
 

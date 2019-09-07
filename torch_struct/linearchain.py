@@ -1,5 +1,8 @@
 import torch
-from .helpers import _Struct
+from .helpers import _Struct, DPManual
+from torch.autograd import Function
+from .semirings import LogSemiring
+
 
 
 class LinearChain(_Struct):
@@ -14,7 +17,6 @@ class LinearChain(_Struct):
         assert C == C2, "Transition shape doesn't match"
 
         alpha = self._make_chart(N, (batch, C), edge, force_grad=force_grad)
-
         edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad=force_grad)
 
         alpha[0].data.fill_(semiring.one())
@@ -26,9 +28,43 @@ class LinearChain(_Struct):
         v = semiring.sum(
             torch.stack([alpha[l - 1][i] for i, l in enumerate(lengths)]), dim=-1
         )
-        return v, edge_store
+        return v, edge_store, alpha
 
-    def sum(self, edge, lengths=None):
+    def _dp_backward(self, edge, lengths, alpha_in):
+        semiring = self.semiring
+        batch, N_1, C, C2 = edge.shape
+        N = N_1 + 1
+        if lengths is None:
+            lengths = torch.LongTensor([N] * batch)
+
+        alpha = self._make_chart(N, (batch, C), edge, force_grad=False)
+        edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad=False)
+
+        for n in range(N-1, 0, -1):
+            for b, l in enumerate(lengths):
+                alpha[l-1][b].data.fill_(semiring.one())
+
+            edge_store[n-1][:] = semiring.times(
+                alpha[n].view(batch, C, 1), edge[:, n-1]
+            )
+            alpha[n - 1][:] = semiring.sum(edge_store[n-1], dim=-2)
+        v = semiring.sum(
+            torch.stack([alpha[0][i] for i, l in enumerate(lengths)]), dim=-1
+        )
+        edge_marginals = self._make_chart(1, (batch, N-1, C, C), edge, force_grad=False)[0]
+
+
+
+        for n in range(N_1):
+            edge_marginals[:, n] = semiring.div_exp(semiring.times(alpha_in[n].view(batch,  1, C),
+                                                                   edge[:, n],
+                                                                   alpha[n+1].view(batch,  C, 1)),
+                                                    v.view(batch, 1, 1))
+
+        return edge_marginals
+
+
+    def sum(self, edge, lengths=None, _autograd=False):
         """
         Compute the forward pass of a linear chain CRF.
 
@@ -42,9 +78,12 @@ class LinearChain(_Struct):
             inside: list of N,  b x C x C table
 
         """
-        return self._dp(edge, lengths)[0]
+        if _autograd or not self.semiring is LogSemiring:
+            return self._dp(edge, lengths)[0]
+        else:
+            return DPManual.apply(self, edge, lengths)
 
-    def marginals(self, edge, lengths=None):
+    def marginals(self, edge, lengths=None, _autograd=False):
         """
         Compute the marginals of a linear chain CRF.
 
@@ -56,11 +95,15 @@ class LinearChain(_Struct):
             marginals: b x (N-1) x C x C table
 
         """
-        v, alpha = self._dp(edge, lengths=lengths, force_grad=True)
-        marg = torch.autograd.grad(
-            v.sum(dim=0), alpha, create_graph=True, only_inputs=True, allow_unused=False
-        )
-        return torch.stack(marg, dim=1)
+        if _autograd or not self.semiring is LogSemiring:
+            v, edge, _ = self._dp(edge, lengths=lengths, force_grad=True)
+            marg = torch.autograd.grad(
+                v.sum(dim=0), edge, create_graph=True, only_inputs=True, allow_unused=False
+            )
+            return torch.stack(marg, dim=1)
+        else:
+            v, _, alpha = self._dp(edge, lengths=lengths, force_grad=False)
+            return self._dp_backward(edge, lengths, alpha)
 
     # Adapters
     @staticmethod
