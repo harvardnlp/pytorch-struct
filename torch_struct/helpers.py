@@ -32,7 +32,8 @@ class DPManual(Function):
             input = input[0]
         with torch.no_grad():
             marginals = ctx.obj._dp_backward(input, ctx.lengths, ctx.alpha)
-        return None, marginals, None
+
+        return None, marginals.mul(grad_v.view((grad_v.shape[0],) + tuple([1]*marginals.dim()))), None
 
 
 class _Struct:

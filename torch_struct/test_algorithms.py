@@ -122,14 +122,21 @@ def test_params(data, seed):
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
     if isinstance(vals, tuple):
-        vals = (v.requires_grad_(True) for v in vals)
+        vals = tuple((v.requires_grad_(True) for v in vals))
     else:
         vals.requires_grad_(True)
     # torch.autograd.set_detect_anomaly(True)
     semiring = LogSemiring
     alpha = model(semiring).sum(vals)
-    alpha.sum().backward()
+    x = alpha.sum().backward()
 
+    if not isinstance(vals, tuple):
+        b = vals.grad.detach()
+        vals.grad.zero_()
+        alpha = model(semiring).sum(vals, _autograd=False)
+        x2 = alpha.sum().backward()
+        c = vals.grad.detach()
+        assert(torch.isclose(b, c).all())
 
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
