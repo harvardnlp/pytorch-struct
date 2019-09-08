@@ -36,7 +36,7 @@ A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 class MySlice(Function):
     @staticmethod
     def forward(ctx, input, e, a, b, c, d):
-        output = torch.zeros(*input.shape).type_as(input)
+        output = input.clone().zero_()
         ctx.save_for_backward(output, torch.tensor([e, a, b, c, d]))
         return input[e, :, a:b, c:d]
 
