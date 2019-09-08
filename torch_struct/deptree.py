@@ -36,16 +36,14 @@ A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 class MySlice(Function):
     @staticmethod
     def forward(ctx, input, e, a, b, c, d):
-        ctx.positions = e, a, b, c, d
-        ctx.shape = input.shape
-        ctx.typ = input.type()
+        output = torch.zeros(*input.shape).type_as(input)
+        ctx.save_for_backward(output, torch.tensor([e, a, b, c, d]))
         return input[e, :, a:b, c:d]
 
     @staticmethod
     def backward(ctx, grad_v):
-        e, a, b, c, d = ctx.positions
-        output = torch.zeros(*ctx.shape).type(ctx.typ)
-        output[e, :, a:b, c:d] = grad_v
+        output, a = ctx.saved_tensors
+        output[a[0], :, a[1]:a[2], a[3]:a[4]] = grad_v
         return output, None, None, None, None, None
 
 class DepTree(_Struct):
@@ -62,9 +60,9 @@ class DepTree(_Struct):
         batch, N, lengths = self._check_potentials(arc_scores, lengths)
 
         DIRS = 2
-        #s = MySlice.apply
-        def s(input, e, a, b, c, d):
-            return input[e, :, a:b, c:d]
+        s = MySlice.apply
+        #def s(input, e, a, b, c, d):
+        #    return input[e, :, a:b, c:d]
         def stack(a, b):
             return torch.stack([a, b])
 
@@ -177,7 +175,7 @@ class DepTree(_Struct):
 
             # Compute reverses.
             alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
-            
+
             if k > 0:
                 f = torch.arange(N - k), torch.arange(k, N)
                 alpha[A][I][:, :, : N - k, k] = semiring.dot(
