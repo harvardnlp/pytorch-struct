@@ -38,15 +38,11 @@ def test_fb(data):
     )
     marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
     v, _, alpha = model()._dp(vals, lengths=lengths)
-    print(v)
-    print(marginals2)
     marginals = model()._dp_backward(vals, lengths, alpha, v)
-    
+
     if isinstance(marginals, tuple):
         for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:])):
-            assert torch.isclose(m1, m2).all(), (
-                not torch.isclose(m1, m2)
-            ).nonzero()
+            assert torch.isclose(m1, m2).all(), (not torch.isclose(m1, m2)).nonzero()
     else:
         assert torch.isclose(marginals, marginals2).all()
 
@@ -128,15 +124,16 @@ def test_params(data, seed):
     # torch.autograd.set_detect_anomaly(True)
     semiring = LogSemiring
     alpha = model(semiring).sum(vals)
-    x = alpha.sum().backward()
+    alpha.sum().backward()
 
     if not isinstance(vals, tuple):
         b = vals.grad.detach()
         vals.grad.zero_()
         alpha = model(semiring).sum(vals, _autograd=False)
-        x2 = alpha.sum().backward()
+        alpha.sum().backward()
         c = vals.grad.detach()
-        assert(torch.isclose(b, c).all())
+        assert torch.isclose(b, c).all()
+
 
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
