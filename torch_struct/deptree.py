@@ -43,7 +43,7 @@ class MySlice(Function):
     @staticmethod
     def backward(ctx, grad_v):
         output, a = ctx.saved_tensors
-        output.data[a[0], :, a[1]:a[2], a[3]:a[4]] = grad_v
+        output[a[0], :, a[1]:a[2], a[3]:a[4]] = grad_v
         return output, None, None, None, None, None
 
 class DepTree(_Struct):
