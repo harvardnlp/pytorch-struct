@@ -38,12 +38,12 @@ class MySlice(Function):
     def forward(ctx, input, e, a, b, c, d):
         output = input.clone().zero_()
         ctx.save_for_backward(output, torch.tensor([e, a, b, c, d]))
-        return input[e, :, a:b, c:d]
+        return input.data[e, :, a:b, c:d]
 
     @staticmethod
     def backward(ctx, grad_v):
         output, a = ctx.saved_tensors
-        output[a[0], :, a[1]:a[2], a[3]:a[4]] = grad_v
+        output.data[a[0], :, a[1]:a[2], a[3]:a[4]] = grad_v
         return output, None, None, None, None, None
 
 class DepTree(_Struct):
