@@ -62,8 +62,9 @@ class DepTree(_Struct):
         batch, N, lengths = self._check_potentials(arc_scores, lengths)
 
         DIRS = 2
-        s = MySlice.apply
-        
+        #s = MySlice.apply
+        def s(input, e, a, b, c, d):
+            return input[e, :, a:b, c:d]
         def stack(a, b):
             return torch.stack([a, b])
 
