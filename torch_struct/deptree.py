@@ -1,5 +1,6 @@
 import torch
 import itertools
+from torch.autograd import Function
 from .helpers import _Struct, roll, roll2
 
 
@@ -32,6 +33,20 @@ def _unconvert(logits):
 # Constants
 A, B, R, C, L, I = 0, 1, 1, 1, 0, 0
 
+class MySlice(Function):
+    @staticmethod
+    def forward(ctx, input, e, a, b, c, d):
+        ctx.positions = e, a, b, c, d
+        ctx.shape = input.shape
+        ctx.typ = input.type()
+        return input[e, :, a:b, c:d]
+
+    @staticmethod
+    def backward(ctx, grad_v):
+        e, a, b, c, d = ctx.positions
+        output = torch.zeros(*ctx.shape).type(ctx.typ)
+        output[e, :, a:b, c:d] = grad_v
+        return output, None, None, None, None, None
 
 class DepTree(_Struct):
     """
@@ -47,7 +62,8 @@ class DepTree(_Struct):
         batch, N, lengths = self._check_potentials(arc_scores, lengths)
 
         DIRS = 2
-
+        s = MySlice.apply
+        
         def stack(a, b):
             return torch.stack([a, b])
 
@@ -66,23 +82,23 @@ class DepTree(_Struct):
 
         for k in range(1, N):
             f = torch.arange(N - k), torch.arange(k, N)
-            arcs[k] = semiring.dot(
-                sstack(alpha[A][C][R, :, : N - k, :k]),
-                sstack(alpha[B][C][L, :, k:, N - k :]),
-                stack(arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]]).unsqueeze(
-                    -1
-                ),
+            arcs[k] = semiring.times(
+                sstack(semiring.sum(semiring.times(
+                    s(alpha[A][C], R, 0, N - k, 0, k),
+                    s(alpha[B][C], L, k, N, N - k, N)))),
+                stack(arc_scores[:, f[1], f[0]],
+                      arc_scores[:, f[0], f[1]])
             )
             alpha[A][I][:, :, : N - k, k] = arcs[k]
             alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
             alpha[A][C][:, :, : N - k, k] = semiring.dot(
                 stack(
-                    alpha[A][C][L, :, : N - k, :k],
-                    alpha[A][I][R, :, : N - k, 1 : k + 1],
+                    s(alpha[A][C], L,0, N - k, 0, k),
+                    s(alpha[A][I], R,0, N - k, 1,  k + 1),
                 ),
                 stack(
-                    alpha[B][I][L, :, k:, N - k - 1 : N - 1],
-                    alpha[B][C][R, :, k:, N - k :],
+                    s(alpha[B][I], L, k, N, N - k - 1, N - 1),
+                    s(alpha[B][C], R, k, N, N - k, N),
                 ),
             )
             alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
@@ -123,7 +139,6 @@ class DepTree(_Struct):
 
         for k in range(N - 1, -1, -1):
             # Initialize
-
             if N - k - 1 > 0:
                 # R completes
                 # I -> C* C

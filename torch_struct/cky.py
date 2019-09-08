@@ -29,7 +29,7 @@ class DPManual2(Function):
 
 
 class CKY(_Struct):
-    def sum(self, scores, lengths=None, force_grad=False, _autograd=False):
+    def sum(self, scores, lengths=None, force_grad=False, _autograd=True):
         """
         Compute the inside pass of a CFG using CKY.
 
@@ -162,7 +162,7 @@ class CKY(_Struct):
 
         return (term_marginals, edge_marginals, root_marginals)
 
-    def marginals(self, scores, lengths=None, _autograd=False):
+    def marginals(self, scores, lengths=None, _autograd=True):
         """
         Compute the marginals of a CFG using CKY.
 
