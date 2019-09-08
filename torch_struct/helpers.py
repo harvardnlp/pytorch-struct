@@ -44,20 +44,6 @@ class _Struct:
             v: b tensor of total sum
         """
 
-        class DPManual(Function):
-            @staticmethod
-            def forward(ctx, input):
-                v, _, alpha = self._dp(input, lengths, False)
-                ctx.save_for_backward(alpha[0][0], alpha[0][1], alpha[1][0], alpha[1][1])
-                return v
-
-            @staticmethod
-            def backward(ctx, grad_v):
-                alpha = ctx.saved_tensors
-                alpha = [[alpha[0], alpha[1]], [alpha[2], alpha[3]]]
-                marginals = self._dp_backward(edge, lengths, alpha)
-                return marginals.mul(
-                        grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
 
         if (
             _autograd
@@ -66,8 +52,20 @@ class _Struct:
         ):
             return self._dp(edge, lengths)[0]
         else:
-            return DPManual.apply(edge)
+            v, _, alpha = self._dp(edge, lengths, False)
 
+            class DPManual(Function):
+                @staticmethod
+                def forward(ctx, input):
+                    return v
+
+                @staticmethod
+                def backward(ctx, grad_v):
+                    marginals = self._dp_backward(edge, lengths, alpha)
+                    return marginals.mul(
+                            grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
+
+            return DPManual.apply(edge)
     def marginals(self, edge, lengths=None, _autograd=True):
         """
         Compute the marginals of a structured model.
