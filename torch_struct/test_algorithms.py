@@ -38,8 +38,10 @@ def test_fb(data):
     )
     marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
     v, _, alpha = model()._dp(vals, lengths=lengths)
+    print(v)
+    print(marginals2)
     marginals = model()._dp_backward(vals, lengths, alpha, v)
-
+    
     if isinstance(marginals, tuple):
         for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:])):
             assert torch.isclose(m1, m2).all(), (
