@@ -38,7 +38,7 @@ class MySlice(Function):
     def forward(ctx, input, e, a, b, c, d):
         output = input.clone().zero_()
         ctx.save_for_backward(output, torch.tensor([e, a, b, c, d]))
-        return input.data[e, :, a:b, c:d]
+        return input[e, :, a:b, c:d]
 
     @staticmethod
     def backward(ctx, grad_v):
