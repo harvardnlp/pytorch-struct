@@ -11,36 +11,6 @@ def roll2(a, b, N, k, gap=0):
     return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
 
 
-class DPManual(Function):
-    @staticmethod
-    def forward(ctx, obj, input, lengths):
-        with torch.no_grad():
-            v, _, alpha = obj._dp(input, lengths, False)
-        ctx.obj = obj
-        ctx.lengths = lengths
-        ctx.alpha = alpha
-
-        if isinstance(input, tuple):
-            ctx.save_for_backward(*input)
-        else:
-            ctx.save_for_backward(input)
-        return v
-
-    @staticmethod
-    def backward(ctx, grad_v):
-        input = ctx.saved_tensors
-        if len(input) == 1:
-            input = input[0]
-        with torch.no_grad():
-            marginals = ctx.obj._dp_backward(input, ctx.lengths, ctx.alpha)
-
-        return (
-            None,
-            marginals.mul(
-                grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim()))
-            ),
-            None,
-        )
 
 
 class _Struct:
@@ -72,8 +42,23 @@ class _Struct:
 
         Returns:
             v: b tensor of total sum
-
         """
+
+        class DPManual(Function):
+            @staticmethod
+            def forward(ctx, input):
+                v, _, alpha = self._dp(input, lengths, False)
+                ctx.save_for_backward(alpha[0][0], alpha[0][1], alpha[1][0], alpha[1][1])
+                return v
+
+            @staticmethod
+            def backward(ctx, grad_v):
+                alpha = ctx.saved_tensors
+                alpha = [[alpha[0], alpha[1]], [alpha[2], alpha[3]]]
+                marginals = self._dp_backward(edge, lengths, alpha)
+                return marginals.mul(
+                        grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
+
         if (
             _autograd
             or self.semiring is not LogSemiring
@@ -81,7 +66,7 @@ class _Struct:
         ):
             return self._dp(edge, lengths)[0]
         else:
-            return DPManual.apply(self, edge, lengths)
+            return DPManual.apply(edge)
 
     def marginals(self, edge, lengths=None, _autograd=True):
         """

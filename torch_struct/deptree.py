@@ -63,6 +63,7 @@ class DepTree(_Struct):
         #     @staticmethod
         #     def backward(ctx, grad_v):
         #         a, = ctx.saved_tensors
+        # itertools(a[2], :, a[3]:a[4], a[5]:a[6])
         #         beta[a[0]][a[1]][a[2], :, a[3]:a[4], a[5]:a[6]] += grad_v
         #         return None, None, None, None, None, None, None, None, None
 
