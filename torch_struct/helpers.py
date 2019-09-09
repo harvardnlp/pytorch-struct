@@ -11,8 +11,6 @@ def roll2(a, b, N, k, gap=0):
     return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
 
 
-
-
 class _Struct:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
@@ -44,7 +42,6 @@ class _Struct:
             v: b tensor of total sum
         """
 
-
         if (
             _autograd
             or self.semiring is not LogSemiring
@@ -63,7 +60,8 @@ class _Struct:
                 def backward(ctx, grad_v):
                     marginals = self._dp_backward(edge, lengths, alpha)
                     return marginals.mul(
-                            grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
+                        grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim()))
+                    )
 
             return DPManual.apply(edge)
 

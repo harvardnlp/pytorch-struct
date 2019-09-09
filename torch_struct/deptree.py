@@ -20,10 +20,11 @@ def _convert(logits):
 def _unconvert(logits):
     "Move root arcs to diagonal"
     new_logits = torch.zeros(
-        logits.size(0), logits.size(1) - 1, logits.size(2) - 1,
+        logits.size(0),
+        logits.size(1) - 1,
+        logits.size(2) - 1,
         dtype=logits.dtype,
-        device=logits.device
-
+        device=logits.device,
     )
 
     new_logits.fill_(-1e9)
@@ -63,39 +64,49 @@ class DepTree(_Struct):
         def sstack(a):
             return torch.stack([a, a])
 
-        arcs = [self._make_chart(1, (DIRS, batch, N-k), arc_scores, force_grad)[0]
-                for k in range(N)]
+        arcs = [
+            self._make_chart(1, (DIRS, batch, N - k), arc_scores, force_grad)[0]
+            for k in range(N)
+        ]
 
         # Inside step. assumes first token is root symbol
         alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
         alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
         k = 0
 
-        AIR = alpha[A][I][R, :, :N-k, 1:k]
-        BIL = alpha[B][I][L, :, k:N, N-k:N-1]
+        AIR = alpha[A][I][R, :, : N - k, 1:k]
+        BIL = alpha[B][I][L, :, k:N, N - k : N - 1]
         k = 1
-        AC2 = alpha[A][C][:, :, :N - k, :k]
-        BC2 = alpha[B][C][:, :, k:, N - k:]
+        AC2 = alpha[A][C][:, :, : N - k, :k]
+        BC2 = alpha[B][C][:, :, k:, N - k :]
+        AC, BC, AC_next = None, None, None
+
         ends = [None]
         for k in range(1, N):
+            def tf(a): return torch.narrow(a, 2, 0, N-k)
+            def tb(a): return torch.narrow(a, 2, 1, N-k)
+
             f = torch.arange(N - k), torch.arange(k, N)
             if k > 1:
-                AC2 = torch.cat([AC[:, :, :-1], AC_next[:, :, :-1].unsqueeze(-1)],
-                                 dim=3)
+                AC2 = torch.cat(
+                    [tf(AC), tf(AC_next).unsqueeze(-1)], dim=3
+                )
             if k > 1:
-                BC2 = torch.cat([AC_next[:, :, 1:].unsqueeze(-1), BC[:, :, 1:]], dim=3)
+                BC2 = torch.cat([tb(AC_next).unsqueeze(-1), tb(BC)], dim=3)
 
             start = semiring.dot(BC2[L], AC2[R])
             # if k == 1:
-            arcs[k] = stack(semiring.times(start,   arc_scores[:, f[1], f[0]]),
-                            semiring.times(start, arc_scores[:, f[0], f[1]]))
+            arcs[k] = stack(
+                semiring.times(start, arc_scores[:, f[1], f[0]]),
+                semiring.times(start, arc_scores[:, f[0], f[1]])
+            )
 
             # else:
             #     arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
             #                     semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
 
-            AIR2 = torch.cat([AIR[:, :-1], arcs[k][R].unsqueeze(-1)], dim=2)
-            BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), BIL[:, 1:]], dim=2)
+            AIR2 = torch.cat([torch.narrow(AIR, 1, 0, N-k), arcs[k][R].unsqueeze(-1)], dim=2)
+            BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), torch.narrow(BIL, 1, 1, N-k)], dim=2)
             AC_next = stack(semiring.dot(AC2[L], BIL2), semiring.dot(AIR2, BC2[R]))
 
             ends.append(AC_next[R, :, 0])
@@ -223,7 +234,9 @@ class DepTree(_Struct):
         batch, N = grads[0][0].shape
         N = N + 1
 
-        ret = torch.zeros(batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device)
+        ret = torch.zeros(
+            batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device
+        )
         # for k in torch.arange(N):
         #     f = torch.arange(N - k), torch.arange(k, N)
         #     ret[:, f[1], k] = grad[L][:, k, f[0]]
