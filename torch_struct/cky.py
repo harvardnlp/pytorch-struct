@@ -70,7 +70,7 @@ class CKY(_Struct):
         for w in range(1, N):
             Y = beta[A][:, : N - w, :w, :].view(batch, N - w, w, 1, S, 1)
             Z = beta[B][:, w:, N - w :, :].view(batch, N - w, w, 1, 1, S)
-            Y, Z = Y.clone(), Z.clone()
+            # Y, Z = Y.clone(), Z.clone()
             X_Y_Z = rules.view(batch, 1, NT, S, S)
             rule_use[w - 1][:] = semiring.times(
                 semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z
