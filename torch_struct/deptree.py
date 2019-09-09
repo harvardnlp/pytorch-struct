@@ -83,14 +83,16 @@ class DepTree(_Struct):
 
         ends = [None]
         for k in range(1, N):
-            def tf(a): return torch.narrow(a, 2, 0, N-k)
-            def tb(a): return torch.narrow(a, 2, 1, N-k)
+
+            def tf(a):
+                return torch.narrow(a, 2, 0, N - k)
+
+            def tb(a):
+                return torch.narrow(a, 2, 1, N - k)
 
             f = torch.arange(N - k), torch.arange(k, N)
             if k > 1:
-                AC2 = torch.cat(
-                    [tf(AC), tf(AC_next).unsqueeze(-1)], dim=3
-                )
+                AC2 = torch.cat([tf(AC), tf(AC_next).unsqueeze(-1)], dim=3)
             if k > 1:
                 BC2 = torch.cat([tb(AC_next).unsqueeze(-1), tb(BC)], dim=3)
 
@@ -100,15 +102,19 @@ class DepTree(_Struct):
             # if k == 1:
             arcs[k] = stack(
                 semiring.times(start, arc_scores[:, f[1], f[0]]),
-                semiring.times(start, arc_scores[:, f[0], f[1]])
+                semiring.times(start, arc_scores[:, f[0], f[1]]),
             )
             arcsL, arcR = arcs[k].unbind()
             # else:
             #     arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
             #                     semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
 
-            AIR2 = torch.cat([torch.narrow(AIR, 1, 0, N-k), arcR.unsqueeze(-1)], dim=2)
-            BIL2 = torch.cat([arcsL.unsqueeze(-1), torch.narrow(BIL, 1, 1, N-k)], dim=2)
+            AIR2 = torch.cat(
+                [torch.narrow(AIR, 1, 0, N - k), arcR.unsqueeze(-1)], dim=2
+            )
+            BIL2 = torch.cat(
+                [arcsL.unsqueeze(-1), torch.narrow(BIL, 1, 1, N - k)], dim=2
+            )
             AC_next = stack(semiring.dot(ACL, BIL2), semiring.dot(AIR2, BCR))
 
             ends.append(AC_next[R, :, 0])
