@@ -57,7 +57,7 @@ class _BaseLog(Semiring):
 
     @staticmethod
     def div_exp(a, b):
-        return a.exp().div(b.exp())
+        return (a - b).exp()
 
 
 class LogSemiring(_BaseLog):
