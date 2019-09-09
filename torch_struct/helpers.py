@@ -21,7 +21,7 @@ class _Struct:
         batch = potentials.shape[0]
         return torch.mul(potentials, parts).view(batch, -1).sum(-1)
 
-    def _make_chart(self, N, size, potentials, force_grad):
+    def _make_chart(self, N, size, potentials, force_grad=False):
         return [
             (
                 torch.zeros(*size)
@@ -66,6 +66,7 @@ class _Struct:
                             grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
 
             return DPManual.apply(edge)
+
     def marginals(self, edge, lengths=None, _autograd=True):
         """
         Compute the marginals of a structured model.

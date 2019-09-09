@@ -77,38 +77,81 @@ class DepTree(_Struct):
         def sstack(a):
             return torch.stack([a, a])
 
-        arcs = self._make_chart(N, (DIRS, batch, N), arc_scores, force_grad)
+        arcs = [self._make_chart(1, (DIRS, batch, N-k), arc_scores, force_grad)[0]
+                for k in range(N)]
+
 
         # Inside step. assumes first token is root symbol
         alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
         alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
+        k = 0
+        ACR = alpha[A][C][R, :, :N - k, :k-1]
+        BCL = alpha[B][C][L, :, k:N, N-k+1:]
+        BCR = alpha[B][C][R, :, k:N, N-k+1:]
+        ACL = alpha[A][C][R, :, :N - k, :k-1]
+        AIR = alpha[A][I][R, :, :N-k, 1:k]
+        BIL = alpha[B][I][L, :, k:N, N-k:N-1]
 
         for k in range(1, N):
             f = torch.arange(N - k), torch.arange(k, N)
-            arcs[k] = semiring.times(
-                sstack(
-                    semiring.sum(
-                        semiring.times(
-                            s(alpha[A][C], R, 0, N - k, 0, k),
-                            s(alpha[B][C], L, k, N, N - k, N),
-                        )
-                    )
-                ),
-                stack(arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]]),
-            )
-            alpha[A][I][:, :, : N - k, k] = arcs[k]
-            alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
-            alpha[A][C][:, :, : N - k, k] = semiring.dot(
-                stack(
-                    s(alpha[A][C], L, 0, N - k, 0, k),
-                    s(alpha[A][I], R, 0, N - k, 1, k + 1),
-                ),
-                stack(
-                    s(alpha[B][I], L, k, N, N - k - 1, N - 1),
-                    s(alpha[B][C], R, k, N, N - k, N),
-                ),
-            )
-            alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
+            ACR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            BCL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            ACL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            AIR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            BIL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            BCR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+
+            ACR2[:, :, :k-1] = ACR[:, :N-k, :k-1]
+            if k > 1:
+                ACR2[:, :, k-1] = ACR_next[:, :-1]
+            else:
+                ACR2[:, :, k-1] = alpha[A][C][R, :, :N - k, k-1]
+
+            BCL2[:, :, 1:] = BCL[:, 1:, :]
+            if k > 1:
+                BCL2[:, :, 0] = ACL_next[:, 1:]
+            else:
+                BCL2[:, :, 0] = alpha[B][C][L, :, k:N, N - k]
+
+            BCR2[:, :, 1:] = BCR[:, 1:, :]
+            if k > 1:
+                BCR2[:, :, 0] = ACR_next[:, 1:]
+            else:
+                BCR2[:, :, 0] = alpha[B][C][R, :, k:N, N - k]
+
+            ACL2[:, :, :k-1] = ACL[:, :N-k, :k-1]
+            if k > 1:
+                ACL2[:, :, k-1] = ACL_next[:, :-1]
+            else:
+                ACL2[:, :, k-1] = alpha[A][C][L, :, :N - k, k-1]
+
+
+            start = semiring.dot(BCL2, ACR2)
+            arcs[k][L] = semiring.times(start, arc_scores[:, f[1], f[0]])
+            arcs[k][R] = semiring.times(start, arc_scores[:, f[0], f[1]])
+
+            AIR_next = arcs[k][R]
+            BIL_next = arcs[k][L]
+            # alpha[A][I][:, :, : N - k, k] = arcs[k]
+            # alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
+
+            AIR2[:, :, :k-1] = AIR[:, :N-k, :k-1]
+            AIR2[:, :, k-1] = AIR_next
+
+            BIL2[:, :, 1:] = BIL[:, 1:, :k-1]
+            BIL2[:, :, 0] = BIL_next
+
+            ACL_next = semiring.dot(ACL2, BIL2)
+            ACR_next = semiring.dot(AIR2, BCR2)
+            alpha[A][C][:, :, : N - k, k] = stack(ACL_next, ACR_next)
+
+
+            ACR = ACR2
+            BCL = BCL2
+            ACL = ACL2
+            AIR = AIR2
+            BIL = BIL2
+            BCR = BCR2
 
         v = torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)])
         return (v, arcs[1:], alpha)
