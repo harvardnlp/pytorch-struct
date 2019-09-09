@@ -10,9 +10,10 @@ def _convert(logits):
     ).type_as(logits.data)
     new_logits.fill_(-1e9)
     new_logits[:, 1:, 1:] = logits
-    for i in range(0, logits.size(1)):
-        new_logits[:, 0, i + 1] = logits[:, i, i]
-        new_logits[:, i + 1, i + 1] = -1e9
+
+    N = logits.size(1)
+    new_logits[:, 0, 1:] = logits[:, torch.arange(N), torch.arange(N)]
+    new_logits[:, torch.arange(1, N), torch.arange(1, N)] = -1e9
     return new_logits
 
 
@@ -52,24 +53,6 @@ class DepTree(_Struct):
             self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
             for _ in range(2)
         ]
-        # Want to fix this slicing function.
-        # class MySlice(Function):
-        #     @staticmethod
-        #     def forward(ctx, alpha, beta, s1, s2, e, a, b, c, d):
-        #         indices = torch.tensor([s1, s2, e, a, b, c, d])
-        #         ctx.save_for_backward(indices)
-        #         return alpha[e, :, a:b, c:d]
-
-        #     @staticmethod
-        #     def backward(ctx, grad_v):
-        #         a, = ctx.saved_tensors
-        # itertools(a[2], :, a[3]:a[4], a[5]:a[6])
-        #         beta[a[0]][a[1]][a[2], :, a[3]:a[4], a[5]:a[6]] += grad_v
-        #         return None, None, None, None, None, None, None, None, None
-
-        # s = MySlice.apply
-        def s(input, e, a, b, c, d):
-            return input[e, :, a:b, c:d]
 
         def stack(a, b):
             return torch.stack([a, b])
@@ -79,7 +62,6 @@ class DepTree(_Struct):
 
         arcs = [self._make_chart(1, (DIRS, batch, N-k), arc_scores, force_grad)[0]
                 for k in range(N)]
-
 
         # Inside step. assumes first token is root symbol
         alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
@@ -93,35 +75,33 @@ class DepTree(_Struct):
             f = torch.arange(N - k), torch.arange(k, N)
 
             if k > 1:
-                # ACR2[:, :, :k-1] = torch.cat([ACR[:, :N-k, :k-1],
-                # ACR2[:, :, k-1] = ACR_next[:, :-1]]
-                ACR2 = torch.cat([ACR[:, :N-k, :k-1], ACR_next[:, :-1].unsqueeze(-1)],
+                ACR2 = torch.cat([ACR[:, :-1], ACR_next[:, :-1].unsqueeze(-1)],
                                  dim=2)
             else:
                 ACR2 = alpha[A][C][R, :, :N - k, :k]
 
             if k > 1:
-                ACL2 = torch.cat([ACL[:, :N-k, :k-1], ACL_next[:, :-1].unsqueeze(-1)],
+                ACL2 = torch.cat([ACL[:, :-1], ACL_next[:, :-1].unsqueeze(-1)],
                                              dim=2)
             else:
                 ACL2 = alpha[A][C][L, :, :N - k, :k]
 
             if k > 1:
-                BCL2 = torch.cat([ACL_next[:, 1:].unsqueeze(-1), BCL[:, 1:, :]], dim=2)
+                BCL2 = torch.cat([ACL_next[:, 1:].unsqueeze(-1), BCL[:, 1:]], dim=2)
             else:
-                BCL2 = alpha[B][C][L, :, k:N, N - k:]
+                BCL2 = alpha[B][C][L, :, k:, N - k:]
 
             if k > 1:
-                BCR2 = torch.cat([ACR_next[:, 1:].unsqueeze(-1), BCR[:, 1:, :]],dim=2)
+                BCR2 = torch.cat([ACR_next[:, 1:].unsqueeze(-1), BCR[:, 1:]],dim=2)
             else:
-                BCR2 = alpha[B][C][R, :, k:N, N-k:]
+                BCR2 = alpha[B][C][R, :, k:, N-k:]
 
             start = semiring.dot(BCL2, ACR2)
             arcs[k] = stack(semiring.times(start, arc_scores[:, f[1], f[0]]),
                             semiring.times(start, arc_scores[:, f[0], f[1]]))
 
-            AIR2 = torch.cat([AIR[:, :N-k, :k-1], arcs[k][R].unsqueeze(-1)], dim=2)
-            BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), BIL[:, 1:, :k-1]], dim=2)
+            AIR2 = torch.cat([AIR[:, :-1], arcs[k][R].unsqueeze(-1)], dim=2)
+            BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), BIL[:, 1:]], dim=2)
 
             ACL_next = semiring.dot(ACL2, BIL2)
             ACR_next = semiring.dot(AIR2, BCR2)
