@@ -24,9 +24,8 @@ def _unconvert(logits):
     ).type_as(logits.data)
     new_logits.fill_(-1e9)
     new_logits[:, :, :] = logits[:, 1:, 1:]
-    for i in range(0, new_logits.size(1)):
-        new_logits[:, i, i] = logits[:, 0, i + 1]
-
+    N = new_logits.size(1)
+    new_logits[:, torch.arange(N), torch.arange(N)] = logits[:, 0, 1:]
     return new_logits
 
 
@@ -83,13 +82,13 @@ class DepTree(_Struct):
                 BC2 = torch.cat([AC_next[:, :, 1:].unsqueeze(-1), BC[:, :, 1:]], dim=3)
 
             start = semiring.dot(BC2[L], AC2[R])
-            if k == 1:
-                arcs[k] = stack(semiring.times(start,   arc_scores[:, f[1], f[0]]),
-                                semiring.times(start, arc_scores[:, f[0], f[1]]))
+            # if k == 1:
+            arcs[k] = stack(semiring.times(start,   arc_scores[:, f[1], f[0]]),
+                            semiring.times(start, arc_scores[:, f[0], f[1]]))
 
-            else:
-                arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
-                                semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
+            # else:
+            #     arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
+            #                     semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
 
             AIR2 = torch.cat([AIR[:, :-1], arcs[k][R].unsqueeze(-1)], dim=2)
             BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), BIL[:, 1:]], dim=2)
@@ -219,11 +218,18 @@ class DepTree(_Struct):
     def _arrange_marginals(self, grads):
         batch, N = grads[0][0].shape
         N = N + 1
-        ret = torch.zeros(batch, N, N).cpu()
+
+        ret = torch.zeros(batch, N, N).type_as(grads[0][0])
+        # for k in torch.arange(N):
+        #     f = torch.arange(N - k), torch.arange(k, N)
+        #     ret[:, f[1], k] = grad[L][:, k, f[0]]
+        #     ret[:, k, f[1]] = grad[L][:, k, f[0]]
+
+        # ret = torch.zeros(batch, N, N).cpu()
         for k, grad in enumerate(grads, 1):
             f = torch.arange(N - k), torch.arange(k, N)
-            ret[:, f[0], f[1]] = grad[R].cpu()
-            ret[:, f[1], f[0]] = grad[L].cpu()
+            ret[:, f[0], f[1]] = grad[R]
+            ret[:, f[1], f[0]] = grad[L]
         return _unconvert(ret)
 
     @staticmethod
