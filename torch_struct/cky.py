@@ -231,7 +231,6 @@ class CKY(_Struct):
                 b, torch.arange(lengths[b]), torch.arange(lengths[b]), NT:
             ]
             cover = spans[b].nonzero()
-
             left = {i: [] for i in range(N)}
             right = {i: [] for i in range(N)}
             for i in range(cover.shape[0]):
@@ -245,9 +244,11 @@ class CKY(_Struct):
                     for C_p, k_2, b_span in right[j]:
                         if k_2 == k + 1 and a_span + b_span == j - i + 1:
                             B, C = B_p, C_p
+                            k_final = k
                             break
                 if j > i:
                     assert B is not None, "%s" % ((i, j, left[i], right[j], cover),)
+
                     rules[b, A, B, C] += 1
         return terms, rules, roots
 
@@ -255,7 +256,7 @@ class CKY(_Struct):
     def from_parts(chart):
         terms, rules, roots = chart
         batch, N, N, NT, S, S = rules.shape
-        spans = torch.zeros(batch, N, N, S)
+        spans = torch.zeros(batch, N, N, S).type_as(chart)
         rules = rules.sum(dim=-1).sum(dim=-1)
 
         for n in range(N):
@@ -264,6 +265,46 @@ class CKY(_Struct):
             ]
         spans[:, torch.arange(N), torch.arange(N), NT:] = terms
         return spans, (NT, S - NT)
+
+    @staticmethod
+    def _intermediary()
+        batch, N = spans.shape[:2]
+        splits = []
+        for b in range(batch):
+            cover = spans[b].nonzero()
+            left = {i: [] for i in range(N)}
+            right = {i: [] for i in range(N)}
+            batch_split = {}
+            for i in range(cover.shape[0]):
+                i, j, A = cover[i].tolist()
+                left[i].append((A, j, j - i + 1))
+                right[j].append((A, i, j - i + 1))
+            for i in range(cover.shape[0]):
+                i, j, A = cover[i].tolist()
+                B = None
+                for B_p, k, a_span in left[i]:
+                    for C_p, k_2, b_span in right[j]:
+                        if k_2 == k + 1 and a_span + b_span == j - i + 1:
+                            B, C = B_p, C_p
+                            k_final = k
+                            break
+                if j > i:
+                    batch_split[(i, j)] =k
+            splits.append(batch_split)
+        return splits
+
+    @classmethod
+    def to_networkx(cls, spans):
+        import networkx as nx
+        G = nx.DiGraph()
+        batch, _ = spans.shape
+        for b in range(batch):
+            for n in spans[0].nonzero():
+                G.add_node((b, n[0], n[1]), label=n[2])
+            for k, v in splits[0].items():
+                G.add_edge(k, (b, k[0],v))
+                G.add_edge(k, (b, v+1, k[1]))
+        return G
 
     ###### Test
 
