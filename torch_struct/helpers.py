@@ -22,8 +22,7 @@ class _Struct:
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [
             (
-                torch.zeros(*size)
-                .type_as(potentials)
+                torch.zeros(*size, dtype=potentials.dtype, device=potentials.device)
                 .fill_(self.semiring.zero())
                 .requires_grad_(force_grad and not potentials.requires_grad)
             )

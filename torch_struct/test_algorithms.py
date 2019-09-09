@@ -114,7 +114,7 @@ def test_generic_lengths(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
     model = data.draw(
-        sampled_from([DepTree])
+        sampled_from([DepTree, CKY])
     )  # LinearChain, SemiMarkov, DepTree, CKY]))
     struct = model()
     torch.manual_seed(seed)
