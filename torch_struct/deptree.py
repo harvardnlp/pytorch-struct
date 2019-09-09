@@ -85,67 +85,57 @@ class DepTree(_Struct):
         alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
         alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
         k = 0
-        ACR = alpha[A][C][R, :, :N - k, :k-1]
-        BCL = alpha[B][C][L, :, k:N, N-k+1:]
-        BCR = alpha[B][C][R, :, k:N, N-k+1:]
-        ACL = alpha[A][C][R, :, :N - k, :k-1]
+
         AIR = alpha[A][I][R, :, :N-k, 1:k]
         BIL = alpha[B][I][L, :, k:N, N-k:N-1]
 
         for k in range(1, N):
             f = torch.arange(N - k), torch.arange(k, N)
-            ACR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
-            BCL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
-            ACL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
-            AIR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
-            BIL2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
-            BCR2 = self._make_chart(1, (batch, N-k, k), arc_scores)[0]
+            (ACR2,
+             BCL2,
+             ACL2,
+             AIR2,
+             BIL2,
+             BCR2) = self._make_chart(6, (batch, N-k, k), arc_scores)
 
-            ACR2[:, :, :k-1] = ACR[:, :N-k, :k-1]
             if k > 1:
+                ACR2[:, :, :k-1] = ACR[:, :N-k, :k-1]
                 ACR2[:, :, k-1] = ACR_next[:, :-1]
             else:
-                ACR2[:, :, k-1] = alpha[A][C][R, :, :N - k, k-1]
+                ACR2[:] = alpha[A][C][R, :, :N - k, :k]
 
-            BCL2[:, :, 1:] = BCL[:, 1:, :]
             if k > 1:
-                BCL2[:, :, 0] = ACL_next[:, 1:]
-            else:
-                BCL2[:, :, 0] = alpha[B][C][L, :, k:N, N - k]
-
-            BCR2[:, :, 1:] = BCR[:, 1:, :]
-            if k > 1:
-                BCR2[:, :, 0] = ACR_next[:, 1:]
-            else:
-                BCR2[:, :, 0] = alpha[B][C][R, :, k:N, N - k]
-
-            ACL2[:, :, :k-1] = ACL[:, :N-k, :k-1]
-            if k > 1:
+                ACL2[:, :, :k-1] = ACL[:, :N-k, :k-1]
                 ACL2[:, :, k-1] = ACL_next[:, :-1]
             else:
-                ACL2[:, :, k-1] = alpha[A][C][L, :, :N - k, k-1]
+                ACL2[:] = alpha[A][C][L, :, :N - k, :k]
 
+            if k > 1:
+                BCL2[:, :, 1:] = BCL[:, 1:, :]
+                BCL2[:, :, 0] = ACL_next[:, 1:]
+            else:
+                BCL2[:] = alpha[B][C][L, :, k:N, N - k:]
+
+            if k > 1:
+                BCR2[:, :, 1:] = BCR[:, 1:, :]
+                BCR2[:, :, 0] = ACR_next[:, 1:]
+            else:
+                BCR2[:] = alpha[B][C][R, :, k:N, N-k:]
 
             start = semiring.dot(BCL2, ACR2)
-            arcs[k][L] = semiring.times(start, arc_scores[:, f[1], f[0]])
-            arcs[k][R] = semiring.times(start, arc_scores[:, f[0], f[1]])
-
-            AIR_next = arcs[k][R]
-            BIL_next = arcs[k][L]
-            # alpha[A][I][:, :, : N - k, k] = arcs[k]
-            # alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
+            arcs[k] = stack(semiring.times(start, arc_scores[:, f[1], f[0]]),
+                            semiring.times(start, arc_scores[:, f[0], f[1]]))
 
             AIR2[:, :, :k-1] = AIR[:, :N-k, :k-1]
-            AIR2[:, :, k-1] = AIR_next
+            AIR2[:, :, k-1] = arcs[k][R]
 
             BIL2[:, :, 1:] = BIL[:, 1:, :k-1]
-            BIL2[:, :, 0] = BIL_next
+            BIL2[:, :, 0] = arcs[k][L]
 
             ACL_next = semiring.dot(ACL2, BIL2)
             ACR_next = semiring.dot(AIR2, BCR2)
-            alpha[A][C][:, :, : N - k, k] = stack(ACL_next, ACR_next)
 
-
+            alpha[A][C][R, :, : N - k, k] = ACR_next
             ACR = ACR2
             BCL = BCL2
             ACL = ACL2
