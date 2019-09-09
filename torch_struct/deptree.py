@@ -21,7 +21,9 @@ def _unconvert(logits):
     "Move root arcs to diagonal"
     new_logits = torch.zeros(
         logits.size(0), logits.size(1) - 1, logits.size(2) - 1,
-        dtype=logits.dtype
+        dtype=logits.dtype,
+        device=logits.device
+
     )
 
     new_logits.fill_(-1e9)
@@ -221,8 +223,7 @@ class DepTree(_Struct):
         batch, N = grads[0][0].shape
         N = N + 1
 
-        ret = torch.zeros(batch, N, N, dtype=grads[0][0].dtype)
-        print(ret.type(), grads[0][0].dtype, grads[0][0].type())
+        ret = torch.zeros(batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device)
         # for k in torch.arange(N):
         #     f = torch.arange(N - k), torch.arange(k, N)
         #     ret[:, f[1], k] = grad[L][:, k, f[0]]
