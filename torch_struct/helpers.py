@@ -3,12 +3,12 @@ from .semirings import LogSemiring
 from torch.autograd import Function
 
 
-def roll(a, b, N, k, gap=0):
-    return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
+# def roll(a, b, N, k, gap=0):
+#     return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
 
 
-def roll2(a, b, N, k, gap=0):
-    return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
+# def roll2(a, b, N, k, gap=0):
+#     return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
 
 
 class _Struct:
@@ -22,8 +22,7 @@ class _Struct:
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [
             (
-                torch.zeros(*size)
-                .type_as(potentials)
+                torch.zeros(*size, dtype=potentials.dtype, device=potentials.device)
                 .fill_(self.semiring.zero())
                 .requires_grad_(force_grad and not potentials.requires_grad)
             )
@@ -76,12 +75,12 @@ class _Struct:
             marginals: b x (N-1) x C x C table
 
         """
-        v, edges, alpha = self._dp(edge, lengths=lengths, force_grad=True)
         if (
             _autograd
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
+            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             marg = torch.autograd.grad(
                 v.sum(dim=0),
                 edges,
@@ -91,4 +90,5 @@ class _Struct:
             )
             return self._arrange_marginals(marg)
         else:
+            v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)

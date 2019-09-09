@@ -45,7 +45,7 @@ class CKY(_Struct):
         if _autograd or self.semiring is not LogSemiring:
             return self._dp(scores, lengths)[0]
         else:
-            return DPManual2.apply(self, *scores, lengths)
+            return DPManual2.apply(self, *scores, lengths=lengths)
 
     def _dp(self, scores, lengths=None, force_grad=False):
         terms, rules, roots = scores
@@ -67,14 +67,29 @@ class CKY(_Struct):
         term_use[:] = terms + 0.0
         beta[A][:, :, 0, NT:] = term_use
         beta[B][:, :, N - 1, NT:] = term_use
+        X_Y_Z = rules.view(batch, 1, NT, S, S)[:, :, :, :NT, :NT]
+        X_Y_Z1 = rules.view(batch, 1, NT, S, S)[:, :, :, :NT, NT:]
+        X_Y1_Z = rules.view(batch, 1, NT, S, S)[:, :, :, NT:, :NT]
+        X_Y1_Z1 = rules.view(batch, 1, NT, S, S)[:, :, :, NT:, NT:]
         for w in range(1, N):
-            Y = beta[A][:, : N - w, :w, :].view(batch, N - w, w, 1, S, 1)
-            Z = beta[B][:, w:, N - w :, :].view(batch, N - w, w, 1, 1, S)
-            Y, Z = Y.clone(), Z.clone()
-            X_Y_Z = rules.view(batch, 1, NT, S, S)
-            rule_use[w - 1][:] = semiring.times(
+            Y = beta[A][:, : N - w, :w, :NT].view(batch, N - w, w, 1, NT, 1)
+            Z = beta[B][:, w:, N - w :, :NT].view(batch, N - w, w, 1, 1, NT)
+            rule_use[w - 1][:, :, :, :NT, :NT] = semiring.times(
                 semiring.sum(semiring.times(Y, Z), dim=2), X_Y_Z
             )
+            Y = beta[A][:, : N - w, w - 1, :NT].view(batch, N - w, 1, NT, 1)
+            Z = beta[B][:, w:, N - 1, NT:].view(batch, N - w, 1, 1, T)
+            rule_use[w - 1][:, :, :, :NT, NT:] = semiring.times(Y, Z, X_Y_Z1)
+
+            Y = beta[A][:, : N - w, 0, NT:].view(batch, N - w, 1, T, 1)
+            Z = beta[B][:, w:, N - w, :NT].view(batch, N - w, 1, 1, NT)
+            rule_use[w - 1][:, :, :, NT:, :NT] = semiring.times(Y, Z, X_Y1_Z)
+
+            if w == 1:
+                Y = beta[A][:, : N - w, w - 1, NT:].view(batch, N - w, 1, T, 1)
+                Z = beta[B][:, w:, N - w, NT:].view(batch, N - w, 1, 1, T)
+                rule_use[w - 1][:, :, :, NT:, NT:] = semiring.times(Y, Z, X_Y1_Z1)
+
             rulesmid = rule_use[w - 1].view(batch, N - w, NT, S * S)
             span[w] = semiring.sum(rulesmid, dim=3)
             beta[A][:, : N - w, w, :NT] = span[w]
