@@ -75,12 +75,12 @@ class _Struct:
             marginals: b x (N-1) x C x C table
 
         """
-        v, edges, alpha = self._dp(edge, lengths=lengths, force_grad=True)
         if (
             _autograd
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
+            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             marg = torch.autograd.grad(
                 v.sum(dim=0),
                 edges,
@@ -90,4 +90,5 @@ class _Struct:
             )
             return self._arrange_marginals(marg)
         else:
+            v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)
