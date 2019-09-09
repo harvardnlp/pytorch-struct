@@ -3,12 +3,12 @@ from .semirings import LogSemiring
 from torch.autograd import Function
 
 
-def roll(a, b, N, k, gap=0):
-    return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
+# def roll(a, b, N, k, gap=0):
+#     return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
 
 
-def roll2(a, b, N, k, gap=0):
-    return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
+# def roll2(a, b, N, k, gap=0):
+#     return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
 
 
 class _Struct:

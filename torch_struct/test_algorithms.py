@@ -59,11 +59,11 @@ def test_generic_a(data):
     print(alpha, count)
     assert torch.isclose(count[0], alpha[0])
 
-    # vals, _ = model._rand()
-    # struct = model(MaxSemiring)
-    # score = struct.sum(vals)
-    # marginals = struct.marginals(vals)
-    # assert torch.isclose(score, struct.score(vals, marginals)).all()
+    vals, _ = model._rand()
+    struct = model(MaxSemiring)
+    score = struct.sum(vals)
+    marginals = struct.marginals(vals)
+    assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
 @given(data(), integers(min_value=1, max_value=10))
