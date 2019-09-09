@@ -83,8 +83,8 @@ class DepTree(_Struct):
                 BC2 = torch.cat([AC_next[:, :, 1:].unsqueeze(-1), BC[:, :, 1:]], dim=3)
 
             start = semiring.dot(BC2[L], AC2[R])
-            arcs[k] = stack(semiring.times(start, arc_scores[:, f[1], f[0]]),
-                            semiring.times(start, arc_scores[:, f[0], f[1]]))
+            arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
+                            semiring.times(start))  #, arc_scores[:, f[0], f[1]]))
 
             AIR2 = torch.cat([AIR[:, :-1], arcs[k][R].unsqueeze(-1)], dim=2)
             BIL2 = torch.cat([arcs[k][L].unsqueeze(-1), BIL[:, 1:]], dim=2)
