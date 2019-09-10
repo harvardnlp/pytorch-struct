@@ -49,20 +49,18 @@ class DepTree(_Struct):
     def _dp(self, arc_scores, lengths=None, force_grad=False):
         semiring = self.semiring
         arc_scores = _convert(arc_scores)
-        batch, N, lengths = self._check_potentials(arc_scores, lengths)
-
+        arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         DIRS = 2
-
         alpha = [
             self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
             for _ in range(2)
         ]
 
         def stack(a, b):
-            return torch.stack([a, b])
+            return torch.stack([a, b], dim=1)
 
         def sstack(a):
-            return torch.stack([a, a])
+            return torch.stack([a, a], dim=1)
 
         arcs = [
             self._make_chart(1, (DIRS, batch, N - k), arc_scores, force_grad)[0]
@@ -70,61 +68,61 @@ class DepTree(_Struct):
         ]
 
         # Inside step. assumes first token is root symbol
-        alpha[A][C][:, :, :, 0].data.fill_(semiring.one())
-        alpha[B][C][:, :, :, -1].data.fill_(semiring.one())
+        semiring.one_(alpha[A][C][:, :, :, :, 0].data)
+        semiring.one_(alpha[B][C][:, :, :, :, -1].data)
         k = 0
 
-        AIR = alpha[A][I][R, :, : N - k, 1:k]
-        BIL = alpha[B][I][L, :, k:N, N - k : N - 1]
+        AIR = alpha[A][I][:, R, :, : N - k, 1:k]
+        BIL = alpha[B][I][:, L, :, k:N, N - k : N - 1]
         k = 1
-        AC2 = alpha[A][C][:, :, : N - k, :k]
-        BC2 = alpha[B][C][:, :, k:, N - k :]
+        AC2 = alpha[A][C][:, :, :, : N - k, :k]
+        BC2 = alpha[B][C][:, :, :, k:, N - k :]
         AC, BC, AC_next = None, None, None
 
         ends = [None]
         for k in range(1, N):
 
             def tf(a):
-                return torch.narrow(a, 2, 0, N - k)
+                return torch.narrow(a, 3, 0, N - k)
 
             def tb(a):
-                return torch.narrow(a, 2, 1, N - k)
+                return torch.narrow(a, 3, 1, N - k)
 
             f = torch.arange(N - k), torch.arange(k, N)
             if k > 1:
-                AC2 = torch.cat([tf(AC), tf(AC_next).unsqueeze(-1)], dim=3)
+                AC2 = torch.cat([tf(AC), tf(AC_next).unsqueeze(-1)], dim=4)
             if k > 1:
-                BC2 = torch.cat([tb(AC_next).unsqueeze(-1), tb(BC)], dim=3)
+                BC2 = torch.cat([tb(AC_next).unsqueeze(-1), tb(BC)], dim=4)
 
-            ACL, ACR = AC2.unbind()
-            BCL, BCR = BC2.unbind()
+            ACL, ACR = AC2.unbind(dim=1)
+            BCL, BCR = BC2.unbind(dim=1)
             start = semiring.dot(BCL, ACR)
             # if k == 1:
             arcs[k] = stack(
-                semiring.times(start, arc_scores[:, f[1], f[0]]),
-                semiring.times(start, arc_scores[:, f[0], f[1]]),
+                semiring.times(start, arc_scores[:, :, f[1], f[0]]),
+                semiring.times(start, arc_scores[:, :, f[0], f[1]]),
             )
-            arcsL, arcR = arcs[k].unbind()
+            arcsL, arcR = arcs[k].unbind(dim=1)
             # else:
             #     arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
             #                     semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
 
             AIR2 = torch.cat(
-                [torch.narrow(AIR, 1, 0, N - k), arcR.unsqueeze(-1)], dim=2
+                [torch.narrow(AIR, 2, 0, N - k), arcR.unsqueeze(-1)], dim=3
             )
             BIL2 = torch.cat(
-                [arcsL.unsqueeze(-1), torch.narrow(BIL, 1, 1, N - k)], dim=2
+                [arcsL.unsqueeze(-1), torch.narrow(BIL, 2, 1, N - k)], dim=3
             )
             AC_next = stack(semiring.dot(ACL, BIL2), semiring.dot(AIR2, BCR))
 
-            ends.append(AC_next[R, :, 0])
+            ends.append(AC_next[:, R, :, 0])
             AC = AC2
             BC = BC2
             AIR = AIR2
             BIL = BIL2
-        v = torch.stack([ends[l][i] for i, l in enumerate(lengths)])
+        v = torch.stack([ends[l][:, i] for i, l in enumerate(lengths)], dim=1)
         # v = torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)])
-        return (v, arcs[1:], alpha)
+        return (semiring.unconvert(v), arcs[1:], alpha)
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
@@ -133,11 +131,12 @@ class DepTree(_Struct):
         if lengths is None:
             lengths = torch.LongTensor([N - 1] * batch)
         assert max(lengths) <= N, "Length longer than N"
+        arc_scores = semiring.convert(arc_scores)
         for b in range(batch):
-            arc_scores[b, lengths[b] + 1 :, :] = semiring.zero()
-            arc_scores[b, :, lengths[b] + 1 :] = semiring.zero()
+            semiring.zero_(arc_scores[:, b, lengths[b] + 1 :, :])
+            semiring.zero_(arc_scores[:, b, :, lengths[b] + 1 :])
 
-        return batch, N, lengths
+        return arc_scores, batch, N, lengths
 
     # def _dp_backward(self, arc_scores, lengths, alpha_in, v=None, force_grad=False):
 
@@ -239,7 +238,7 @@ class DepTree(_Struct):
     #     return _unconvert(ret)
 
     def _arrange_marginals(self, grads):
-        batch, N = grads[0][0].shape
+        _, batch, N = grads[0][0].shape
         N = N + 1
 
         ret = torch.zeros(
@@ -252,6 +251,7 @@ class DepTree(_Struct):
 
         # ret = torch.zeros(batch, N, N).cpu()
         for k, grad in enumerate(grads, 1):
+            grad = self.semiring.unconvert(grad)
             f = torch.arange(N - k), torch.arange(k, N)
             ret[:, f[0], f[1]] = grad[R]
             ret[:, f[1], f[0]] = grad[L]
@@ -320,7 +320,7 @@ class DepTree(_Struct):
             parses.append(
                 semiring.times(*[arc_scores[:, parse[i], i] for i in range(1, N, 1)])
             )
-        return semiring.sum(torch.stack(parses, dim=-1))
+        return semiring.sum(torch.stack(parses, dim=-1)), None
 
 
 def deptree_nonproj(arc_scores, eps=1e-5):

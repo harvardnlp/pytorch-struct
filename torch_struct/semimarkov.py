@@ -7,35 +7,43 @@ class SemiMarkov(_Struct):
     edge : b x N x K x C x C semimarkov potentials
     """
 
-    def _dp(self, edge, lengths=None, force_grad=False):
-        semiring = self.semiring
+    def _check_potentials(self, edge, lengths=None):
         batch, N_1, K, C, C2 = edge.shape
+        edge = self.semiring.convert(edge)
         N = N_1 + 1
         if lengths is None:
             lengths = torch.LongTensor([N] * batch)
         assert max(lengths) <= N, "Length longer than edge scores"
         assert max(lengths) == N, "At least one in batch must be length N"
         assert C == C2, "Transition shape doesn't match"
+        return edge, batch, N, K, C, lengths
+
+    def _dp(self, edge, lengths=None, force_grad=False):
+        semiring = self.semiring
+        ssize = semiring.size()
+        edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
 
         spans = self._make_chart(N - 1, (batch, K, C, C), edge, force_grad)
         alpha = self._make_chart(N, (batch, K, C), edge, force_grad)
         beta = self._make_chart(N, (batch, C), edge, force_grad)
-        beta[0].data.fill_(semiring.one())
+        semiring.one_(beta[0].data)
         for n in range(1, N):
             spans[n - 1][:] = semiring.times(
-                beta[n - 1].view(batch, 1, 1, C), edge[:, n - 1].view(batch, K, C, C)
+                beta[n - 1].view(ssize, batch, 1, 1, C),
+                edge[:, :, n - 1].view(ssize, batch, K, C, C),
             )
             alpha[n - 1][:] = semiring.sum(spans[n - 1])
             t = max(n - K, -1)
             f1 = torch.arange(n - 1, t, -1)
             f2 = torch.arange(1, len(f1) + 1)
-            print(n - 1, f1, f2)
             beta[n][:] = semiring.sum(
-                torch.stack([alpha[a][:, b] for a, b in zip(f1, f2)]), dim=0
+                torch.stack([alpha[a][:, :, b] for a, b in zip(f1, f2)], dim=1), dim=1
             )
         v = semiring.sum(
-            torch.stack([beta[l - 1][i] for i, l in enumerate(lengths)]), dim=1
+            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1),
+            dim=2,
         )
+        v = semiring.unconvert(v)
         return v, spans, beta
 
     @staticmethod
@@ -47,7 +55,7 @@ class SemiMarkov(_Struct):
         return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
 
     def _arrange_marginals(self, marg):
-        return torch.stack(marg, dim=1)
+        return torch.stack(marg, dim=2)
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
@@ -109,10 +117,12 @@ class SemiMarkov(_Struct):
     # Tests
     def enumerate(self, edge):
         semiring = self.semiring
+        ssize = semiring.size()
         batch, N, K, C, _ = edge.shape
+        edge = semiring.convert(edge)
         chains = {}
         chains[0] = [
-            ([(c, 0)], torch.zeros(batch).fill_(semiring.one())) for c in range(C)
+            ([(c, 0)], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)
         ]
 
         for n in range(1, N + 1):
@@ -125,7 +135,10 @@ class SemiMarkov(_Struct):
                         chains[n].append(
                             (
                                 chain + [(c, k)],
-                                semiring.mul(score, edge[:, n - k, k, c, chain[-1][0]]),
+                                semiring.mul(
+                                    score, edge[:, :, n - k, k, c, chain[-1][0]]
+                                ),
                             )
                         )
-        return semiring.sum(torch.stack([s for (_, s) in chains[N]]), dim=0)
+        ls = [s for (_, s) in chains[N]]
+        return semiring.unconvert(semiring.sum(torch.stack(ls, dim=1), dim=1)), ls
