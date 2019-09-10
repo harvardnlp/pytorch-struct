@@ -17,14 +17,18 @@ class _Struct:
 
     def score(self, potentials, parts):
         batch = potentials.shape[0]
-        return torch.mul(potentials, parts).view(batch, -1).sum(-1)
+        return self.semiring.prod(torch.mul(potentials, parts).view(batch, -1))
 
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [
             (
-                torch.zeros(*size, dtype=potentials.dtype, device=potentials.device)
-                .fill_(self.semiring.zero())
-                .requires_grad_(force_grad and not potentials.requires_grad)
+                self.semiring.zero_(
+                    torch.zeros(
+                        *((self.semiring.size(),) + size),
+                        dtype=potentials.dtype,
+                        device=potentials.device
+                    )
+                ).requires_grad_(force_grad and not potentials.requires_grad)
             )
             for _ in range(N)
         ]
@@ -88,7 +92,7 @@ class _Struct:
                 only_inputs=True,
                 allow_unused=False,
             )
-            return self._arrange_marginals(marg)
+            return self.semiring.unconvert(self._arrange_marginals(marg))
         else:
             v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)
