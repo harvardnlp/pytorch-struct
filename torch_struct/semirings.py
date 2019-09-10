@@ -66,12 +66,14 @@ class EntropySemiring(Semiring):
     def size():
         return 2
 
+    @staticmethod
     def convert(xs):
         values = torch.zeros((2,) + xs.shape).type_as(xs)
         values[0] = xs
         values[1] = 0
         return values
 
+    @staticmethod
     def unconvert(xs):
         return xs[1]
 
