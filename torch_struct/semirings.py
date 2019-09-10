@@ -181,7 +181,10 @@ class SampledSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return _SampledLogSumExp.apply(xs, dim)
 
+
 bits = [pow(2, i) for i in range(17)]
+
+
 class _MultiSampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):
@@ -197,8 +200,15 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             s = torch.distributions.OneHotCategorical(logits=logits).sample((16,))
             final = grad_output % 2
             on = [grad_output % bits[i] for i in range(17)]
-            grad_input = sum([bits[i] * s[i].masked_fill_((on[i+1] - on[i] + final ==0).unsqueeze(dim), 0)
-                              for i in range(16)])
+            grad_input = sum(
+                [
+                    bits[i]
+                    * s[i].masked_fill_(
+                        (on[i + 1] - on[i] + final == 0).unsqueeze(dim), 0
+                    )
+                    for i in range(16)
+                ]
+            )
         return grad_input, None
 
 
@@ -209,5 +219,4 @@ class MultiSampledSemiring(_BaseLog):
 
     @staticmethod
     def to_discrete(xs, i):
-        return (xs % bits[i+1] - xs % bits[i] != 0).type_as(xs)
-
+        return (xs % bits[i + 1] - xs % bits[i] != 0).type_as(xs)
