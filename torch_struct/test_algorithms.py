@@ -8,6 +8,7 @@ from .semirings import (
     StdSemiring,
     SampledSemiring,
     EntropySemiring,
+    MultiSampledSemiring
 )
 import torch
 from hypothesis import given, settings
@@ -24,9 +25,10 @@ def test_simple(batch, N, C):
     semiring = StdSemiring
     alpha = LinearChain(semiring).sum(vals)
     assert (alpha == pow(C, N + 1)).all()
-    LinearChain(SampledSemiring).sum(vals)
-
-
+    x = LinearChain(MultiSampledSemiring).marginals(vals)
+    print(MultiSampledSemiring.to_discrete(x, 1))
+    print(MultiSampledSemiring.to_discrete(x, 2))
+    assert(False)
 # def test_fb_m():
 #     vals = torch.rand(2, 4, 5, 5)
 #     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
