@@ -1,3 +1,3 @@
-from .TreeLSTM import TreeLSTM
+from .TreeLSTM import TreeLSTMCell
 
-__all__ = [TreeLSTM]
+__all__ = [TreeLSTMCell]
