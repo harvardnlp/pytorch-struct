@@ -52,10 +52,11 @@ def test_networkx(data):
     )
     struct = model(SampledSemiring)
     marginals = struct.marginals(vals, lengths=lengths)
-    print(marginals[0][0].nonzero())
-
     spans = CKY.from_parts(marginals)[0]
-    CKY.to_networkx(spans)
+    print(spans[0].nonzero())
+    g, indices = CKY.to_networkx(spans)
+    for b in range(batch):
+        assert len(list(g.neighbors(indices[(b, 0, lengths[b].item()-1)]))) == 2, "%s %s"%(b, lengths[b].item()-1)
 
 # def test_fb_m():
 #     vals = torch.rand(2, 4, 5, 5)

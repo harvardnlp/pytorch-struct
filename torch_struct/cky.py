@@ -279,7 +279,6 @@ class CKY(_Struct):
             spans[:, torch.arange(N - n - 1), torch.arange(n + 1, N), :NT] = rules[
                 :, n, torch.arange(N - n - 1)
             ]
-        print(terms.nonzero())
         spans[:, torch.arange(N), torch.arange(N), NT:] = terms
         return spans, (NT, S - NT)
 
@@ -324,7 +323,6 @@ class CKY(_Struct):
         batch = spans.shape[0]
         cur = 0
         indices = {}
-
         for n in spans.nonzero():
             indices[(n[0].item(), n[1].item(), n[2].item())] = cur
             G.add_node(cur, label=n[3].item())
