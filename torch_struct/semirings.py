@@ -170,7 +170,7 @@ class _SampledLogSumExp(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             if dim == -1:
                 s = torch.distributions.OneHotCategorical(
-                    logits
+                    logits=logits
                 ).sample()
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
