@@ -294,10 +294,10 @@ class CKY(_Struct):
             left[b, i].append((A, j, j - i + 1))
             right[b, j].append((A, i, j - i + 1))
 
-        b_final = None
-        c_final = None
         for x in range(cover.shape[0]):
             b, i, j, A = cover[x].tolist()
+            b_final = None
+            c_final = None
             for B_p, k, a_span in left.get((b,i), []):
                 if k >j: continue
                 for C_p, k_2, b_span in right.get((b,j), []):
