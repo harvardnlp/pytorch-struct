@@ -316,7 +316,7 @@ class CKY(_Struct):
         cur = 0
         indices = {}
         for b in range(batch):
-            for n in spans[0].nonzero():
+            for n in spans[b].nonzero():
                 indices[(b, n[0].item(), n[1].item())] = cur
                 G.add_node(cur, label=n[2].item())
                 cur += 1
