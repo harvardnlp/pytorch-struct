@@ -20,6 +20,7 @@ lint = integers(min_value=2, max_value=10)
 
 
 @given(smint, smint, smint)
+@settings(max_examples=50, deadline=None)
 def test_simple(batch, N, C):
     vals = torch.ones(batch, N, C, C)
     semiring = StdSemiring
@@ -28,18 +29,34 @@ def test_simple(batch, N, C):
     x = LinearChain(SampledSemiring).marginals(vals)
 
     x = LinearChain(MultiSampledSemiring).marginals(vals)
-    print(MultiSampledSemiring.to_discrete(x, 1))
-    print(MultiSampledSemiring.to_discrete(x, 2))
+    #print(MultiSampledSemiring.to_discrete(x, 1))
+    #print(MultiSampledSemiring.to_discrete(x, 2))
 
+@given(data())
+@settings(max_examples=50, deadline=None)
+def test_networkx(data):
+    batch = 5
+    N = 10
+    NT = 5
+    T = 5
 
-def test_networkx():
+    torch.manual_seed(0)
+
+    terms = torch.rand(batch, N, T)
+    rules = torch.rand(batch, NT, (NT + T), (NT + T))
+    roots = torch.rand(batch, NT)
+    vals = (terms, rules, roots)
     model = CKY
-    vals, _ = model._rand()
+    lengths = torch.tensor(
+        [data.draw(integers(min_value=3, max_value=N)) for b in range(batch - 1)] + [N]
+    )
     struct = model(SampledSemiring)
-    score = struct.sum(vals)
-    marginals = struct.marginals(vals)
+    marginals = struct.marginals(vals, lengths=lengths)
+    print(marginals[0][0].nonzero())
+
     spans = CKY.from_parts(marginals)[0]
     CKY.to_networkx(spans)
+
 # def test_fb_m():
 #     vals = torch.rand(2, 4, 5, 5)
 #     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)

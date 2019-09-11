@@ -263,7 +263,6 @@ class CKY(_Struct):
                             break
                 if j > i:
                     assert B is not None, "%s" % ((i, j, left[i], right[j], cover),)
-
                     rules[b, A, B, C] += 1
         return terms, rules, roots
 
@@ -271,6 +270,8 @@ class CKY(_Struct):
     def from_parts(chart):
         terms, rules, roots = chart
         batch, N, N, NT, S, S = rules.shape
+        assert terms.shape[1] == N
+
         spans = torch.zeros(batch, N, N, S).type_as(terms)
         rules = rules.sum(dim=-1).sum(dim=-1)
 
@@ -278,6 +279,7 @@ class CKY(_Struct):
             spans[:, torch.arange(N - n - 1), torch.arange(n + 1, N), :NT] = rules[
                 :, n, torch.arange(N - n - 1)
             ]
+        print(terms.nonzero())
         spans[:, torch.arange(N), torch.arange(N), NT:] = terms
         return spans, (NT, S - NT)
 
@@ -309,7 +311,7 @@ class CKY(_Struct):
                         c_final = C_p
                         break
                 if b_final is not None: break
-            assert k_final is not None, "%s %s %s"%(b, i, j)
+            assert k_final is not None, "%s %s %s %s"%(b, i, j, spans[b].nonzero())
             splits[(b, i, j)] = k_final, b_final, c_final
         return splits
 
