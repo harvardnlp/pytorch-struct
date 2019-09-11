@@ -286,19 +286,20 @@ class CKY(_Struct):
         batch, N = spans.shape[:2]
         splits = {}
         cover = spans.nonzero()
-        left = {i: [] for i in range(N)}
-        right = {i: [] for i in range(N)}
+        left, right = {}, {}
         for k in range(cover.shape[0]):
-            i, j, A = cover[k].tolist()
-            left[i].append((A, j, j - i + 1))
-            right[j].append((A, i, j - i + 1))
+            b, i, j, A = cover[k].tolist()
+            left.setdefault((b,i), [])
+            right.setdefault((b,j), [])
+            left[b, i].append((A, j, j - i + 1))
+            right[b, j].append((A, i, j - i + 1))
 
         b_final = None
         c_final = None
         for x in range(cover.shape[0]):
-            i, j, A = cover[x].tolist()
-            for B_p, k, a_span in left[i]:
-                for C_p, k_2, b_span in right[j]:
+            b, i, j, A = cover[x].tolist()
+            for B_p, k, a_span in left.get((b,i), []):
+                for C_p, k_2, b_span in right.get((b,j), []):
                     if k_2 == k + 1 and a_span + b_span == j - i + 1:
                         k_final = k
                         b_final = B_p

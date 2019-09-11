@@ -32,6 +32,14 @@ def test_simple(batch, N, C):
     print(MultiSampledSemiring.to_discrete(x, 2))
 
 
+def test_networkx():
+    model = CKY
+    vals, _ = model._rand()
+    struct = model(SampledSemiring)
+    score = struct.sum(vals)
+    marginals = struct.marginals(vals)
+    spans = CKY.from_parts(marginals)[0]
+    CKY.to_networkx(spans)
 # def test_fb_m():
 #     vals = torch.rand(2, 4, 5, 5)
 #     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
