@@ -169,19 +169,23 @@ class _SampledLogSumExp(torch.autograd.Function):
         grad_input = None
         if ctx.needs_input_grad[0]:
             if dim == -1:
-                s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim=dim)).sample()
+                s = torch.distributions.OneHotCategorical(
+                    probs=logits.softmax(dim=dim)
+                ).sample()
             else:
-                dim = dim if dim >= 0 else xs.dim() + dim
+                dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
                 rev_perm = []
                 for i in range(logits.dim()):
                     if i < dim:
                         rev_perm.append(i)
                     if i > dim:
-                        rev_perm.append(i-1)
+                        rev_perm.append(i - 1)
                     if i == dim:
-                        rev_perm.append(logits.dim()-1)
-                s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim=dim).permute(perm).contiguous()).sample()
+                        rev_perm.append(logits.dim() - 1)
+                s = torch.distributions.OneHotCategorical(
+                    probs=logits.softmax(dim=dim).permute(perm).contiguous()
+                ).sample()
                 s = s.permute(rev_perm)
             grad_input = grad_output.unsqueeze(dim).mul(s)
         return grad_input, None
@@ -208,7 +212,9 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
         logits, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
-            s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim)).sample((16,))
+            s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim)).sample(
+                (16,)
+            )
             final = grad_output % 2
             on = [grad_output % bits[i] for i in range(17)]
             grad_input = sum(

@@ -26,11 +26,12 @@ def test_simple(batch, N, C):
     semiring = StdSemiring
     alpha = LinearChain(semiring).sum(vals)
     assert (alpha == pow(C, N + 1)).all()
-    x = LinearChain(SampledSemiring).marginals(vals)
+    LinearChain(SampledSemiring).marginals(vals)
 
-    x = LinearChain(MultiSampledSemiring).marginals(vals)
-    #print(MultiSampledSemiring.to_discrete(x, 1))
-    #print(MultiSampledSemiring.to_discrete(x, 2))
+    LinearChain(MultiSampledSemiring).marginals(vals)
+    # print(MultiSampledSemiring.to_discrete(x, 1))
+    # print(MultiSampledSemiring.to_discrete(x, 2))
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)
@@ -54,8 +55,9 @@ def test_networkx(data):
     marginals = struct.marginals(vals, lengths=lengths)
     spans = CKY.from_parts(marginals)[0]
     g, indices = CKY.to_networkx(spans)
-    #for b in range(batch):
+    # for b in range(batch):
     #    assert len(list(g.neighbors(indices[(b, 0, lengths[b].item()-1)]))) == 2, "%s %s"%(b, lengths[b].item()-1)
+
 
 # def test_fb_m():
 #     vals = torch.rand(2, 4, 5, 5)

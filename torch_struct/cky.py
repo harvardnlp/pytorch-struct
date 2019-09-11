@@ -290,27 +290,30 @@ class CKY(_Struct):
         left, right = {}, {}
         for k in range(cover.shape[0]):
             b, i, j, A = cover[k].tolist()
-            left.setdefault((b,i), [])
-            right.setdefault((b,j), [])
+            left.setdefault((b, i), [])
+            right.setdefault((b, j), [])
             left[b, i].append((A, j, j - i + 1))
             right[b, j].append((A, i, j - i + 1))
 
         for x in range(cover.shape[0]):
             b, i, j, A = cover[x].tolist()
-            if i == j: continue
+            if i == j:
+                continue
             b_final = None
             c_final = None
             k_final = None
-            for B_p, k, a_span in left.get((b,i), []):
-                if k >j: continue
-                for C_p, k_2, b_span in right.get((b,j), []):
+            for B_p, k, a_span in left.get((b, i), []):
+                if k > j:
+                    continue
+                for C_p, k_2, b_span in right.get((b, j), []):
                     if k_2 == k + 1 and a_span + b_span == j - i + 1:
                         k_final = k
                         b_final = B_p
                         c_final = C_p
                         break
-                if b_final is not None: break
-            assert k_final is not None, "%s %s %s %s"%(b, i, j, spans[b].nonzero())
+                if b_final is not None:
+                    break
+            assert k_final is not None, "%s %s %s %s" % (b, i, j, spans[b].nonzero())
             splits[(b, i, j)] = k_final, b_final, c_final
         return splits
 
@@ -320,7 +323,6 @@ class CKY(_Struct):
 
         splits = cls._intermediary(spans.cpu())
         G = nx.DiGraph()
-        batch = spans.shape[0]
         cur = 0
         indices = {}
         for n in spans.nonzero():
@@ -329,7 +331,7 @@ class CKY(_Struct):
             cur += 1
         for k, v in splits.items():
             G.add_edge(indices[(k[0], k[1], v[0])], indices[k])
-            G.add_edge(indices[(k[0], v[0]+1, k[2])], indices[k])
+            G.add_edge(indices[(k[0], v[0] + 1, k[2])], indices[k])
         return G, indices
 
     ###### Test

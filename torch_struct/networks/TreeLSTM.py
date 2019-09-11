@@ -4,6 +4,7 @@ import torch as th
 import torch.nn as nn
 import dgl
 
+
 class TreeLSTMCell(nn.Module):
     def __init__(self, x_size, h_size):
         super(TreeLSTMCell, self).__init__()
@@ -13,21 +14,21 @@ class TreeLSTMCell(nn.Module):
         self.U_f = nn.Linear(2 * h_size, 2 * h_size)
 
     def message_func(self, edges):
-        return {'h': edges.src['h'], 'c': edges.src['c']}
+        return {"h": edges.src["h"], "c": edges.src["c"]}
 
     def reduce_func(self, nodes):
-        h_cat = nodes.mailbox['h'].view(nodes.mailbox['h'].size(0), -1)
-        f = th.sigmoid(self.U_f(h_cat)).view(*nodes.mailbox['h'].size())
-        c = th.sum(f * nodes.mailbox['c'], 1)
-        return {'iou': self.U_iou(h_cat), 'c': c}
+        h_cat = nodes.mailbox["h"].view(nodes.mailbox["h"].size(0), -1)
+        f = th.sigmoid(self.U_f(h_cat)).view(*nodes.mailbox["h"].size())
+        c = th.sum(f * nodes.mailbox["c"], 1)
+        return {"iou": self.U_iou(h_cat), "c": c}
 
     def apply_node_func(self, nodes):
-        iou = nodes.data['iou'] + self.b_iou
+        iou = nodes.data["iou"] + self.b_iou
         i, o, u = th.chunk(iou, 3, 1)
         i, o, u = th.sigmoid(i), th.sigmoid(o), th.tanh(u)
-        c = i * u + nodes.data['c']
+        c = i * u + nodes.data["c"]
         h = o * th.tanh(c)
-        return {'h' : h, 'c' : c}
+        return {"h": h, "c": c}
 
 
 def run(cell, graph, iou, h, c):
