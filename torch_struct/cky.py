@@ -315,7 +315,7 @@ class CKY(_Struct):
         batch = spans.shape[0]
         for b in range(batch):
             for n in spans[0].nonzero():
-                G.add_node((b, n[0], n[1]), label=n[2])
+                G.add_node((b, n[0].item(), n[1].item()), label=n[2].item())
             for k, v in splits[0].items():
                 G.add_edge(k, (b, k[0], v))
                 G.add_edge(k, (b, v + 1, k[1]))
