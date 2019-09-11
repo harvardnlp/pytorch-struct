@@ -2,7 +2,14 @@ from .cky import CKY
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
-from .semirings import LogSemiring, StdSemiring, SampledSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring
+from .semirings import (
+    LogSemiring,
+    StdSemiring,
+    SampledSemiring,
+    MaxSemiring,
+    EntropySemiring,
+    MultiSampledSemiring,
+)
 
 
 version = "0.0.1"
@@ -18,5 +25,5 @@ __all__ = [
     SampledSemiring,
     MaxSemiring,
     EntropySemiring,
-    MultiSampledSemiring
+    MultiSampledSemiring,
 ]
