@@ -302,7 +302,7 @@ class CKY(_Struct):
                             k_final = k
                             break
                 if j > i:
-                    batch_split[(i, j)] = k_final
+                    batch_split[(b, i, j)] = k_final
             splits.append(batch_split)
         return splits
 
@@ -313,12 +313,16 @@ class CKY(_Struct):
         splits = cls._intermediary(spans)
         G = nx.DiGraph()
         batch = spans.shape[0]
+        cur = 0
+        indices = {}
         for b in range(batch):
             for n in spans[0].nonzero():
-                G.add_node((b, n[0].item(), n[1].item()), label=n[2].item())
+                indices[(b, n[0].item(), n[1].item())] = cur
+                G.add_node(cur, label=n[2].item())
+                cur += 1
             for k, v in splits[0].items():
-                G.add_edge(k, (b, k[0], v))
-                G.add_edge(k, (b, v + 1, k[1]))
+                G.add_edge(indices[k], indices[(b, k[0], v)])
+                G.add_edge(indices[k], indices[(b, v + 1, k[1])])
         return G
 
     ###### Test
