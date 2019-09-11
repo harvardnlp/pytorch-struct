@@ -309,7 +309,7 @@ class CKY(_Struct):
                         c_final = C_p
                         break
                 if b_final is not None: break
-            assert k_final is not None, b, i, j
+            assert k_final is not None, "%s %s %s"%(b, i, j)
             splits[(b, i, j)] = k_final, b_final, c_final
         return splits
 
