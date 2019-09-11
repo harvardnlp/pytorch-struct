@@ -181,7 +181,7 @@ class _SampledLogSumExp(torch.autograd.Function):
                         rev_perm.append(i-1)
                     if i == dim:
                         rev_perm.append(logits.dim()-1)
-                s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim=dim).permute(perm)).sample()
+                s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim=dim).permute(perm).contiguous()).sample()
                 s = s.permute(rev_perm)
             grad_input = grad_output.unsqueeze(dim).mul(s)
         return grad_input, None
