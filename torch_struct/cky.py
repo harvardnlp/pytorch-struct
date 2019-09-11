@@ -323,7 +323,7 @@ class CKY(_Struct):
             for k, v in splits[0].items():
                 G.add_edge(indices[k], indices[(b, k[0], v)])
                 G.add_edge(indices[k], indices[(b, v + 1, k[1])])
-        return G
+        return G, indices
 
     ###### Test
 
