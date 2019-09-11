@@ -312,7 +312,7 @@ class CKY(_Struct):
 
         splits = cls._intermediary(spans)
         G = nx.DiGraph()
-        batch, _ = spans.shape
+        batch = spans.shape[0]
         for b in range(batch):
             for n in spans[0].nonzero():
                 G.add_node((b, n[0], n[1]), label=n[2])
