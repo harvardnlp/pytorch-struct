@@ -284,46 +284,47 @@ class CKY(_Struct):
     @staticmethod
     def _intermediary(spans):
         batch, N = spans.shape[:2]
-        splits = []
-        for b in range(batch):
-            cover = spans[b].nonzero()
-            left = {i: [] for i in range(N)}
-            right = {i: [] for i in range(N)}
-            batch_split = {}
-            for i in range(cover.shape[0]):
-                i, j, A = cover[i].tolist()
-                left[i].append((A, j, j - i + 1))
-                right[j].append((A, i, j - i + 1))
-            for i in range(cover.shape[0]):
-                i, j, A = cover[i].tolist()
-                for B_p, k, a_span in left[i]:
-                    for C_p, k_2, b_span in right[j]:
-                        if k_2 == k + 1 and a_span + b_span == j - i + 1:
-                            k_final = k
-                            break
-                if j > i:
-                    batch_split[(b, i, j)] = k_final
-            splits.append(batch_split)
+        splits = {}
+        cover = spans.nonzero()
+        left = {i: [] for i in range(N)}
+        right = {i: [] for i in range(N)}
+        for k in range(cover.shape[0]):
+            i, j, A = cover[k].tolist()
+            left[i].append((A, j, j - i + 1))
+            right[j].append((A, i, j - i + 1))
+
+        b_final = None
+        c_final = None
+        for x in range(cover.shape[0]):
+            i, j, A = cover[x].tolist()
+            for B_p, k, a_span in left[i]:
+                for C_p, k_2, b_span in right[j]:
+                    if k_2 == k + 1 and a_span + b_span == j - i + 1:
+                        k_final = k
+                        b_final = B_p
+                        c_final = C_p
+                        break
+            if j > i:
+                splits[(b, i, j)] = k_final, b_final, c_final
         return splits
 
     @classmethod
     def to_networkx(cls, spans):
         import networkx as nx
 
-        splits = cls._intermediary(spans)
+        splits = cls._intermediary(spans.cpu())
         G = nx.DiGraph()
         batch = spans.shape[0]
         cur = 0
         indices = {}
-        for b in range(batch):
-            for n in spans[b].nonzero():
-                indices[(b, n[0].item(), n[1].item())] = cur
-                G.add_node(cur, label=n[2].item())
-                cur += 1
-        for s in splits:
-            for k, v in s.items():
-                G.add_edge(indices[(k[0], k[1], v)], indices[k])
-                G.add_edge(indices[(k[0], v+1, k[2])], indices[k])
+
+        for n in spans.nonzero():
+            indices[(n[0].item(), n[1]].item(), n[2].item())] = cur
+            G.add_node(cur, label=n[3].item())
+            cur += 1
+        for k, v in splits.items():
+            G.add_edge(indices[(k[0], k[1], v[0])], indices[k])
+            G.add_edge(indices[(k[0], v[0]+1, k[2])], indices[k])
         return G, indices
 
     ###### Test
