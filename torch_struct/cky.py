@@ -321,8 +321,8 @@ class CKY(_Struct):
                 G.add_node(cur, label=n[2].item())
                 cur += 1
         for k, v in splits[0].items():
-            G.add_edge(indices[k], indices[(k[0], k[1], v)])
-            G.add_edge(indices[k], indices[(k[0], v+1, k[2])])
+            G.add_edge(indices[(k[0], k[1], v)], indices[k])
+            G.add_edge(indices[(k[0], v+1, k[2])], indices[k])
         return G, indices
 
     ###### Test
