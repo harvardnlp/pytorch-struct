@@ -319,7 +319,7 @@ class CKY(_Struct):
         indices = {}
 
         for n in spans.nonzero():
-            indices[(n[0].item(), n[1]].item(), n[2].item())] = cur
+            indices[(n[0].item(), n[1].item(), n[2].item())] = cur
             G.add_node(cur, label=n[3].item())
             cur += 1
         for k, v in splits.items():
