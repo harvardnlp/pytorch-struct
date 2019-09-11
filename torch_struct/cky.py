@@ -299,12 +299,14 @@ class CKY(_Struct):
         for x in range(cover.shape[0]):
             b, i, j, A = cover[x].tolist()
             for B_p, k, a_span in left.get((b,i), []):
+                if k >j: continue
                 for C_p, k_2, b_span in right.get((b,j), []):
                     if k_2 == k + 1 and a_span + b_span == j - i + 1:
                         k_final = k
                         b_final = B_p
                         c_final = C_p
                         break
+                if b_final is not None: break
             if j > i:
                 splits[(b, i, j)] = k_final, b_final, c_final
         return splits
