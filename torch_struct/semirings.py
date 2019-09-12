@@ -227,15 +227,16 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
             on = on[1:] - on[:-1]
             old_bits = (on + final == 0).unsqueeze(dim+1)
-            grad_input = mbits[0] * s[0].masked_fill_(old_bits[0], 0)
+            grad_input_check = mbits[0] * s[0].masked_fill_(old_bits[0], 0)
+            grad_input = mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
+                                   s.masked_fill_(old_bits,0))
+            assert (grad_input_check == grad_input[0]).all()
             #final = (grad_output % 2).unsqueeze(0)
             #on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
             #on = on[1:] - on[:-1]
             #old_bits = (on + final != 0).unsqueeze(dim+1)
-            #grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
-            #                       old_bits.type_as(s).mul(s)), dim=0)
-            assert grad_input.shape == logits.shape
-        return grad_input, None
+            #assert grad_input.shape == logits.shape
+        return torch.sum(grad_input, dim=0), None
 
 
 class MultiSampledSemiring(_BaseLog):
