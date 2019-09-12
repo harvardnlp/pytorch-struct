@@ -220,6 +220,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
                 rev_perm =[0] + [a+1 for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
                 s= sample(logits.permute(perm)).permute(rev_perm)
 
+
             dim = dim if dim >= 0 else logits.dim() + dim
             mbits = bits[:].type_as(grad_output)
             final = (grad_output % 2).unsqueeze(0)
@@ -227,7 +228,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             on = on[1:] - on[:-1]
             old_bits = (on + final == 0).unsqueeze(dim+1)
             grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
-                                   s.masked_fill_(old_bits, 0)), dim=0)
+                                   old_bits.type_as(s).mul(s)), dim=0)
             assert grad_input.shape == logits.shape
         return grad_input, None
 
