@@ -55,6 +55,16 @@ def test_networkx(data):
     marginals = struct.marginals(vals, lengths=lengths)
     spans = CKY.from_parts(marginals)[0]
     g, indices = CKY.to_networkx(spans)
+
+    struct = model(MultiSampledSemiring)
+    marginals = struct.marginals(vals, lengths=lengths)
+
+    m2 = (MultiSampledSemiring.to_discrete(m, 2) for m in marginals)
+
+    spans = CKY.from_parts(m2)[0]
+    g, indices = CKY.to_networkx(spans)
+
+
     # for b in range(batch):
     #    assert len(list(g.neighbors(indices[(b, 0, lengths[b].item()-1)]))) == 2, "%s %s"%(b, lengths[b].item()-1)
 

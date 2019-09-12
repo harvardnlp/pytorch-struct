@@ -190,15 +190,13 @@ class SampledSemiring(_BaseLog):
         return _SampledLogSumExp.apply(xs, dim)
 
 
-bits = [pow(2, i) for i in range(17)]
-
+bits = torch.tensor([pow(2, i) for i in range(1, 18)])
 
 class _MultiSampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):
         ctx.save_for_backward(input, torch.tensor(dim))
-        xs = input
-        return torch.logsumexp(xs, dim=dim)
+        return torch.logsumexp(input, dim=dim)
 
     @staticmethod
     def backward(ctx, grad_output):
@@ -207,7 +205,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             if dim == -1:
                 s = torch.distributions.OneHotCategorical(
-                    logits=logits
+                    logits=logits.contiguous()
                 ).sample((16,))
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
@@ -217,18 +215,18 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
                     probs=logits.softmax(dim=dim).permute(perm).contiguous()
                 ).sample((16,))
                 s = s.permute(rev_perm)
+            dim = dim if dim >= 0 else logits.dim() + dim
+            final = (grad_output % 2).unsqueeze(0)
+            mbits = bits[:].type_as(grad_output)
+            on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
+            on = on[1:] - on[:-1]
+            #print(on.size())
+            #print(final.size())
+            old_bits = (on + final == 0).unsqueeze(dim+1)
+            #print(old_bits.size(), mbits.size())
+            grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
+                                   s.masked_fill_(old_bits, 0)), dim=0)
 
-            final = grad_output % 2
-            on = [grad_output % bits[i] for i in range(17)]
-            grad_input = sum(
-                [
-                    bits[i]
-                    * s[i].masked_fill_(
-                        (on[i + 1] - on[i] + final == 0).unsqueeze(dim), 0
-                    )
-                    for i in range(16)
-                ]
-            )
         return grad_input, None
 
 
@@ -238,5 +236,8 @@ class MultiSampledSemiring(_BaseLog):
         return _MultiSampledLogSumExp.apply(xs, dim)
 
     @staticmethod
-    def to_discrete(xs, i):
-        return (xs % bits[i + 1] - xs % bits[i] != 0).type_as(xs)
+    def to_discrete(xs, j):
+        i = j + 2
+        final = xs % 2
+        mbits = bits.type_as(xs)
+        return ((xs % mbits[i + 1] - xs % mbits[i]  + final)!= 0).type_as(xs)
