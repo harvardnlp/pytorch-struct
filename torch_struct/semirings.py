@@ -226,7 +226,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             final = (grad_output % 2).unsqueeze(0)
             on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
             on = on[1:] - on[:-1]
-            old_bits = (on + final == 0).unsqueeze(dim+1)
+            old_bits = (on + final != 0).unsqueeze(dim+1)
             grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
                                    old_bits.type_as(s).mul(s)), dim=0)
             assert grad_input.shape == logits.shape
