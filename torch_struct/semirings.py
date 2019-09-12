@@ -168,18 +168,20 @@ class _SampledLogSumExp(torch.autograd.Function):
         logits, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
+            def sample(ls):
+                pre_shape = ls.shape
+                draws = torch.multinomial(ls.softmax(-1).view(-1, pre_shape[-1]), 1, True)
+                draws.squeeze(1)
+                return torch.nn.functional.one_hot(draws, pre_shape[-1]).view(*pre_shape).type_as(ls)
+
             if dim == -1:
-                s = torch.distributions.OneHotCategorical(
-                    logits=logits
-                ).sample()
+                s=sample(logits)
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
                 rev_perm = [a for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
-                s = torch.distributions.OneHotCategorical(
-                    probs=logits.softmax(dim=dim).permute(perm).contiguous()
-                ).sample()
-                s = s.permute(rev_perm)
+                s= sample(logits.permute(perm)).permute(rev_perm)
+
             grad_input = grad_output.unsqueeze(dim).mul(s)
         return grad_input, None
 
@@ -204,18 +206,20 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
         logits, part, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
+            def sample(ls):
+                pre_shape = ls.shape
+                draws = torch.multinomial(ls.softmax(-1).view(-1, pre_shape[-1]), 16, True)
+                draws.transpose(0, 1)
+                return torch.nn.functional.one_hot(draws, pre_shape[-1]).view(16, *pre_shape).type_as(ls)
+
             if dim == -1:
-                s = torch.distributions.OneHotCategorical(
-                    probs=(logits - part.unsqueeze(-1)).contiguous()
-                ).sample((16,))
+                s = sample(logits)
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
                 rev_perm =[0] + [a+1 for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
-                s = torch.distributions.OneHotCategorical(
-                    probs=logits.softmax(dim=dim).permute(perm).contiguous()
-                ).sample((16,))
-                s = s.permute(rev_perm)
+                s= sample(logits.permute(perm)).permute(rev_perm)
+
             dim = dim if dim >= 0 else logits.dim() + dim
             final = (grad_output % 2).unsqueeze(0)
             mbits = bits[:].type_as(grad_output)
