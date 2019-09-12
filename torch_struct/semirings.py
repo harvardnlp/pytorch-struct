@@ -253,4 +253,4 @@ class MultiSampledSemiring(_BaseLog):
         i = j
         final = xs % 2
         mbits = bits.type_as(xs)
-        return ((xs % mbits[i + 1] - xs % mbits[i]  + final)!= 0).type_as(xs)
+        return (((xs % mbits[i + 1]) - (xs % mbits[i])  + final)!= 0).type_as(xs)
