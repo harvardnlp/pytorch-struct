@@ -222,13 +222,19 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
 
 
             dim = dim if dim >= 0 else logits.dim() + dim
-            mbits = bits[:].type_as(grad_output)
             final = (grad_output % 2).unsqueeze(0)
+            mbits = bits[:].type_as(grad_output)
             on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
             on = on[1:] - on[:-1]
-            old_bits = (on + final != 0).unsqueeze(dim+1)
-            grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
-                                   old_bits.type_as(s).mul(s)), dim=0)
+            old_bits = (on + final == 0).unsqueeze(dim+1)
+            print(mbits[0], s[0].size(), old_bits[0].size())
+            grad_input = mbits[0] * s[0].masked_fill_(old_bits[0], 0)
+            #final = (grad_output % 2).unsqueeze(0)
+            #on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
+            #on = on[1:] - on[:-1]
+            #old_bits = (on + final != 0).unsqueeze(dim+1)
+            #grad_input = torch.sum(mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
+            #                       old_bits.type_as(s).mul(s)), dim=0)
             assert grad_input.shape == logits.shape
         return grad_input, None
 
@@ -240,7 +246,7 @@ class MultiSampledSemiring(_BaseLog):
 
     @staticmethod
     def to_discrete(xs, j):
-        i = j + 2
+        i = j
         final = xs % 2
         mbits = bits.type_as(xs)
         return ((xs % mbits[i + 1] - xs % mbits[i]  + final)!= 0).type_as(xs)
