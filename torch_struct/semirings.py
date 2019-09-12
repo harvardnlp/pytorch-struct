@@ -203,7 +203,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()
+        #assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()
 
         logits, part, dim = ctx.saved_tensors
         grad_input = None
