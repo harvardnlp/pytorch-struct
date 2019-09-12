@@ -272,7 +272,7 @@ class CKY(_Struct):
         batch, N, N, NT, S, S = rules.shape
         assert terms.shape[1] == N
 
-        spans = torch.zeros(batch, N, N, S, dtype=rules.dtype, device=rule.device)
+        spans = torch.zeros(batch, N, N, S, dtype=rules.dtype, device=rules.device)
         rules = rules.sum(dim=-1).sum(dim=-1)
         for n in range(N):
             spans[:, torch.arange(N - n - 1), torch.arange(n + 1, N), :NT] = rules[
