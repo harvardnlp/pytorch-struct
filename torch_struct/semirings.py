@@ -169,22 +169,13 @@ class _SampledLogSumExp(torch.autograd.Function):
         grad_input = None
         if ctx.needs_input_grad[0]:
             if dim == -1:
-                #print(logits)
-                #print(logits.softmax(-1) < 0)
                 s = torch.distributions.OneHotCategorical(
                     logits=logits
                 ).sample()
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
-                rev_perm = []
-                for i in range(logits.dim()):
-                    if i < dim:
-                        rev_perm.append(i)
-                    if i > dim:
-                        rev_perm.append(i - 1)
-                    if i == dim:
-                        rev_perm.append(logits.dim() - 1)
+                rev_perm = [a for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
                 s = torch.distributions.OneHotCategorical(
                     probs=logits.softmax(dim=dim).permute(perm).contiguous()
                 ).sample()
@@ -214,9 +205,19 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
         logits, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
-            s = torch.distributions.OneHotCategorical(probs=logits.softmax(dim)).sample(
-                (16,)
-            )
+            if dim == -1:
+                s = torch.distributions.OneHotCategorical(
+                    logits=logits
+                ).sample((16,))
+            else:
+                dim = dim if dim >= 0 else logits.dim() + dim
+                perm = [i for i in range(logits.dim()) if i != dim] + [dim]
+                rev_perm =[0] + [a+1 for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
+                s = torch.distributions.OneHotCategorical(
+                    probs=logits.softmax(dim=dim).permute(perm).contiguous()
+                ).sample((16,))
+                s = s.permute(rev_perm)
+
             final = grad_output % 2
             on = [grad_output % bits[i] for i in range(17)]
             grad_input = sum(

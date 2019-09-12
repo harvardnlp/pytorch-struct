@@ -219,7 +219,7 @@ class CKY(_Struct):
                 allow_unused=False,
             )
             rule_use = marg[:-2]
-            rules = torch.zeros(batch, N, N, NT, S, S)
+            rules = torch.zeros(batch, N, N, NT, S, S, dtype=scores[1].dtype, device=scores[1].device)
             for w in range(len(rule_use)):
                 rules[:, w, : N - w - 1] = self.semiring.unconvert(rule_use[w])
 
