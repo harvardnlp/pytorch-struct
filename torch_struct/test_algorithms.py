@@ -59,7 +59,7 @@ def test_networkx(data):
     struct = model(MultiSampledSemiring)
     marginals = struct.marginals(vals, lengths=lengths)
     print(marginals[2])
-    m2 = tuple((MultiSampledSemiring.to_discrete(m, 0) for m in marginals))
+    m2 = tuple((MultiSampledSemiring.to_discrete(m, 5) for m in marginals))
     print(m2[2])
     assert False
     spans = CKY.from_parts(m2)[0]
