@@ -206,7 +206,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
         if ctx.needs_input_grad[0]:
             if dim == -1:
                 s = torch.distributions.OneHotCategorical(
-                    probs=logits - part.unsqueeze(-1)
+                    probs=(logits - part.unsqueeze(-1)).contiguous()
                 ).sample((16,))
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
