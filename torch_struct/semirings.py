@@ -211,8 +211,7 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             def sample(ls):
                 pre_shape = ls.shape
                 draws = torch.multinomial(ls.softmax(-1).view(-1, pre_shape[-1]), 16, True)
-                draws.transpose(0, 1)
-                draws[5] = draws[0]
+                draws = draws.transpose(0, 1)
                 return torch.nn.functional.one_hot(draws, pre_shape[-1]).view(16, *pre_shape).type_as(ls)
 
             if dim == -1:
