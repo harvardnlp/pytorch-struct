@@ -195,17 +195,18 @@ bits = torch.tensor([pow(2, i) for i in range(1, 18)])
 class _MultiSampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):
-        ctx.save_for_backward(input, torch.tensor(dim))
-        return torch.logsumexp(input, dim=dim)
+        part = torch.logsumexp(input, dim=dim)
+        ctx.save_for_backward(input, part, torch.tensor(dim))
+        return part
 
     @staticmethod
     def backward(ctx, grad_output):
-        logits, dim = ctx.saved_tensors
+        logits, part, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
             if dim == -1:
                 s = torch.distributions.OneHotCategorical(
-                    logits=logits.contiguous()
+                    probs=logits - part.unsqueeze(-1)
                 ).sample((16,))
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim

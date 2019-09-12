@@ -59,7 +59,7 @@ def test_networkx(data):
     struct = model(MultiSampledSemiring)
     marginals = struct.marginals(vals, lengths=lengths)
 
-    m2 = (MultiSampledSemiring.to_discrete(m, 2) for m in marginals)
+    m2 = tuple((MultiSampledSemiring.to_discrete(m, 2) for m in marginals))
 
     spans = CKY.from_parts(m2)[0]
     g, indices = CKY.to_networkx(spans)
