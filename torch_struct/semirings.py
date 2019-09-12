@@ -227,7 +227,6 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
             on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
             on = on[1:] - on[:-1]
             old_bits = (on + final == 0).unsqueeze(dim+1)
-            print(mbits[0], s[0].size(), old_bits[0].size())
             grad_input = mbits[0] * s[0].masked_fill_(old_bits[0], 0)
             #final = (grad_output % 2).unsqueeze(0)
             #on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
