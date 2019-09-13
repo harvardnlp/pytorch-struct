@@ -53,7 +53,6 @@ class CKY_CRF(_Struct):
         for w, grad in enumerate(grads):
             grad = semiring.unconvert(grad)
             f = torch.arange(N - w), torch.arange(w, N)
-            print(w, grad.shape)
             rules[:, f[0], f[1]] = self.semiring.unconvert(grad)
         return rules
 
