@@ -6,46 +6,46 @@ from torch.autograd import Function
 A, B = 0, 1
 
 
-class DPManual2(Function):
-    @staticmethod
-    def forward(ctx, obj, terms, rules, roots, lengths):
-        with torch.no_grad():
-            v, _, alpha = obj._dp((terms, rules, roots), lengths, False)
-        ctx.obj = obj
-        ctx.lengths = lengths
-        ctx.alpha = alpha
-        ctx.v = v
-        ctx.save_for_backward(terms, rules, roots)
-        return v
+# class DPManual2(Function):
+#     @staticmethod
+#     def forward(ctx, obj, terms, rules, roots, lengths):
+#         with torch.no_grad():
+#             v, _, alpha = obj._dp((terms, rules, roots), lengths, False)
+#         ctx.obj = obj
+#         ctx.lengths = lengths
+#         ctx.alpha = alpha
+#         ctx.v = v
+#         ctx.save_for_backward(terms, rules, roots)
+#         return v
 
-    @staticmethod
-    def backward(ctx, grad_v):
-        terms, rules, roots = ctx.saved_tensors
-        with torch.no_grad():
-            marginals = ctx.obj._dp_backward(
-                (terms, rules, roots), ctx.lengths, ctx.alpha, ctx.v
-            )
-        return None, marginals[0], marginals[1].sum(1).sum(1), marginals[2], None
+#     @staticmethod
+#     def backward(ctx, grad_v):
+#         terms, rules, roots = ctx.saved_tensors
+#         with torch.no_grad():
+#             marginals = ctx.obj._dp_backward(
+#                 (terms, rules, roots), ctx.lengths, ctx.alpha, ctx.v
+#             )
+#         return None, marginals[0], marginals[1].sum(1).sum(1), marginals[2], None
 
 
 class CKY(_Struct):
-    def sum(self, scores, lengths=None, force_grad=False, _autograd=True):
-        """
-        Compute the inside pass of a CFG using CKY.
+    # def sum(self, scores, lengths=None, force_grad=False, _autograd=True):
+    #     """
+    #     Compute the inside pass of a CFG using CKY.
 
-        Parameters:
-            terms : b x n x T
-            rules : b x NT x (NT+T) x (NT+T)
-            root:   b x NT
+    #     Parameters:
+    #         terms : b x n x T
+    #         rules : b x NT x (NT+T) x (NT+T)
+    #         root:   b x NT
 
-        Returns:
-            v: b tensor of total sum
-            spans: list of N,  b x N x (NT+t)
-        """
-        if _autograd or self.semiring is not LogSemiring:
-            return self._dp(scores, lengths)[0]
-        else:
-            return DPManual2.apply(self, *scores, lengths=lengths)
+    #     Returns:
+    #         v: b tensor of total sum
+    #         spans: list of N,  b x N x (NT+t)
+    #     """
+    #     if _autograd or self.semiring is not LogSemiring:
+    #         return self._dp(scores, lengths)[0]
+    #     else:
+    #         return DPManual2.apply(self, *scores, lengths=lengths)
 
     def _dp(self, scores, lengths=None, force_grad=False):
         terms, rules, roots = scores
