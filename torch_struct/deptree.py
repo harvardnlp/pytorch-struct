@@ -238,11 +238,12 @@ class DepTree(_Struct):
     #     return _unconvert(ret)
 
     def _arrange_marginals(self, grads):
+        ssize = self.semiring.size()
         _, batch, N = grads[0][0].shape
         N = N + 1
 
         ret = torch.zeros(
-            batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device
+             batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device
         )
         # for k in torch.arange(N):
         #     f = torch.arange(N - k), torch.arange(k, N)

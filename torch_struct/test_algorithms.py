@@ -1,4 +1,5 @@
 from .cky import CKY
+from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
@@ -113,20 +114,20 @@ def test_entropy(data):
 @given(data())
 @settings(max_examples=50, deadline=None)
 def test_generic_a(data):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, DepTree]))
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree]))
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
-    print(alpha.shape)
+    #print(alpha.shape)
     count, _ = struct.enumerate(vals)
-    print(alpha, count)
+    #print(alpha, count)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
 
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring, CKY, DepTree]))
+    #semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     vals, _ = model._rand()
     struct = model(MaxSemiring)
     score = struct.sum(vals)
@@ -193,7 +194,7 @@ def test_parts_from_sequence(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, DepTree]))
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -238,7 +239,7 @@ def test_generic_lengths(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
     model = data.draw(
-        sampled_from([DepTree, CKY])
+        sampled_from([DepTree, CKY, CKY_CRF])
     )  # LinearChain, SemiMarkov, DepTree, CKY]))
     struct = model()
     torch.manual_seed(seed)

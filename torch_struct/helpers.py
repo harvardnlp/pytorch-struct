@@ -96,3 +96,9 @@ class _Struct:
         else:
             v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)
+
+    def to_parts(spans, extra, lengths=None):
+        return spans
+
+    def from_parts(spans):
+        return spans, None
