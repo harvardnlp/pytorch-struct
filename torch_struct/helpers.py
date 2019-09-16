@@ -91,7 +91,7 @@ class _Struct:
         ):
             v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             marg = torch.autograd.grad(
-                v.sum(dim=0),
+                self.semiring.unconvert(v).sum(dim=0),
                 edges,
                 create_graph=True,
                 only_inputs=True,
