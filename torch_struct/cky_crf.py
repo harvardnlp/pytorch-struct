@@ -31,10 +31,10 @@ class CKY_CRF(_Struct):
             Z = beta[B][:, :, w:, N - w :].view(ssize, batch, N - w, 1, w,  1, NT)
             f = torch.arange(N-w), torch.arange(w, N)
             X = scores[:, :, f[0], f[1]].view(ssize, batch, N-w, NT)
-            merge = semiring.times(Y, Z).view(ssize, batch, N - w, -1)
+            merge = semiring.times(Y, Z).view(ssize, batch, N - w, 1, -1)
             rule_use[w ][:] = semiring.times(
-                semiring.sum(merge, X)
-            )
+                semiring.sum(merge), X)
+
             span[w] = rule_use[w].view(ssize, batch, N - w, NT)
             beta[A][:, :, : N - w, w] = span[w]
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
