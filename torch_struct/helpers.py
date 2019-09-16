@@ -33,7 +33,7 @@ class _Struct:
             for _ in range(N)
         ]
 
-    def sum(self, edge, lengths=None, _autograd=True):
+    def sum(self, edge, lengths=None, _autograd=True, _raw=False):
         """
         Compute the (semiring) sum over all structures model.
 
@@ -50,7 +50,12 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            return self._dp(edge, lengths)[0]
+
+            v = self._dp(edge, lengths)[0]
+            if _raw:
+                return v
+            return self.semiring.unconvert(v)
+
         else:
             v, _, alpha = self._dp(edge, lengths, False)
 

@@ -43,7 +43,6 @@ class SemiMarkov(_Struct):
             torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1),
             dim=2,
         )
-        v = semiring.unconvert(v)
         return v, spans, beta
 
     @staticmethod
