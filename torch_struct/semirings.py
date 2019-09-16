@@ -82,11 +82,13 @@ class EntropySemiring(Semiring):
         assert dim != 0
         eps= 1e-6
         d = dim - 1 if dim > 0 else dim
-        sm = torch.softmax(xs[0], dim=d)
+        part = torch.logsumexp(xs[0], dim=d)
+        log_sm = xs[0] - part.unsqueeze(d)
+        sm = log_sm.exp()
         return torch.stack(
             (
-                torch.logsumexp(xs[0], dim=d),
-                torch.sum(xs[1].mul(sm) - sm.add(eps).log().mul(sm), dim=d),
+                part,
+                torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d),
             )
         )
 
