@@ -7,6 +7,18 @@ from torch_struct.networks import NeuralCFG, TreeLSTMCell
 import torch
 import dgl
 import pickle
+import torch.nn as nn
+import wandb
+from torch_struct import MultiSampledSemiring
+import networkx
+import time
+
+
+config = {"method": "reinforce", "baseline": "mean", "opt": "adadelta", 
+          "lr_struct": 0.1, "lr_params": 1, "train_model":True, 
+          "var_norm": False, "entropy": 0.001, "v": 2}
+
+wandb.init(project="pytorch-struct", config=config)
 
 def tree_post(v):
     def post(ls):
@@ -63,92 +75,7 @@ def run(graph, cell, iou, h, c):
     dgl.prop_nodes_topo(g)
     return g.ndata.pop("h")
 
-WORD = data.Field(include_lengths=True, batch_first=True, eos_token=None, init_token=None)
-LABEL = data.Field(sequential=False, batch_first=True)
-TREE = data.RawField(postprocessing=tree_post(WORD))
-TREE.is_target=False
-train = ListOpsDataset("data/train_d20s.tsv", (("word", WORD), ("label", LABEL), ("tree", TREE)),
-                       filter_pred=lambda x: 5 < len(x.word) < 50)
-WORD.build_vocab(train)
-LABEL.build_vocab(train)
-valid = ListOpsDataset("data/test_d20s.tsv", (("word", WORD), ("label", LABEL), ("tree", TREE)),
-                       filter_pred=lambda x: 5 < len(x.word) < 150)
 
-train_iter = TokenBucket(train, 
-    batch_size=1500,
-    device="cuda:0", key=lambda x: len(x.word))
-train_iter.repeat = False
-valid_iter = data.BucketIterator(train, 
-    batch_size=50,
-    device="cuda:0")
-
-H = 100
-tree_lstm = TreeLSTMCell(H, H).cuda()
-emb = torch.nn.Embedding(len(WORD.vocab) + 100, 100).cuda()
-out = torch.nn.Linear(H, len(LABEL.vocab)).cuda()
-
-params = list(emb.parameters()) + list(tree_lstm.parameters()) + list(out.parameters()) 
-for p in params:
-    if p.dim() > 1:
-        torch.nn.init.xavier_uniform_(p)
-opt = torch.optim.Adam(params, lr=0.001, betas=[0.75, 0.999])
-
-def tree_model(trees, lengths):
-    graph, indices = CKY.to_networkx(trees.cpu())
-    g = dgl.DGLGraph()
-    g.from_networkx(graph, node_attrs=['label'])
-    h = torch.zeros(len(graph.nodes), H).cuda()
-    c = torch.zeros(len(graph.nodes), H).cuda()
-    iou = emb(g.ndata["label"].cuda())
-    g = run(g, tree_lstm, tree_lstm.W_iou(iou), h, c)
-    final = torch.stack([g[indices[i, 0, l.item()-1]]  for i, l in enumerate(lengths)])
-    final = out(final).log_softmax(dim=-1)
-    return final
-
-def valid_sup(valid_iter):
-    total = 0
-    correct = 0
-    for i, ex in enumerate(valid_iter):
-        words, lengths = ex.word
-        trees = ex.tree
-        label = ex.label
-        batch = label.shape[0]
-        words = words.cuda()
-        final = tree_model(trees, lengths)
-        _, argmax = final.max(-1)
-        total += batch
-        correct += (argmax == label).sum().item()
-        if i == 25: break
-    print(correct / float(total), correct, total)
-def train_sup(train_iter):
-    tree_lstm.train()
-    losses = []
-    for epoch in range(10):
-        for i, ex in enumerate(train_iter):
-            opt.zero_grad()
-            words, lengths = ex.word
-            trees = ex.tree
-            label = ex.label
-            batch = label.shape[0]
-            words = words.cuda()
-            final = tree_model(trees, lengths)
-            loss = final[torch.arange(batch), label].mean()
-            (-loss).backward()
-            torch.nn.utils.clip_grad_norm_(params, 5.0)
-            opt.step()
-            losses.append(loss.detach())
-            if i % 500 == 1:            
-                pickle.dump(params, open("params.pkl", "wb"))
-                print(-torch.tensor(losses).mean(), words.shape)
-                valid_sup(valid_iter)
-                losses = []
-
-#train_sup(train_iter)
-
-
-#exit()
-
-import torch.nn as nn
 class Res(nn.Module):
     def __init__(self, H):
         super().__init__()
@@ -195,13 +122,34 @@ class LSTMParse(torch.nn.Module):
 #    break
 
 
-import wandb
-from torch_struct import MultiSampledSemiring
-config = {"method": "reinforce", "baseline": "mean", "opt": "adadelta", 
-          "lr_struct": 1, "lr_params": 1, "train_model":True, 
-          "var_norm": False, "entropy": 0.001 }
+WORD = data.Field(include_lengths=True, batch_first=True, eos_token=None, init_token=None)
+LABEL = data.Field(sequential=False, batch_first=True)
+TREE = data.RawField(postprocessing=tree_post(WORD))
+TREE.is_target=False
+train = ListOpsDataset("data/train_d20s.tsv", (("word", WORD), ("label", LABEL), ("tree", TREE)),
+                       filter_pred=lambda x: 5 < len(x.word) < 50)
+WORD.build_vocab(train)
+LABEL.build_vocab(train)
+valid = ListOpsDataset("data/test_d20s.tsv", (("word", WORD), ("label", LABEL), ("tree", TREE)),
+                       filter_pred=lambda x: 5 < len(x.word) < 150)
 
-wandb.init(project="pytorch-struct", config=config)
+train_iter = TokenBucket(train, 
+    batch_size=1500,
+    device="cuda:0", key=lambda x: len(x.word))
+train_iter.repeat = False
+valid_iter = data.BucketIterator(train, 
+    batch_size=50,
+    device="cuda:0")
+
+H = 100
+tree_lstm = TreeLSTMCell(H, H).cuda()
+emb = torch.nn.Embedding(len(WORD.vocab) + 100, 100).cuda()
+out = torch.nn.Linear(H, len(LABEL.vocab)).cuda()
+
+params = list(emb.parameters()) + list(tree_lstm.parameters()) + list(out.parameters()) 
+for p in params:
+    if p.dim() > 1:
+        torch.nn.init.xavier_uniform_(p)
 
 if not config["train_model"]:
     import pickle
@@ -209,19 +157,6 @@ if not config["train_model"]:
     for i, p in enumerate(list(emb.parameters()) + list(tree_lstm.parameters()) + list(out.parameters())):
         p.data.copy_(par[i])
     valid_sup(valid_iter)
-
-#from google.colab import files
-#files.upload()
-
-#import pickle
-#pickle.dump(params, open("params.pkl", "wb"))
-#from google.colab import files
-#files.download("params.pkl")
-
-import networkx
-import time
-
-
 
 g_time = time.time()
 last = ""
@@ -231,9 +166,7 @@ def t(s):
     if last:
         total_time.setdefault(last, 0)
         total_time[last] += time.time() - g_time
-        #print(time.time() - g_time)
     g_time = time.time()
-    #print(s, "takes: ")
     last = s
 
 def detach(t):
@@ -267,7 +200,6 @@ def sample_baseline_a(reward_fn, phi, lengths):
     return [sample], torch.stack([reward]), sample_score, max_score
 
 
-
 def sample_baseline_b(reward_fn, phi, lengths, K=5):
     samples = []
     total = 0
@@ -279,8 +211,6 @@ def sample_baseline_b(reward_fn, phi, lengths, K=5):
     t("construct")
     trees = []
     for k in range(K):
-        #tmp_sample = CKY(SampledSemiring).marginals(tuple((p.contiguous() for p in phi)), lengths=lengths)
-        #tmp_sample = detach(tmp_sample)
         tmp_sample = MultiSampledSemiring.to_discrete(sample, k+1)
         sampled_tree = struct().from_parts(tmp_sample)[0].cpu()
         trees.append((sampled_tree, tmp_sample))
@@ -308,6 +238,19 @@ def sample_baseline_b(reward_fn, phi, lengths, K=5):
         
 
     return structs, torch.stack(rewards), total / K, max_score
+
+def tree_model(trees, lengths):
+    graph, indices = CKY.to_networkx(trees.cpu())
+    g = dgl.DGLGraph()
+    g.from_networkx(graph, node_attrs=['label'])
+
+    h = torch.zeros(len(graph.nodes), H, device="cuda:0")
+    c = torch.zeros(len(graph.nodes), H, device="cuda:0")
+    iou = emb(g.ndata["label"].cuda())
+    g = run(g, tree_lstm, tree_lstm.W_iou(iou), h, c)
+    final = torch.stack([g[indices[i, 0, l.item()-1]]  for i, l in enumerate(lengths)])
+    final = out(final).log_softmax(dim=-1)
+    return final
 
 
 def valid_show():
@@ -355,10 +298,11 @@ def valid_sup(valid_iter):
 
         def tree_reward(spans):
             spans[:, torch.arange(N), torch.arange(N)] = 0
-            new_spans = torch.zeros(batch, N, N, 1 + V).cuda()
+            new_spans = torch.zeros(batch, N, N, 1 + V, device=spans.device, dtype=spans.dtype)
             new_spans[:, :, :, :1] = spans
             new_spans[:, torch.arange(N), torch.arange(N), :].fill_(0)
             new_spans[:, torch.arange(N), torch.arange(N), 1:] = torch.nn.functional.one_hot(words, V).float().cuda()
+            #torch.nn.functional.one_hot(words, V).float().cuda()
             _, am = tree_model(new_spans, lengths).max(-1)
             return (label == am).sum(), label.shape[0]
            
@@ -412,6 +356,7 @@ def train(train_iter):
             if config["method"] == "reinforce":            
                 opt_struct.zero_grad()
                 obj = [] 
+                log_partition, entropy = struct(EntropySemiring).sum(phi, lengths=lengths, _raw=True).unbind()
                 for sample, reward in zip(structs, rewards):
                     #if running_reward is None:
                     #    running_reward = reward.var().detach()
@@ -419,9 +364,6 @@ def train(train_iter):
                     #    running_reward = running_reward * alpha + reward.var() * (1.0 - alpha)
                     #    reward = reward / running_reward.sqrt().clamp(min=1.0)
                     reward = reward.detach()
-                    log_partition, entropy = struct(EntropySemiring).sum(phi, lengths=lengths, _raw=True).unbind()
-                    # log_partition = struct(LogSemiring).sum(phi, lengths=lengths)
-                    # entropy = struct(EntropySemiring).sum(phi, lengths=lengths)
                     cur = struct().score(phi, sample.cuda()) - log_partition 
                     r = cur                     
                     obj.append(reward.mul(r).mean())
@@ -484,120 +426,62 @@ def train(train_iter):
                     print(k, total_time[k])
                 losses = []
 
-#torch.tensor([-0.0005]).sqrt().clamp(min=1.0)
-
-#valid_show()
-
-#            "entropy-weight":             0.0001,
-##            "clip-grad-norm":             0.5,
- #           "env-optimizer":              "adadelta",
- #           "pol-optimizer":              "adadelta",
- #           "env-lr":                     1,
- #           "pol-lr":                     1/10.,
- #           "ppo-updates":                15,
- #           "epsilon":                    0.2,
-
-#for p in model.parameters():
-#    print(p)
-
 tree = train(train_iter)
 
-torch.nn.functional.one_hot(torch.multinomial(torch.rand(5, 7), 20, True), 7).shape
 
-torch.nn.functional.one_hot(draws, pre_shape[-1])
+# opt = torch.optim.Adam(params, lr=0.001, betas=[0.75, 0.999])
 
+# def tree_model(trees, lengths):
+#     graph, indices = CKY.to_networkx(trees.cpu())
+#     g = dgl.DGLGraph()
+#     g.from_networkx(graph, node_attrs=['label'])
 
-for i, ex in enumerate(train_iter):
-    words, lengths = ex.word
-    label = ex.label
-    batch = label.shape[0]
-    words = words.cuda()
-    out = [WORD.vocab.itos[w.item()] for w in words[0]]
-    print(" ".join(out))
-    def show(tree):
-        start = {}
-        end = {}    
-        for i, j, _ in tree.nonzero():
-            i = i.item()
-            j = j.item()
-            start.setdefault(i, -1)
-            end.setdefault(j, -1)
-            start[i] += 1
-            end[j] += 1
-        for i, w in enumerate(out):
-            for _ in range(start.get(i, 0)):
-                print("(", end=" ")
-            print(w, end=" ")
-            for _ in range(end.get(i, 0)):
-                print(")", end=" ")
-        print()
-    show(ex.tree[0])
-    phi = model(words, lengths)
-    argmax = struct(MaxSemiring).marginals(phi, lengths=lengths)    
-    argmax_tree = struct().from_parts(detach(argmax))[0].cpu()
-    show(argmax_tree[0])
-    #spans = argmax_tree
-    #spans[:, :, :, 0] = spans[:, :, :, 0:NT].max(-1)[0]
-    #spans[:, :, :, 1:NT] = 0
-    #print(spans[0].nonzero())
-    #print(ex.tree[0].nonzero())
-    #print(phi[0][0])
-    break
+#     h = torch.zeros(len(graph.nodes), H, device="cuda:0")
+#     c = torch.zeros(len(graph.nodes), H, device="cuda:0")
+#     iou = emb(g.ndata["label"].cuda())
+#     g = run(g, tree_lstm, tree_lstm.W_iou(iou), h, c)
+#     final = torch.stack([g[indices[i, 0, l.item()-1]]  for i, l in enumerate(lengths)])
+#     final = out(final).log_softmax(dim=-1)
+#     return final
 
-print(tree[1])
+# def valid_sup(valid_iter):
+#     total = 0
+#     correct = 0
+#     for i, ex in enumerate(valid_iter):
+#         words, lengths = ex.word
+#         trees = ex.tree
+#         label = ex.label
+#         batch = label.shape[0]
+#         words = words.cuda()
+#         final = tree_model(trees, lengths)
+#         _, argmax = final.max(-1)
+#         total += batch
+#         correct += (argmax == label).sum().item()
+#         if i == 25: break
+#     print(correct / float(total), correct, total)
+# def train_sup(train_iter):
+#     tree_lstm.train()
+#     losses = []
+#     for epoch in range(10):
+#         for i, ex in enumerate(train_iter):
+#             opt.zero_grad()
+#             words, lengths = ex.word
+#             trees = ex.tree
+#             label = ex.label
+#             batch = label.shape[0]
+#             words = words.cuda()
+#             final = tree_model(trees, lengths)
+#             loss = final[torch.arange(batch), label].mean()
+#             (-loss).backward()
+#             torch.nn.utils.clip_grad_norm_(params, 5.0)
+#             opt.step()
+#             losses.append(loss.detach())
+#             if i % 500 == 1:            
+#                 pickle.dump(params, open("params.pkl", "wb"))
+#                 print(-torch.tensor(losses).mean(), words.shape)
+#                 valid_sup(valid_iter)
+#                 losses = []
 
-my_tree = tree[0]
+#train_sup(train_iter)
+#exit()
 
-rev_ind = {j: i for i, j in tree[1].items()}
-
-for n in tree[0].neighbors(tree[1][0,0, 4]):
-    print(rev_ind[n])
-
-len(tree[0].nodes)
-
-len()
-
-tree.nodes
-
-networkx.draw(tree)
-
-import networkx as nx
-
-def _convert(logits):
-    "move root arcs from diagonal"
-    new_logits = torch.zeros(
-        logits.size(0), logits.size(1) + 1, logits.size(2) + 1
-    ).type_as(logits.data)
-    new_logits.fill_(-1e9)
-    new_logits[:, 1:, 1:] = logits
-
-    N = logits.size(1)
-    new_logits[:, 0, 1:] = logits[:, torch.arange(N), torch.arange(N)]
-    new_logits[:, torch.arange(1, N), torch.arange(1, N)] = -1e9
-    return new_logits
-
-def to_networkx(x, t):
-    x = _convert(x)
-    batch, N, N = x.shape
-    g = nx.DiGraph()
-    cur = {}
-    for b in range(batch):
-        nodes = []
-        for n in range(N):
-            name = (b, n, 0)
-            cur[name] = len(cur)
-            g.add_node(cur[name], label=t[b, n])
-            nodes.append(name)
-        for k in range(1, N):
-            f = torch.arange(N-k), torch.arange(k, N)    
-            for i in  x[b, f[0], f[1]].nonzero():
-                j = i + k
-                b,n,c = nodes[i]
-                no = (b, n, c+1)
-                cur[no] = len(cur)
-                g.add_node(cur[no], label=1) 
-                g.add_edge(cur[nodes[j]], cur[no])
-                g.add_edge(cur[(b, n, c)], cur[no])
-                nodes[i] = no
-        cur[(b, "finish")] = nodes[0]
-    return g, cur# -*- coding: utf-8 -*-
