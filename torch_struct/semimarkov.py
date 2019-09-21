@@ -110,8 +110,8 @@ class SemiMarkov(_Struct):
         for i in range(on.shape[0]):
             if on[i][1] == 0:
                 labels[on[i][0], on[i][1]] = on[i][4]
-            labels[on[i][0], on[i][1] + 1] = on[i][3]
-        print(edge.nonzero(), labels)
+            labels[on[i][0], on[i][1] + on[i][2]] = on[i][3]
+        # print(edge.nonzero(), labels)
         return labels, (C, K)
 
     # Tests
