@@ -143,7 +143,7 @@ def test_parts_from_sequence(data, seed):
         i = 0
         while i < N:
             symbol = torch.randint(0, C, (1,)).item()
-            sequence[b,i] = symbol
+            sequence[b, i] = symbol
             length = torch.randint(1, K, (1,)).item()
             i += length
 
