@@ -1,3 +1,4 @@
-from .TreeLSTM import TreeLSTM
+from .TreeLSTM import TreeLSTMCell
+from .NeuralCFG import NeuralCFG
 
-__all__ = [TreeLSTM]
+__all__ = [TreeLSTMCell, NeuralCFG]

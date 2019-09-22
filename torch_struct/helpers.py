@@ -15,9 +15,10 @@ class _Struct:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
 
-    def score(self, potentials, parts):
-        batch = potentials.shape[0]
-        return self.semiring.prod(torch.mul(potentials, parts).view(batch, -1))
+    def score(self, potentials, parts, batch_dims=[0]):
+        score = torch.mul(potentials, parts)
+        batch = tuple((score.shape[b] for b in batch_dims))
+        return self.semiring.prod(score.view(batch + (-1,)))
 
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [
@@ -33,7 +34,7 @@ class _Struct:
             for _ in range(N)
         ]
 
-    def sum(self, edge, lengths=None, _autograd=True):
+    def sum(self, edge, lengths=None, _autograd=True, _raw=False):
         """
         Compute the (semiring) sum over all structures model.
 
@@ -50,7 +51,12 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            return self._dp(edge, lengths)[0]
+
+            v = self._dp(edge, lengths)[0]
+            if _raw:
+                return v
+            return self.semiring.unconvert(v)
+
         else:
             v, _, alpha = self._dp(edge, lengths, False)
 
@@ -86,7 +92,7 @@ class _Struct:
         ):
             v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             marg = torch.autograd.grad(
-                v.sum(dim=0),
+                self.semiring.unconvert(v).sum(dim=0),
                 edges,
                 create_graph=True,
                 only_inputs=True,
@@ -96,3 +102,11 @@ class _Struct:
         else:
             v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)
+
+    @staticmethod
+    def to_parts(spans, extra, lengths=None):
+        return spans
+
+    @staticmethod
+    def from_parts(spans):
+        return spans, None

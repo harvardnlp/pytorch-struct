@@ -122,7 +122,7 @@ class DepTree(_Struct):
             BIL = BIL2
         v = torch.stack([ends[l][:, i] for i, l in enumerate(lengths)], dim=1)
         # v = torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)])
-        return (semiring.unconvert(v), arcs[1:], alpha)
+        return (v, arcs[1:], alpha)
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring

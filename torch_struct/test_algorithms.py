@@ -1,4 +1,5 @@
 from .cky import CKY
+from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
@@ -20,42 +21,45 @@ lint = integers(min_value=2, max_value=10)
 
 
 @given(smint, smint, smint)
+@settings(max_examples=50, deadline=None)
 def test_simple(batch, N, C):
     vals = torch.ones(batch, N, C, C)
     semiring = StdSemiring
     alpha = LinearChain(semiring).sum(vals)
     assert (alpha == pow(C, N + 1)).all()
-    x = LinearChain(SampledSemiring).marginals(vals)
+    LinearChain(SampledSemiring).marginals(vals)
 
-    x = LinearChain(MultiSampledSemiring).marginals(vals)
-    print(MultiSampledSemiring.to_discrete(x, 1))
-    print(MultiSampledSemiring.to_discrete(x, 2))
+    LinearChain(MultiSampledSemiring).marginals(vals)
 
 
-# def test_fb_m():
-#     vals = torch.rand(2, 4, 5, 5)
-#     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
-#     LinearChain(MaxSemiring)._dp_backward(vals, None, alpha)
+@given(data())
+@settings(max_examples=50, deadline=None)
+def test_networkx(data):
+    batch = 5
+    N = 10
+    NT = 5
+    T = 5
 
+    torch.manual_seed(0)
 
-# @given(data())
-# def test_fb(data):
-#     model = data.draw(sampled_from([LinearChain, CKY]))
-#     torch.manual_seed(1)
-#     vals, (batch, N) = model._rand()
+    terms = torch.rand(batch, N, T)
+    rules = torch.rand(batch, NT, (NT + T), (NT + T))
+    roots = torch.rand(batch, NT)
+    vals = (terms, rules, roots)
+    model = CKY
+    lengths = torch.tensor(
+        [data.draw(integers(min_value=3, max_value=N)) for b in range(batch - 1)] + [N]
+    )
+    struct = model(SampledSemiring)
+    marginals = struct.marginals(vals, lengths=lengths)
+    spans = CKY.from_parts(marginals)[0]
+    CKY.to_networkx(spans)
 
-#     lengths = torch.tensor(
-#         [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
-#     )
-#     marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
-#     v, _, alpha = model()._dp(vals, lengths=lengths)
-#     marginals = model()._dp_backward(vals, lengths, alpha, v)
-
-#     if isinstance(marginals, tuple):
-#         for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:])):
-#             assert torch.isclose(m1, m2).all(), (not torch.isclose(m1, m2)).nonzero()
-#     else:
-#         assert torch.isclose(marginals, marginals2).all()
+    struct = model(MultiSampledSemiring)
+    marginals = struct.marginals(vals, lengths=lengths)
+    m2 = tuple((MultiSampledSemiring.to_discrete(m, 5) for m in marginals))
+    spans = CKY.from_parts(m2)[0]
+    CKY.to_networkx(spans)
 
 
 @given(data())
@@ -78,20 +82,17 @@ def test_entropy(data):
 @given(data())
 @settings(max_examples=50, deadline=None)
 def test_generic_a(data):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, DepTree]))
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree]))
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
-    print(alpha.shape)
     count, _ = struct.enumerate(vals)
-    print(alpha, count)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
 
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring, CKY, DepTree]))
     vals, _ = model._rand()
     struct = model(MaxSemiring)
     score = struct.sum(vals)
@@ -158,7 +159,7 @@ def test_parts_from_sequence(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, DepTree]))
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -202,9 +203,7 @@ def test_generic_lengths(data, seed):
 
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
-    model = data.draw(
-        sampled_from([DepTree, CKY])
-    )  # LinearChain, SemiMarkov, DepTree, CKY]))
+    model = data.draw(sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()

@@ -48,7 +48,7 @@ class LinearChain(_Struct):
             for i in torch.arange(batch)
         ]
         ret = torch.cat(ret, dim=1)
-        v = semiring.unconvert(semiring.sum(ret))
+        v = semiring.sum(ret)
         return v, edge_store, alpha
 
     # def _dp_backward(self, edge, lengths, alpha_in, v=None):
