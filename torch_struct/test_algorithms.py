@@ -99,6 +99,62 @@ def test_generic_a(data):
     assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
+@given(data(), integers(min_value=1, max_value=20))
+def test_parts_from_marginals(data, seed):
+    # todo: add CKY, DepTree too?
+    model = data.draw(sampled_from([LinearChain, SemiMarkov]))
+    struct = model()
+    torch.manual_seed(seed)
+    vals, (batch, N) = struct._rand()
+
+    edge = model(MaxSemiring).marginals(vals).long()
+
+    sequence, extra = model.from_parts(edge)
+    edge_ = model.to_parts(sequence, extra)
+
+    assert (torch.isclose(edge, edge_)).all(), edge - edge_
+
+    sequence_, extra_ = model.from_parts(edge_)
+    assert extra == extra_, (extra, extra_)
+
+    assert (torch.isclose(sequence, sequence_)).all(), sequence - sequence_
+
+
+@given(data(), integers(min_value=1, max_value=20))
+def test_parts_from_sequence(data, seed):
+    model = data.draw(sampled_from([LinearChain, SemiMarkov]))
+    struct = model()
+    torch.manual_seed(seed)
+    vals, (batch, N) = struct._rand()
+    C = vals.size(-1)
+    if isinstance(struct, LinearChain):
+        K = 2
+        background = 0
+        extra = C
+    elif isinstance(struct, SemiMarkov):
+        K = vals.size(-3)
+        background = -1
+        extra = C, K
+    else:
+        raise NotImplementedError()
+
+    sequence = torch.full((batch, N), background).long()
+    for b in range(batch):
+        i = 0
+        while i < N:
+            symbol = torch.randint(0, C, (1,)).item()
+            sequence[b, i] = symbol
+            length = torch.randint(1, K, (1,)).item()
+            i += length
+
+    edge = model.to_parts(sequence, extra)
+    sequence_, extra_ = model.from_parts(edge)
+    assert extra == extra_, (extra, extra_)
+    assert (torch.isclose(sequence, sequence_)).all(), sequence - sequence_
+    edge_ = model.to_parts(sequence_, extra_)
+    assert (torch.isclose(edge, edge_)).all(), edge - edge_
+
+
 @given(data(), integers(min_value=1, max_value=10))
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
