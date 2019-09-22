@@ -30,8 +30,6 @@ def test_simple(batch, N, C):
     LinearChain(SampledSemiring).marginals(vals)
 
     LinearChain(MultiSampledSemiring).marginals(vals)
-    # print(MultiSampledSemiring.to_discrete(x, 1))
-    # print(MultiSampledSemiring.to_discrete(x, 2))
 
 
 @given(data())
@@ -64,36 +62,6 @@ def test_networkx(data):
     g, indices = CKY.to_networkx(spans)
 
 
-    # for b in range(batch):
-    #    assert len(list(g.neighbors(indices[(b, 0, lengths[b].item()-1)]))) == 2, "%s %s"%(b, lengths[b].item()-1)
-
-
-# def test_fb_m():
-#     vals = torch.rand(2, 4, 5, 5)
-#     v, _, alpha = LinearChain(MaxSemiring)._dp(vals)
-#     LinearChain(MaxSemiring)._dp_backward(vals, None, alpha)
-
-
-# @given(data())
-# def test_fb(data):
-#     model = data.draw(sampled_from([LinearChain, CKY]))
-#     torch.manual_seed(1)
-#     vals, (batch, N) = model._rand()
-
-#     lengths = torch.tensor(
-#         [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
-#     )
-#     marginals2 = model().marginals(vals, lengths=lengths, _autograd=True)
-#     v, _, alpha = model()._dp(vals, lengths=lengths)
-#     marginals = model()._dp_backward(vals, lengths, alpha, v)
-
-#     if isinstance(marginals, tuple):
-#         for i, (m1, m2) in enumerate(zip(marginals[:], marginals2[:])):
-#             assert torch.isclose(m1, m2).all(), (not torch.isclose(m1, m2)).nonzero()
-#     else:
-#         assert torch.isclose(marginals, marginals2).all()
-
-
 @given(data())
 def test_entropy(data):
     model = data.draw(sampled_from([LinearChain, SemiMarkov]))
@@ -119,15 +87,12 @@ def test_generic_a(data):
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
-    #print(alpha.shape)
     count, _ = struct.enumerate(vals)
-    #print(alpha, count)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
 
-    #semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     vals, _ = model._rand()
     struct = model(MaxSemiring)
     score = struct.sum(vals)
@@ -238,9 +203,7 @@ def test_generic_lengths(data, seed):
 
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
-    model = data.draw(
-        sampled_from([DepTree, CKY, CKY_CRF])
-    )  # LinearChain, SemiMarkov, DepTree, CKY]))
+    model = data.draw(sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()

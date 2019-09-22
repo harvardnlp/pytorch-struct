@@ -80,17 +80,11 @@ class EntropySemiring(Semiring):
     @staticmethod
     def sum(xs, dim=-1):
         assert dim != 0
-        eps= 1e-6
         d = dim - 1 if dim > 0 else dim
         part = torch.logsumexp(xs[0], dim=d)
         log_sm = xs[0] - part.unsqueeze(d)
         sm = log_sm.exp()
-        return torch.stack(
-            (
-                part,
-                torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d),
-            )
-        )
+        return torch.stack((part, torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d)))
 
     @staticmethod
     def mul(a, b):
@@ -171,19 +165,26 @@ class _SampledLogSumExp(torch.autograd.Function):
         logits, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
+
             def sample(ls):
                 pre_shape = ls.shape
-                draws = torch.multinomial(ls.softmax(-1).view(-1, pre_shape[-1]), 1, True)
+                draws = torch.multinomial(
+                    ls.softmax(-1).view(-1, pre_shape[-1]), 1, True
+                )
                 draws.squeeze(1)
-                return torch.nn.functional.one_hot(draws, pre_shape[-1]).view(*pre_shape).type_as(ls)
+                return (
+                    torch.nn.functional.one_hot(draws, pre_shape[-1])
+                    .view(*pre_shape)
+                    .type_as(ls)
+                )
 
             if dim == -1:
-                s=sample(logits)
+                s = sample(logits)
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
-                rev_perm = [a for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
-                s= sample(logits.permute(perm)).permute(rev_perm)
+                rev_perm = [a for a, b in sorted(enumerate(perm), key=lambda a: a[1])]
+                s = sample(logits.permute(perm)).permute(rev_perm)
 
             grad_input = grad_output.unsqueeze(dim).mul(s)
         return grad_input, None
@@ -197,6 +198,7 @@ class SampledSemiring(_BaseLog):
 
 bits = torch.tensor([pow(2, i) for i in range(1, 18)])
 
+
 class _MultiSampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):
@@ -206,35 +208,46 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        #assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()
+        # assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()
 
         logits, part, dim = ctx.saved_tensors
         grad_input = None
         if ctx.needs_input_grad[0]:
+
             def sample(ls):
                 pre_shape = ls.shape
-                draws = torch.multinomial(ls.softmax(-1).view(-1, pre_shape[-1]), 16, True)
+                draws = torch.multinomial(
+                    ls.softmax(-1).view(-1, pre_shape[-1]), 16, True
+                )
                 draws = draws.transpose(0, 1)
-                return torch.nn.functional.one_hot(draws, pre_shape[-1]).view(16, *pre_shape).type_as(ls)
+                return (
+                    torch.nn.functional.one_hot(draws, pre_shape[-1])
+                    .view(16, *pre_shape)
+                    .type_as(ls)
+                )
 
             if dim == -1:
                 s = sample(logits)
             else:
                 dim = dim if dim >= 0 else logits.dim() + dim
                 perm = [i for i in range(logits.dim()) if i != dim] + [dim]
-                rev_perm =[0] + [a+1 for a,b in sorted(enumerate(perm), key=lambda a:a[1])]
-                s= sample(logits.permute(perm)).permute(rev_perm)
-
+                rev_perm = [0] + [
+                    a + 1 for a, b in sorted(enumerate(perm), key=lambda a: a[1])
+                ]
+                s = sample(logits.permute(perm)).permute(rev_perm)
 
             dim = dim if dim >= 0 else logits.dim() + dim
             final = (grad_output % 2).unsqueeze(0)
             mbits = bits[:].type_as(grad_output)
-            on = grad_output.unsqueeze(0) % mbits.view(17, * [1]*grad_output.dim())
+            on = grad_output.unsqueeze(0) % mbits.view(17, *[1] * grad_output.dim())
             on = on[1:] - on[:-1]
-            old_bits = (on + final == 0).unsqueeze(dim+1)
+            old_bits = (on + final == 0).unsqueeze(dim + 1)
 
-            grad_input = mbits[:-1].view(16, *[1]*(s.dim()-1)).mul(
-                                   s.masked_fill_(old_bits,0))
+            grad_input = (
+                mbits[:-1]
+                .view(16, *[1] * (s.dim() - 1))
+                .mul(s.masked_fill_(old_bits, 0))
+            )
 
         return torch.sum(grad_input, dim=0), None
 
@@ -249,5 +262,4 @@ class MultiSampledSemiring(_BaseLog):
         i = j
         final = xs % 2
         mbits = bits.type_as(xs)
-        return (((xs % mbits[i + 1]) - (xs % mbits[i])  + final)!= 0).type_as(xs)
-
+        return (((xs % mbits[i + 1]) - (xs % mbits[i]) + final) != 0).type_as(xs)
