@@ -318,20 +318,35 @@ class CKY(_Struct):
 
     @classmethod
     def to_networkx(cls, spans):
-        import networkx as nx
-
-        splits = cls._intermediary(spans.cpu())
-        G = nx.DiGraph()
         cur = 0
-        indices = {}
-        for n in spans.nonzero():
-            indices[(n[0].item(), n[1].item(), n[2].item())] = cur
-            G.add_node(cur, label=n[3].item())
+        N = spans.shape[1]
+        n_nodes = int(spans.sum().item())
+        cover = spans.nonzero().cpu()
+        order = torch.argsort(cover[:, 2] - cover[:, 1])
+        left = {}
+        right = {}
+        ordered = cover[order]
+        label = ordered[:, 3]
+        a = []
+        b = []
+        topo = [[] for _ in range(N)]
+        for n in ordered:
+            batch, i, j, _ = n.tolist()
+            #G.add_node(cur, label=A)
+            if i-j != 0:
+                a.append(left[(batch, i)][0])
+                a.append(right[(batch, j)][0])
+                b.append(cur)
+                b.append(cur)
+                order = max(left[(batch, i)][1], right[(batch, j)][1]) + 1
+            else:
+                order = 0
+            left[(batch, i)] = (cur, order)
+            right[(batch, j)] = (cur, order)
+            topo[order].append(cur)
             cur += 1
-        for k, v in splits.items():
-            G.add_edge(indices[(k[0], k[1], v[0])], indices[k])
-            G.add_edge(indices[(k[0], v[0] + 1, k[2])], indices[k])
-        return G, indices
+        indices = left
+        return (n_nodes, a, b, label), indices, topo
 
     ###### Test
 

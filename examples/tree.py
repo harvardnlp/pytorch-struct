@@ -16,7 +16,7 @@ import time
 
 config = {"method": "reinforce", "baseline": "mean", "opt": "adadelta", 
           "lr_struct": 0.1, "lr_params": 1, "train_model":True, 
-          "var_norm": False, "entropy": 0.001, "v": 2}
+          "var_norm": False, "entropy": 0.001, "v": 3, "RL_K": 10 }
 
 wandb.init(project="pytorch-struct", config=config)
 
@@ -62,7 +62,7 @@ class ListOpsDataset(data.Dataset):
         super(ListOpsDataset, self).__init__(examples, fields, **kwargs)
 
 
-def run(graph, cell, iou, h, c):
+def run(graph, cell, iou, h, c, topo=None):
     g = graph
     g.register_message_func(cell.message_func)
     g.register_reduce_func(cell.reduce_func)
@@ -72,7 +72,10 @@ def run(graph, cell, iou, h, c):
     g.ndata["h"] = h
     g.ndata["c"] = c
     # propagate
-    dgl.prop_nodes_topo(g)
+    if topo is None:
+        dgl.prop_nodes_topo(g)
+    else:
+        g.prop_nodes(topo)
     return g.ndata.pop("h")
 
 
@@ -107,10 +110,10 @@ class LSTMParse(torch.nn.Module):
         self.emb.weight[1].data.zero_()
         batch, N = words.shape
         f, ba = self.lstm(self.emb(words))[0].chunk(2, dim=2)
-        a = torch.zeros(batch, N, N, 100).type_as(f)
-        b = torch.zeros(batch, N, N, 100).type_as(f)
-        a[:, :, :] = f.view(batch, 1, N, self.H)[:, :, :] - f.view(batch, N, 1,   self.H)
-        b[:, :, :] = ba.view(batch, N,  1,  self.H)[:, :] - ba.view(batch, 1, N,   self.H)
+        a = torch.zeros(batch, N, N, H).type_as(f)
+        b = torch.zeros(batch, N, N, H).type_as(f)
+        a[:, :, :N-1] = f[:, 1:].view(batch, 1, N-1, self.H) - f[:].view(batch, N, 1,   self.H)
+        b[:, 1:, :] = ba[:, :N-1].view(batch, N-1,  1,  self.H) - ba.view(batch, 1, N,   self.H)
         out = self.proj(self.res(torch.cat([a, b], dim=-1)))
         return out
 
@@ -201,55 +204,54 @@ def sample_baseline_a(reward_fn, phi, lengths):
 
 
 def sample_baseline_b(reward_fn, phi, lengths, K=5):
-    samples = []
-    total = 0
-    
     t("sample")
     sample = struct(MultiSampledSemiring).marginals(phi, lengths=lengths)
     sample = detach(sample)
-
+    
     t("construct")
     trees = []
+    samples = []
     for k in range(K):
         tmp_sample = MultiSampledSemiring.to_discrete(sample, k+1)
+        samples.append(tmp_sample)
         sampled_tree = struct().from_parts(tmp_sample)[0].cpu()
-        trees.append((sampled_tree, tmp_sample))
-       
-    t("use")
-    for k in range(K):
-        sample_score = reward_fn(trees[k][0])
-        samples.append([trees[k][1], sample_score])
-        if k == 0:
-            total = sample_score.clone()
-        else:
-            total += sample_score
-        
-    t("rest")
+        trees.append(sampled_tree)
+    structs = torch.stack(samples)
     argmax = struct(MaxSemiring).marginals(phi, lengths=lengths)    
     argmax_tree = struct().from_parts(detach(argmax))[0].cpu()
-    max_score = reward_fn(argmax_tree)
+    trees.append(argmax_tree)
 
-    rewards = []
-    structs = [] 
-    for k in range(K):
-        rewards.append(samples[k][1] - max_score)
-        #print(k, rewards[-1])
-        structs.append(samples[k][0])
-        
+    t("use")
+    sample_score = reward_fn(torch.cat(trees), K+1)
 
-    return structs, torch.stack(rewards), total / K, max_score
+    t("finish")
+    total = sample_score[:-1].mean(dim=0)
+    # for k in range(K):
+    #     samples.append([trees[k][1], sample_scores[k]])
+    #     if k == 0:
+    #         total = sample_score.clone()
+    #     else:
+    #         total += sample_score
+    max_score = sample_score[-1].clone().detach()
+    rewards = sample_score[:-1] - max_score.view(1, sample_score.shape[1])
+    return structs, rewards, total, max_score
 
 def tree_model(trees, lengths):
-    graph, indices = CKY.to_networkx(trees.cpu())
+    (n_nodes, a, b, label), indices, topo = CKY.to_networkx(trees.cpu())
     g = dgl.DGLGraph()
-    g.from_networkx(graph, node_attrs=['label'])
+    g.add_nodes(n_nodes)
+    g.add_edges(a, b)
+    # g.from_networkx(graph, node_attrs=['label'])
 
-    h = torch.zeros(len(graph.nodes), H, device="cuda:0")
-    c = torch.zeros(len(graph.nodes), H, device="cuda:0")
-    iou = emb(g.ndata["label"].cuda())
-    g = run(g, tree_lstm, tree_lstm.W_iou(iou), h, c)
-    final = torch.stack([g[indices[i, 0, l.item()-1]]  for i, l in enumerate(lengths)])
+    t("ftree")
+    h = torch.zeros(n_nodes, H, device="cuda:0")
+    c = torch.zeros(n_nodes, H, device="cuda:0")
+    iou = emb(label.cuda())
+
+    g = run(g, tree_lstm, tree_lstm.W_iou(iou), h, c, topo=topo)
+    final = torch.stack([g[indices[i, 0][0]]  for i, l in enumerate(lengths)])
     final = out(final).log_softmax(dim=-1)
+    t("ex")
     return final
 
 
@@ -303,6 +305,7 @@ def valid_sup(valid_iter):
             new_spans[:, torch.arange(N), torch.arange(N), :].fill_(0)
             new_spans[:, torch.arange(N), torch.arange(N), 1:] = torch.nn.functional.one_hot(words, V).float().cuda()
             #torch.nn.functional.one_hot(words, V).float().cuda()
+            t("tree")
             _, am = tree_model(new_spans, lengths).max(-1)
             return (label == am).sum(), label.shape[0]
            
@@ -332,43 +335,50 @@ def train(train_iter):
             batch = label.shape[0]
             _, N = words.shape
 
-            def tree_reward(spans):
+            def tree_reward(spans, K):
                 spans[:, torch.arange(N), torch.arange(N)] = 0
-                new_spans = torch.zeros(batch, N, N, 1 + V).cuda()
-                new_spans[:, :, :, :1] = spans
-                new_spans[:, torch.arange(N), torch.arange(N), :].fill_(0)
-                new_spans[:, torch.arange(N), torch.arange(N), 1:] = torch.nn.functional.one_hot(words, V).float().cuda()
-                ret = -tree_model(new_spans, lengths)[torch.arange(batch), label]
-                return ret
+                new_spans = torch.zeros(K, batch, N, N, 1 + V).cuda()
+                new_spans[:, :, :, :, :1] = spans.view(K, batch,  N, N, 1)
+                new_spans[:, :, torch.arange(N), torch.arange(N), :].fill_(0)
+                new_spans[:, :, torch.arange(N), torch.arange(N), 1:] = torch.nn.functional.one_hot(words, V).float().cuda().view(1, batch, N, V)
+                
+                new_spans = new_spans.view(batch*K, N, N, 1 + V)
+                ret = tree_model(new_spans, torch.cat([lengths for _ in range(K)]))
+                ret = ret.view(K, batch, -1)                
+                return -ret[:, torch.arange(batch), label].view(K, batch)
             
             words = words.cuda()
             phi = model(words, lengths)
             if config["baseline"] == "mean":
-                structs, rewards, score, max_score = sample_baseline_b(tree_reward, phi, lengths)
+                structs, rewards, score, max_score = sample_baseline_b(tree_reward, phi, lengths, K=config["RL_K"])
             if config["baseline"] == "sct":
                 structs, rewards, score, max_score = sample_baseline_a(tree_reward, phi, lengths)
             if config["train_model"]:
+                t("backward")
                 (score.mean()).backward()
                 torch.nn.utils.clip_grad_norm_(parameters = joint_params, max_norm = 0.5, norm_type=float("inf"))
                 opt_params.step()
                 opt_params.zero_grad()
-
+            
             if config["method"] == "reinforce":            
                 opt_struct.zero_grad()
                 obj = [] 
+                t("policy")
                 log_partition, entropy = struct(EntropySemiring).sum(phi, lengths=lengths, _raw=True).unbind()
-                for sample, reward in zip(structs, rewards):
+                # assert rewards.shape[0] == len(structs)
+                # for sample, reward in zip(structs, rewards):
                     #if running_reward is None:
                     #    running_reward = reward.var().detach()
                     #else:
                     #    running_reward = running_reward * alpha + reward.var() * (1.0 - alpha)
                     #    reward = reward / running_reward.sqrt().clamp(min=1.0)
-                    reward = reward.detach()
-                    cur = struct().score(phi, sample.cuda()) - log_partition 
-                    r = cur                     
-                    obj.append(reward.mul(r).mean())
-                t("rest")
-                policy = torch.stack(obj).mean(dim=0) - config["entropy"] * entropy.mean()
+                rewards = rewards.detach()
+                s = structs.shape
+                r = struct().score(phi.unsqueeze(0), structs, batch_dims=[0,1]) - log_partition.unsqueeze(0)
+
+                obj = rewards.mul(r).mean(-1).mean(-1)
+
+                policy = obj - config["entropy"] * entropy.mean()
                 (policy).backward()
                 torch.nn.utils.clip_grad_norm_(parameters = model.parameters(), max_norm = 0.5, norm_type=float("inf"))
                 opt_struct.step()
@@ -394,6 +404,7 @@ def train(train_iter):
                         log_partition, entropy = struct(EntropySemiring).sum(phi, lengths=lengths, _raw=True).unbind()
                         t("add")
                         cur = struct().score(phi, sample.cuda()) - log_partition 
+                        
                         if p == 0:
                             old = cur.clone().detach()
                         r = (cur - old).exp()  
@@ -412,14 +423,16 @@ def train(train_iter):
                 print(torch.tensor(losses).mean(), words.shape)
                 print("Round")
                 print("Entropy", entropy.mean())
-                print("Reward", reward.mean())
+                print("Reward", rewards.mean())
                 print("Running Reward", running_reward)
-
-                valid_loss = valid_sup(valid_iter)
+                if i % 200 == 9:
+                    valid_loss = valid_sup(valid_iter)
+                else:
+                    print(valid_loss)
                 valid_show()
                 wandb.log({"entropy": entropy.mean(), "valid_loss": valid_loss, 
-                           "reward": reward.mean(),
-                           "reward_var": reward.var(),
+                           "reward": rewards.mean(),
+                           "reward_var": rewards.var(),
                            "loss" : torch.tensor(losses).mean()})
 
                 for k in total_time:

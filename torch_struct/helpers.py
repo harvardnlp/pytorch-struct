@@ -15,9 +15,10 @@ class _Struct:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
 
-    def score(self, potentials, parts):
-        batch = potentials.shape[0]
-        return self.semiring.prod(torch.mul(potentials, parts).view(batch, -1))
+    def score(self, potentials, parts, batch_dims=[0]):
+        score = torch.mul(potentials, parts)
+        batch = tuple((score.shape[b] for b in batch_dims))
+        return self.semiring.prod(score.view(batch + (-1,)))
 
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [
