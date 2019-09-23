@@ -17,8 +17,7 @@ A library of tested, GPU implementations of core structured prediction algorithm
 
 
 ```python
-!pip install -qU git+https://github.com/harvardnlp/pytorch-struct
-!pip install -q matplotlib
+!pip install -qU git+https://github.com/harvardnlp/pytorch-struct matplotlib
 ```
 
 
@@ -128,7 +127,7 @@ Current algorithms implemented:
 * Linear Chain (CRF / HMM)
 * Semi-Markov (CRF / HSMM)
 * Dependency Parsing (Projective and Non-Projective)
-* CKY (CFG)
+* CKY (CFG, CKY_CRF)
 
 * Integration with `torchtext` and `pytorch-transformers` 
 
@@ -143,9 +142,11 @@ Semirings:
 * Log Marginals
 * Max and MAP computation
 * Sampling through specialized backprop
+* Entropy
 
-
-
+Networks:
+* CKY CRF LSTM
+* Tree-LSTM
 
 ## Examples
 
