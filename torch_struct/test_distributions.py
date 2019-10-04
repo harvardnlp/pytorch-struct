@@ -12,7 +12,7 @@ lint = integers(min_value=2, max_value=10)
 @settings(max_examples=50, deadline=None)
 def test_simple(data, seed):
 
-    model = data.draw(sampled_from([LinearChainCRF, SemiMarkovCRF]))
+    model = data.draw(sampled_from([LinearChainCRF]))
     struct = model.struct
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()

@@ -47,7 +47,7 @@ class LinearChain(_Struct):
             alpha[lengths[i] - 1][:, i]
             for i in range(batch)
         ]
-        ret = torch.cat(ret, dim=1)
+        ret = torch.stack(ret, dim=1)
         v = semiring.sum(ret)
         return v, edge_store, alpha
 
