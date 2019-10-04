@@ -1,4 +1,4 @@
-from .distributions import LinearChainCRF, SemiMarkovCRF
+from .distributions import LinearChainCRF
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from

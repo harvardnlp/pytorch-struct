@@ -35,12 +35,11 @@ class LinearChain(_Struct):
         edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
         semiring.one_(alpha[0].data)
-        BATCH_DIM, N_DIM = 1, 2
 
         for n in range(1, N):
             edge_store[n - 1][:] = semiring.times(
                 alpha[n - 1].view(ssize, batch, 1, C),
-                edge[:, :, n-1].view(ssize, batch, C, C),
+                edge[:, :, n - 1].view(ssize, batch, C, C),
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
         ret = [
