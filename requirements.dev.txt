@@ -1,6 +1,6 @@
 pytest
-pytest-runner
-hypothesis==4.38
+pytest - runner
+hypothesis == 4.38
 flake8
 black
-pep8-naming
+pep8 - naming

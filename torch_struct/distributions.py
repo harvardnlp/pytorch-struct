@@ -5,12 +5,7 @@ from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
 from .deptree import DepTree
 from .cky_crf import CKY_CRF
-from .semirings import (
-    LogSemiring,
-    MaxSemiring,
-    EntropySemiring,
-    MultiSampledSemiring,
-)
+from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring
 
 
 class StructDistribution(Distribution):

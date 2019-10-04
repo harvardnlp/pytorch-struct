@@ -5,6 +5,7 @@ import torch.nn as nn
 import dgl
 from torch_struct import CKY
 
+
 class TreeLSTMCell(nn.Module):
     def __init__(self, x_size, h_size):
         super(TreeLSTMCell, self).__init__()
@@ -65,7 +66,7 @@ class TreeLSTM(torch.nn.Module):
         iou = self.emb(label.cuda())
 
         g = run(self.tree_lstm, g, self.tree_lstm.W_iou(iou), h, c, topo=topo)
-        final = torch.stack([g[indices[i, 0][0]]  for i, l in enumerate(lengths)])
+        final = torch.stack([g[indices[i, 0][0]] for i, l in enumerate(lengths)])
         final = self.out(final).log_softmax(dim=-1)
         return final
 

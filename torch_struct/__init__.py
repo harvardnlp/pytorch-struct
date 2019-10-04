@@ -36,7 +36,7 @@ __all__ = [
     MaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
-    SelfCritical
+    SelfCritical,
     StructDistribution,
     LinearChainCRF,
     SemiMarkovCRF,

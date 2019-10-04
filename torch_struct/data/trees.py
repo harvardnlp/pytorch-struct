@@ -1,6 +1,7 @@
 import torchtext.data as data
 import torch
 
+
 class ConllXDataset(data.Dataset):
     def __init__(self, path, fields, encoding="utf-8", separator="\t", **kwargs):
         examples = []
@@ -23,10 +24,7 @@ class ConllXDataset(data.Dataset):
         super(ConllXDataset, self).__init__(examples, fields, **kwargs)
 
 
-
-
 class ListOpsDataset(data.Dataset):
-
     @staticmethod
     def tree_field(v):
         def post(ls):
@@ -41,6 +39,7 @@ class ListOpsDataset(data.Dataset):
                     else:
                         ret[b, i, j, 0] = 1
             return ret.long()
+
         return post
 
     def __init__(self, path, fields, encoding="utf-8", separator="\t", **kwargs):
@@ -50,7 +49,7 @@ class ListOpsDataset(data.Dataset):
                 a, b = line.split("\t")
                 label = a
                 words = [w for w in b.split() if w not in "()"]
-                
+
                 cur = 0
                 spans = []
                 stack = []
@@ -58,11 +57,9 @@ class ListOpsDataset(data.Dataset):
                     if w == "(":
                         stack.append(cur)
                     elif w == ")":
-                        nt = last if stack[-1] == cur else "nt"
-                        spans.append((stack[-1], cur-1, w))
+                        spans.append((stack[-1], cur - 1, w))
                         stack = stack[:-1]
                     else:
-                        last = w
                         spans.append((cur, cur, w))
                         cur += 1
                 examples.append(data.Example.fromlist((words, label, spans), fields))
