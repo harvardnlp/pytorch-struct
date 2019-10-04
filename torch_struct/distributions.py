@@ -8,8 +8,6 @@ from .cky_crf import CKY_CRF
 from .semirings import (
     LogSemiring,
     MaxSemiring,
-    StdSemiring,
-    SampledSemiring,
     EntropySemiring,
     MultiSampledSemiring,
 )
