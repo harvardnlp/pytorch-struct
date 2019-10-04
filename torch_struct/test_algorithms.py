@@ -28,7 +28,6 @@ def test_simple(batch, N, C):
     alpha = LinearChain(semiring).sum(vals)
     assert (alpha == pow(C, N + 1)).all()
     LinearChain(SampledSemiring).marginals(vals)
-
     LinearChain(MultiSampledSemiring).marginals(vals)
 
 
