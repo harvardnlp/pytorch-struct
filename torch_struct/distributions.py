@@ -2,6 +2,7 @@ import torch
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import lazy_property
 from .linearchain import LinearChain
+from .cky import CKY
 from .semimarkov import SemiMarkov
 from .deptree import DepTree
 from .cky_crf import CKY_CRF
@@ -100,3 +101,16 @@ class DependencyCRF(StructDistribution):
 
 class TreeCRF(StructDistribution):
     struct = CKY_CRF
+
+
+class SentCFG(StructDistribution):
+    struct = CKY
+
+    def __init__(self, log_potentials, lengths=None):
+        batch_shape = log_potentials[0].shape[:1]
+        event_shape = log_potentials[0].shape[1:]
+        self.log_potentials = log_potentials
+        self.lengths = lengths
+        super(StructDistribution, self).__init__(
+            batch_shape=batch_shape, event_shape=event_shape
+        )

@@ -5,6 +5,7 @@ from .distributions import (
     SemiMarkovCRF,
     DependencyCRF,
     TreeCRF,
+    SentCFG,
 )
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
@@ -42,4 +43,5 @@ __all__ = [
     SemiMarkovCRF,
     DependencyCRF,
     TreeCRF,
+    SentCFG,
 ]
