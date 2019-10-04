@@ -37,15 +37,15 @@ class LinearChain(_Struct):
         semiring.one_(alpha[0].data)
         BATCH_DIM, N_DIM = 1, 2
 
-        for n in torch.arange(1, N).type_as(edge):
+        for n in range(1, N):
             edge_store[n - 1][:] = semiring.times(
                 alpha[n - 1].view(ssize, batch, 1, C),
-                edge.index_select(N_DIM, n - 1).view(ssize, batch, C, C),
+                edge[:, :, n-1].view(ssize, batch, C, C),
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
         ret = [
-            alpha[lengths[i] - 1].index_select(BATCH_DIM, i)
-            for i in torch.arange(batch)
+            alpha[lengths[i] - 1][:, i]
+            for i in range(batch)
         ]
         ret = torch.cat(ret, dim=1)
         v = semiring.sum(ret)
