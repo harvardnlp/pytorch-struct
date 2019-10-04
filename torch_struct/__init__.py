@@ -1,5 +1,11 @@
 from .cky import CKY
-from .distributions import StructDistribution, LinearChainCRF, SemiMarkovCRF, DependencyCRF, TreeCRF
+from .distributions import (
+    StructDistribution,
+    LinearChainCRF,
+    SemiMarkovCRF,
+    DependencyCRF,
+    TreeCRF,
+)
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
@@ -33,5 +39,5 @@ __all__ = [
     LinearChainCRF,
     SemiMarkovCRF,
     DependencyCRF,
-    TreeCRF
+    TreeCRF,
 ]

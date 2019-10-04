@@ -25,20 +25,19 @@ def test_simple(data, seed):
     print(edges.shape)
     log_probs = dist.log_prob(edges)
     for b in range(lengths.shape[0]):
-        log_probs[enum_lengths[b]:, b] = -1e9
+        log_probs[enum_lengths[b] :, b] = -1e9
 
-    assert(torch.isclose(log_probs.exp().sum(0), torch.tensor(1.0)).all())
+    assert torch.isclose(log_probs.exp().sum(0), torch.tensor(1.0)).all()
 
     entropy = dist.entropy
-    assert(torch.isclose(entropy, -log_probs.exp().mul(log_probs).sum(0)).all())
+    assert torch.isclose(entropy, -log_probs.exp().mul(log_probs).sum(0)).all()
 
     argmax = dist.argmax
     _, max_indices = log_probs.max(0)
 
     amax = edges[max_indices, torch.arange(batch)]
-    assert((amax == argmax).all())
-
+    assert (amax == argmax).all()
 
     samples = dist.sample((100,))
     marginals = dist.marginals
-    assert(((samples.mean(0) - marginals).abs() < 0.2).all())
+    assert ((samples.mean(0) - marginals).abs() < 0.2).all()
