@@ -10,6 +10,7 @@ from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
+from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     StdSemiring,
@@ -35,6 +36,7 @@ __all__ = [
     MaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
+    SelfCritical,
     StructDistribution,
     LinearChainCRF,
     SemiMarkovCRF,

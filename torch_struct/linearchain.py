@@ -42,10 +42,7 @@ class LinearChain(_Struct):
                 edge[:, :, n - 1].view(ssize, batch, C, C),
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
-        ret = [
-            alpha[lengths[i] - 1][:, i]
-            for i in range(batch)
-        ]
+        ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
         ret = torch.stack(ret, dim=1)
         v = semiring.sum(ret)
         return v, edge_store, alpha

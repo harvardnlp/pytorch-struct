@@ -1,8 +1,9 @@
 # From DGL documentation
-
+import torch
 import torch as th
 import torch.nn as nn
 import dgl
+from torch_struct import CKY
 
 
 class TreeLSTMCell(nn.Module):
@@ -31,7 +32,7 @@ class TreeLSTMCell(nn.Module):
         return {"h": h, "c": c}
 
 
-def run(cell, graph, iou, h, c):
+def run(cell, graph, iou, h, c, topo=None):
     g = graph
     g.register_message_func(cell.message_func)
     g.register_reduce_func(cell.reduce_func)
@@ -42,4 +43,37 @@ def run(cell, graph, iou, h, c):
     g.ndata["c"] = c
     # propagate
     dgl.prop_nodes_topo(g)
+    if topo is None:
+        dgl.prop_nodes_topo(g)
+    else:
+        g.prop_nodes(topo)
+
     return g.ndata.pop("h")
+
+
+class TreeLSTM(torch.nn.Module):
+    def __init__(self, hidden, in_size, out_size):
+        super().__init__()
+        self.emb = torch.nn.Embedding(in_size, hidden)
+        self.out = torch.nn.Linear(hidden, out_size)
+        self.tree_lstm = TreeLSTMCell(hidden, hidden)
+        self.hidden_size = hidden
+
+    def forward(self, g, label, indices, topo, lengths):
+        n_nodes = g.number_of_nodes()
+        h = torch.zeros(n_nodes, self.hidden_size, device="cuda:0")
+        c = torch.zeros(n_nodes, self.hidden_size, device="cuda:0")
+        iou = self.emb(label.cuda())
+
+        g = run(self.tree_lstm, g, self.tree_lstm.W_iou(iou), h, c, topo=topo)
+        final = torch.stack([g[indices[i, 0][0]] for i, l in enumerate(lengths)])
+        final = self.out(final).log_softmax(dim=-1)
+        return final
+
+    @staticmethod
+    def spans_to_dgl(trees):
+        (n_nodes, a, b, label), indices, topo = CKY.to_networkx(trees.cpu())
+        g = dgl.DGLGraph()
+        g.add_nodes(n_nodes)
+        g.add_edges(a, b)
+        return g, label, indices, topo
