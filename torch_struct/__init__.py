@@ -1,4 +1,11 @@
 from .cky import CKY
+from .distributions import (
+    StructDistribution,
+    LinearChainCRF,
+    SemiMarkovCRF,
+    DependencyCRF,
+    TreeCRF,
+)
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
@@ -14,7 +21,7 @@ from .semirings import (
 )
 
 
-version = "0.0.1"
+version = "0.2"
 
 # For flake8 compatibility.
 __all__ = [
@@ -30,4 +37,9 @@ __all__ = [
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical
+    StructDistribution,
+    LinearChainCRF,
+    SemiMarkovCRF,
+    DependencyCRF,
+    TreeCRF,
 ]

@@ -35,19 +35,18 @@ class LinearChain(_Struct):
         edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
         semiring.one_(alpha[0].data)
-        BATCH_DIM, N_DIM = 1, 2
 
-        for n in torch.arange(1, N):
+        for n in range(1, N):
             edge_store[n - 1][:] = semiring.times(
                 alpha[n - 1].view(ssize, batch, 1, C),
-                edge.index_select(N_DIM, n - 1).view(ssize, batch, C, C),
+                edge[:, :, n - 1].view(ssize, batch, C, C),
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
         ret = [
-            alpha[lengths[i] - 1].index_select(BATCH_DIM, i)
-            for i in torch.arange(batch)
+            alpha[lengths[i] - 1][:, i]
+            for i in range(batch)
         ]
-        ret = torch.cat(ret, dim=1)
+        ret = torch.stack(ret, dim=1)
         v = semiring.sum(ret)
         return v, edge_store, alpha
 
@@ -166,14 +165,17 @@ class LinearChain(_Struct):
         return torch.rand(b, N, C, C), (b.item(), (N + 1).item())
 
     ### Tests
-    def enumerate(self, edge):
+
+    def enumerate(self, edge, lengths=None):
         semiring = self.semiring
         ssize = semiring.size()
-        edge, batch, N, C, lengths = self._check_potentials(edge, None)
-        chains = [([c], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)]
+        edge, batch, N, C, lengths = self._check_potentials(edge, lengths)
+        chains = [[([c], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)]]
+
+        enum_lengths = torch.LongTensor(lengths.shape)
         for n in range(1, N):
             new_chains = []
-            for chain, score in chains:
+            for chain, score in chains[-1]:
                 for c in range(C):
                     new_chains.append(
                         (
@@ -181,13 +183,31 @@ class LinearChain(_Struct):
                             semiring.mul(score, edge[:, :, n - 1, c, chain[-1]]),
                         )
                     )
-            chains = new_chains
+            chains.append(new_chains)
 
-        edges = self.to_parts(torch.stack([torch.tensor(c) for (c, _) in chains]), C)
+            for b in range(lengths.shape[0]):
+                if lengths[b] == n + 1:
+                    enum_lengths[b] = len(new_chains)
+
+        edges = self.to_parts(
+            torch.stack([torch.tensor(c) for (c, _) in chains[-1]]), C
+        )
         # Sum out non-batch
         a = torch.einsum("ancd,sbncd->sbancd", edges.float(), edge)
         a = semiring.prod(a.view(*a.shape[:3] + (-1,)), dim=3)
         a = semiring.sum(a, dim=2)
-        b = semiring.sum(torch.stack([s for (_, s) in chains], dim=1), dim=1)
-        assert torch.isclose(a, b).all(), "%s %s" % (a, b)
-        return semiring.unconvert(b), [s for (_, s) in chains]
+        ret = semiring.sum(torch.stack([s for (_, s) in chains[-1]], dim=1), dim=1)
+        assert torch.isclose(a, ret).all(), "%s %s" % (a, ret)
+
+        edges = torch.zeros(len(chains[-1]), batch, N - 1, C, C)
+        for b in range(lengths.shape[0]):
+            edges[: enum_lengths[b], b, : lengths[b] - 1] = self.to_parts(
+                torch.stack([torch.tensor(c) for (c, _) in chains[lengths[b] - 1]]), C
+            )
+
+        return (
+            semiring.unconvert(ret),
+            [s for (_, s) in chains[-1]],
+            edges,
+            enum_lengths,
+        )
