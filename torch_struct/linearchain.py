@@ -37,7 +37,7 @@ class LinearChain(_Struct):
         semiring.one_(alpha[0].data)
         BATCH_DIM, N_DIM = 1, 2
 
-        for n in range(1, N):
+        for n in torch.arange(1, N).type_as(edge):
             edge_store[n - 1][:] = semiring.times(
                 alpha[n - 1].view(ssize, batch, 1, C),
                 edge.index_select(N_DIM, n - 1).view(ssize, batch, C, C),
