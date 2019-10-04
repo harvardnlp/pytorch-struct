@@ -17,13 +17,14 @@ A library of tested, GPU implementations of core structured prediction algorithm
 
 
 ```python
-!pip install -qU git+https://github.com/harvardnlp/pytorch-struct matplotlib
+!pip install -qU git+https://github.com/harvardnlp/pytorch-struct
+!pip install -q matplotlib
 ```
 
 
 ```python
 import torch
-from torch_struct import DepTree, LinearChain, MaxSemiring, SampledSemiring
+from torch_struct import DependencyCRF, LinearChainCRF
 import matplotlib.pyplot as plt
 def show(x): plt.imshow(x.detach())
 ```
@@ -34,8 +35,8 @@ def show(x): plt.imshow(x.detach())
 vals = torch.zeros(2, 10, 10) + 1e-5
 vals[:, :5, :5] = torch.rand(5)
 vals[:, 5:, 5:] = torch.rand(5) 
-vals = vals.log()
-show(vals[0])
+dist = DependencyCRF(vals.log())
+show(dist.log_potentials[0])
 ```
 
 
@@ -45,8 +46,7 @@ show(vals[0])
 
 ```python
 # Compute marginals
-marginals = DepTree().marginals(vals)
-show(marginals[0])
+show(dist.marginals[0])
 ```
 
 
@@ -56,8 +56,7 @@ show(marginals[0])
 
 ```python
 # Compute argmax
-argmax = DepTree(MaxSemiring).marginals(vals)
-show(argmax.detach()[0])
+show(dist.argmax.detach()[0])
 ```
 
 
@@ -67,16 +66,14 @@ show(argmax.detach()[0])
 
 ```python
 # Compute scoring and enumeration (forward / inside)
-log_partition = DepTree().sum(vals)
-max_score = DepTree(MaxSemiring).sum(vals)
-max_score = DepTree().score(argmax, vals)
+log_partition = dist.partition
+max_score = dist.log_prob(dist.argmax)
 ```
 
 
 ```python
 # Compute samples 
-sample = DepTree(SampledSemiring).marginals(vals)
-show(sample.detach()[0])
+show(dist.sample((1,)).detach()[0, 0])
 ```
 
 
@@ -86,12 +83,10 @@ show(sample.detach()[0])
 
 ```python
 # Padding/Masking built into library.
-marginals = DepTree().marginals(
-    vals,
-    lengths=torch.tensor([10, 7]))
-show(marginals[0])
+dist = DependencyCRF(vals, lengths=torch.tensor([10, 7]))
+show(dist.marginals[0])
 plt.show()
-show(marginals[1])
+show(dist.marginals[1])
 ```
 
 
@@ -112,8 +107,8 @@ chain[:, 0, :, 0] = 1
 chain[:, -1,9, :] = 1
 chain = chain.log()
 
-marginals = LinearChain().marginals(chain)
-show(marginals.detach()[0].sum(-1))
+dist = LinearChainCRF(chain)
+show(dist.marginals.detach()[0].sum(-1))
 ```
 
 
@@ -122,36 +117,42 @@ show(marginals.detach()[0].sum(-1))
 
 ## Library
 
-Current algorithms implemented:
+Current distributions implemented:
 
-* Linear Chain (CRF / HMM)
-* Semi-Markov (CRF / HSMM)
-* Dependency Parsing (Projective and Non-Projective)
-* CKY (CFG, CKY_CRF)
+* LinearChainCRF 
+* SemiMarkovCRF 
+* DependencyCRF 
+* TreeCRF 
 
-* Integration with `torchtext` and `pytorch-transformers` 
+
+Extensions:
+
+* Integration with `torchtext`, `pytorch-transformers`, `dgl`
+* Adapters for generative structured models (CFG / HMM / HSMM)
+* Common tree structured parameterizations TreeLSTM / SpanLSTM
 
 Design Strategy:
 
-1) Minimal implementatations. Most are 10 lines.
+1) Minimal efficient python implementatations. 
 2) Batched for GPU.
 3) Code can be ported to other backends
 
-Semirings:
+
+## Low-level API: 
+
+Everything implemented through semiring dynamic programming. 
 
 * Log Marginals
 * Max and MAP computation
 * Sampling through specialized backprop
-* Entropy
+* Entropy and first-order semirings. 
 
-Networks:
-* CKY CRF LSTM
-* Tree-LSTM
+
+
 
 ## Examples
 
 * BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertTagger.ipynb">Part-of-Speech</a> 
 * BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertDependencies.ipynb">Dependency Parsing</a>
-* <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/Unsupervised_CFG.ipynb">Unsupervised Learning </a>
+* Unsupervised Learning (to come)
 * Structured VAE (to come)
-* Structured attention (to come)
