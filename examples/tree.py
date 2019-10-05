@@ -88,7 +88,7 @@ def run_train(train_iter, valid_iter, model, tree_lstm, V):
     model.train()
     tree_lstm.train()
     losses = []
-    Dist = TreeCFG
+    Dist = TreeCRF
     step = 0
     trees = None
     for epoch in range(100):
@@ -172,6 +172,7 @@ def run_train(train_iter, valid_iter, model, tree_lstm, V):
 
 def valid_show(valid_iter, model):
     table = wandb.Table(columns=["Sent", "Predicted Tree", "True Tree"])
+    Dist = TreeCRF
     for i, ex in enumerate(valid_iter):
         words, lengths = ex.word
         label = ex.label
@@ -259,7 +260,6 @@ def main():
         for p in model.parameters():
             if p.dim() > 1:
                 torch.nn.init.xavier_uniform_(p)
-        struct = CKY_CRF
 
         wandb.watch((model, tree_lstm))
         print(wandb.config)

@@ -12,7 +12,7 @@ class SelfCritical:
         for k in range(K):
             sampled_tree = dist.struct.from_parts(samples[k])[0].cpu()
             trees.append(sampled_tree)
-        structs = torch.stack(samples)
+        structs = torch.stack(trees)
         argmax = dist.argmax
         argmax_tree = dist.struct.from_parts(argmax.detach())[0].cpu()
         trees.append(argmax_tree)
