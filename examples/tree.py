@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # wandb login 7cd7ade39e2d850ec1cf4e914d9a148586a20900
-from torch_struct import (TreeCRF, SelfCritical)
+from torch_struct import TreeCRF, SelfCritical
 import torchtext.data as data
 from torch_struct.data import ListOpsDataset, TokenBucket
 from torch_struct.networks import TreeLSTM, SpanLSTM
