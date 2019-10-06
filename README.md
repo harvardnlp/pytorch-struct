@@ -154,5 +154,5 @@ Everything implemented through semiring dynamic programming.
 
 * BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertTagger.ipynb">Part-of-Speech</a> 
 * BERT <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/BertDependencies.ipynb">Dependency Parsing</a>
-* Unsupervised Learning (to come)
-* Structured VAE (to come)
+* <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/notebooks/Unsupervised_CFG.ipynb">Unsupervised Learning</a> 
+* <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/examples/tree.py">Structured VAE </a>
