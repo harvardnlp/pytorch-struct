@@ -1,0 +1,4 @@
+sphinx
+sphinx-jinja
+sphinx-rtd-theme
+recommonmark
