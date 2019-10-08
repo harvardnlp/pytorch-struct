@@ -9,11 +9,28 @@ PyTorch-Struct
 Introduction
 ============
 
-A library for structured prediction in pytorch.
+A library for structured prediction.
+
 
 
 Distributional Interface
 ========================
+
+
+The main interface is through a structured distribution objects. Each
+of these implement a conditional random field over a class of
+structures. Roughly, these represent specialized softmax's over
+exponentially sized spaces. Each distribution object takes in
+log_potentials (generalized logits) and can return properties of the
+distribution. The properties of interest are,
+
+* Partition (e.g. logsumexp)
+* Marginals (e.g. softmax)
+* Argmax
+* Entropy
+* Samples
+* to_event / from_event (adapters)
+
 
 .. autoclass:: torch_struct.StructDistribution
    :members:
@@ -33,6 +50,7 @@ Semi-Markov
 Dependency Tree
 ----------------
 
+
 .. autoclass:: torch_struct.DependencyCRF
 
 
@@ -45,8 +63,6 @@ Context-Free Grammar
 ---------------------
 
 .. autoclass:: torch_struct.SentCFG
-
-
 
 
 
@@ -76,6 +92,11 @@ Datasets for common structured prediction tasks.
 
 Advanced Usage: Semirings
 =========================
+
+All of the distributional code is implemented through a series of
+semiring objects. These are passed through dynamic programming
+backends to compute the distributions.
+
 
 Standard Semirings
 ------------------
