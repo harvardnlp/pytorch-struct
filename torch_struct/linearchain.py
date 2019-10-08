@@ -6,12 +6,6 @@ class LinearChain(_Struct):
     """
     Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
     and anything with chain-like dynamics.
-
-
-    Potentials are of the form:
-
-            edge : b x (N-1) x C x C markov potentials
-                        (n-1 x z_n x z_{n-1})
     """
 
     def _check_potentials(self, edge, lengths=None):

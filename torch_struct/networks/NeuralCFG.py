@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-# NeuralCFG From Kim et al
+
 class Res(nn.Module):
     def __init__(self, H):
         super().__init__()
@@ -20,6 +20,9 @@ class Res(nn.Module):
 
 
 class NeuralCFG(torch.nn.Module):
+    """
+    NeuralCFG From Kim et al
+    """
     def __init__(self, V, T, NT, H):
         super().__init__()
         self.NT = NT
