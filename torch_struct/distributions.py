@@ -16,9 +16,10 @@ class StructDistribution(Distribution):
     Dynamic distribution for length N of structures :math:`p(z)`.
 
     Parameters:
-        log_potentials (tensor) : batch_shape x event_shape log-potentials :math:`\phi`
-        lengths (long tensor) : batch_shape integers for length masking
+        log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`
+        lengths (long tensor, batch_shape) : integers for length masking
     """
+
     has_enumerate_support = True
 
     def __init__(self, log_potentials, lengths=None):
@@ -60,11 +61,11 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def argmax(self):
-        """
-        Compute an argmax for distribution :math:`\arg\max p(z)`.
+        r"""
+        Compute an argmax for distribution :math:`\\arg\max p(z)`.
 
         Returns:
-            argmax - batch_shape x event_shape
+            argmax (*batch_shape x event_shape*)
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
@@ -74,7 +75,7 @@ class StructDistribution(Distribution):
         Compute marginals for distribution :math:`p(z_t)`.
 
         Returns:
-            marginals - batch_shape x event_shape
+            marginals (*batch_shape x event_shape*)
         """
         return self.struct(LogSemiring).marginals(self.log_potentials, self.lengths)
 
@@ -92,7 +93,7 @@ class StructDistribution(Distribution):
         return self.struct(LogSemiring).sum(self.log_potentials, self.lengths)
 
     def sample(self, sample_shape=torch.Size()):
-        """
+        r"""
         Compute structured samples from the distribution :math:`z \sim p(z)`.
 
         Parameters:
@@ -151,6 +152,7 @@ class LinearChainCRF(StructDistribution):
 
     Compact representation: N long tensor in [0, ..., C-1]
     """
+
     struct = LinearChain
 
 
@@ -167,6 +169,7 @@ class SemiMarkovCRF(StructDistribution):
 
     Compact representation: N long tensor in [-1, 0, ..., C-1]
     """
+
     struct = SemiMarkov
 
 
@@ -185,6 +188,7 @@ class DependencyCRF(StructDistribution):
 
     Compact representation: N long tensor in [0, N] (indexing is +1)
     """
+
     struct = DepTree
 
 
