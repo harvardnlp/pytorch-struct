@@ -10,6 +10,16 @@ from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSe
 
 
 class StructDistribution(Distribution):
+    r"""
+    Base structured distribution class.
+
+    Dynamic distribution for length N of structures :math:`p(z)`.
+
+    Parameters:
+        log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`
+        lengths (long tensor, batch_shape) : integers for length masking
+    """
+
     has_enumerate_support = True
 
     def __init__(self, log_potentials, lengths=None):
@@ -22,6 +32,53 @@ class StructDistribution(Distribution):
     def _new(self, *args, **kwargs):
         return self._param.new(*args, **kwargs)
 
+    def log_prob(self, value):
+        """
+        Compute log probability over values :math:`p(z)`.
+
+        Parameters:
+            value (tensor): sample_sample x batch_shape x event_shapesss
+        """
+
+        d = value.dim()
+        batch_dims = range(d - len(self.event_shape))
+        v = self.struct().score(
+            self.log_potentials,
+            value.type_as(self.log_potentials),
+            batch_dims=batch_dims,
+        )
+        return v - self.partition
+
+    @lazy_property
+    def entropy(self):
+        """
+        Compute entropy for distribution :math:`H[z]`.
+
+        Returns:
+            entropy - batch_shape
+        """
+        return self.struct(EntropySemiring).sum(self.log_potentials, self.lengths)
+
+    @lazy_property
+    def argmax(self):
+        r"""
+        Compute an argmax for distribution :math:`\\arg\max p(z)`.
+
+        Returns:
+            argmax (*batch_shape x event_shape*)
+        """
+        return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
+
+    @lazy_property
+    def marginals(self):
+        """
+        Compute marginals for distribution :math:`p(z_t)`.
+
+        Returns:
+            marginals (*batch_shape x event_shape*)
+        """
+        return self.struct(LogSemiring).marginals(self.log_potentials, self.lengths)
+
     # @constraints.dependent_property
     # def support(self):
     #     pass
@@ -32,17 +89,19 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def partition(self):
+        "Compute the partition function."
         return self.struct(LogSemiring).sum(self.log_potentials, self.lengths)
 
-    @property
-    def mean(self):
-        pass
-
-    @property
-    def variance(self):
-        pass
-
     def sample(self, sample_shape=torch.Size()):
+        r"""
+        Compute structured samples from the distribution :math:`z \sim p(z)`.
+
+        Parameters:
+            sample_shape (int): number of samples
+
+        Returns:
+            samples - sample_shape x batch_shape x event_shape
+        """
         assert len(sample_shape) == 1
         nsamples = sample_shape[0]
         samples = []
@@ -56,29 +115,21 @@ class StructDistribution(Distribution):
             samples.append(tmp_sample)
         return torch.stack(samples)
 
-    def log_prob(self, value):
-        d = value.dim()
-        batch_dims = range(d - len(self.event_shape))
-        v = self.struct().score(
-            self.log_potentials,
-            value.type_as(self.log_potentials),
-            batch_dims=batch_dims,
-        )
-        return v - self.partition
+    def to_event(self, sequence, extra, lengths=None):
+        "Convert simple representation to event."
+        return self.struct.to_parts(sequence, extra, lengths=None)
 
-    @lazy_property
-    def entropy(self):
-        return self.struct(EntropySemiring).sum(self.log_potentials, self.lengths)
-
-    @lazy_property
-    def argmax(self):
-        return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
-
-    @lazy_property
-    def marginals(self):
-        return self.struct(LogSemiring).marginals(self.log_potentials, self.lengths)
+    def from_event(self, event):
+        "Convert event to simple representation."
+        return self.struct.from_parts(event)
 
     def enumerate_support(self, expand=True):
+        """
+        Compute the full exponential enumeration set.
+
+        Returns:
+            (enum, enum_lengths) - tuple cardinality x batch_shape x event_shape
+        """
         _, _, edges, enum_lengths = self.struct().enumerate(
             self.log_potentials, self.lengths
         )
@@ -88,22 +139,92 @@ class StructDistribution(Distribution):
 
 
 class LinearChainCRF(StructDistribution):
+    r"""
+    Represents structured linear-chain CRFs with C classes.
+
+    Event shape is of the form:
+
+    Parameters:
+        log_potentials (tensor) : event shape ((N-1) x C x C ) e.g.
+                                  :math:`\phi(n,  z_{n+1}, z_{n})`
+        lengths (long tensor) : batch_shape integers for length masking.
+
+
+    Compact representation: N long tensor in [0, ..., C-1]
+    """
+
     struct = LinearChain
 
 
 class SemiMarkovCRF(StructDistribution):
+    r"""
+    Represents a semi-markov or segmental CRF with C classes of max width K
+
+    Event shape is of the form:
+
+    Parameters:
+       log_potentials : event shape (N x K x C x C) e.g.
+                        :math:`\phi(n, k, z_{n+1}, z_{n})`
+       lengths (long tensor) : batch shape integers for length masking.
+
+    Compact representation: N long tensor in [-1, 0, ..., C-1]
+    """
+
     struct = SemiMarkov
 
 
 class DependencyCRF(StructDistribution):
+    r"""
+    Represents a projective dependency CRF.
+
+    Event shape is of the form:
+
+    Parameters:
+       log_potentials (tensor) : event shape (N x N) head, child  with
+                                 arc scores with root scores on diagonal e.g.
+                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).
+       lengths (long tensor) : batch shape integers for length masking.
+
+
+    Compact representation: N long tensor in [0, N] (indexing is +1)
+    """
+
     struct = DepTree
 
 
 class TreeCRF(StructDistribution):
+    r"""
+    Represents a 0th-order span parser with NT nonterminals.
+
+    Event shape is of the form:
+
+    Parameters:
+        log_potentials (tensor) : event_shape N x N x NT, e.g.
+                                    :math:`\phi(i, j, nt)`
+        lengths (long tensor) : batch shape integers for length masking.
+
+    Compact representation:  N x N x NT long tensor (Same)
+    """
     struct = CKY_CRF
 
 
 class SentCFG(StructDistribution):
+    """
+    Represents a full generative context-free grammar with
+    non-terminals NT and terminals T.
+
+    Event shape is of the form:
+
+    Parameters:
+        log_potentials (tuple) : event tuple with event shapes
+                         terms (N x T)
+                         rules (NT x (NT+T) x (NT+T))
+                         root  (NT)
+        lengths (long tensor) : batch shape integers for length masking.
+
+    Compact representation:  N x N x NT long tensor
+    """
+
     struct = CKY
 
     def __init__(self, log_potentials, lengths=None):

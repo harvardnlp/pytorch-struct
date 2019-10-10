@@ -52,6 +52,10 @@ def run(cell, graph, iou, h, c, topo=None):
 
 
 class TreeLSTM(torch.nn.Module):
+    """
+    TreeLSTM from DGL.
+    """
+
     def __init__(self, hidden, in_size, out_size):
         super().__init__()
         self.emb = torch.nn.Embedding(in_size, hidden)
