@@ -1,4 +1,5 @@
 sphinx
 sphinx-jinja
+sphinxcontrib-bibtex
 sphinx-rtd-theme
 recommonmark
