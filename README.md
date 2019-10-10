@@ -117,6 +117,8 @@ show(dist.marginals.detach()[0].sum(-1))
 
 ## Library
 
+Full docs: http://nlp.seas.harvard.edu/pytorch-struct/
+
 Current distributions implemented:
 
 * LinearChainCRF 
