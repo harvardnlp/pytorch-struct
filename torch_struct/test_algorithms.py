@@ -87,6 +87,7 @@ def test_generic_a(data):
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
+    print(count)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
