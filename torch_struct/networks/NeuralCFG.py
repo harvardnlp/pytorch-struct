@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 
-
 class Res(nn.Module):
     def __init__(self, H):
         super().__init__()

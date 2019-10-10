@@ -10,7 +10,7 @@ from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSe
 
 
 class StructDistribution(Distribution):
-    """
+    r"""
     Base structured distribution class.
 
     Dynamic distribution for length N of structures :math:`p(z)`.
@@ -115,11 +115,11 @@ class StructDistribution(Distribution):
             samples.append(tmp_sample)
         return torch.stack(samples)
 
-    def to_event(sequence, extra, lengths=None):
+    def to_event(self, sequence, extra, lengths=None):
         "Convert simple representation to event."
         return self.struct.to_parts(sequence, extra, lengths=None)
 
-    def from_event(event):
+    def from_event(self, event):
         "Convert event to simple representation."
         return self.struct.from_parts(event)
 
@@ -139,7 +139,7 @@ class StructDistribution(Distribution):
 
 
 class LinearChainCRF(StructDistribution):
-    """
+    r"""
     Represents structured linear-chain CRFs with C classes.
 
     Event shape is of the form:
@@ -157,7 +157,7 @@ class LinearChainCRF(StructDistribution):
 
 
 class SemiMarkovCRF(StructDistribution):
-    """
+    r"""
     Represents a semi-markov or segmental CRF with C classes of max width K
 
     Event shape is of the form:
@@ -174,7 +174,7 @@ class SemiMarkovCRF(StructDistribution):
 
 
 class DependencyCRF(StructDistribution):
-    """
+    r"""
     Represents a projective dependency CRF.
 
     Event shape is of the form:
