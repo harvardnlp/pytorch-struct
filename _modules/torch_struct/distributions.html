@@ -181,7 +181,7 @@
 <span class="sd">        Compute log probability over values :math:`p(z)`.</span>
 
 <span class="sd">        Parameters:</span>
-<span class="sd">            value (tensor): sample_sample x batch_shape x event_shapesss</span>
+<span class="sd">            value (tensor): sample_shape x batch_shape x event_shape</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
@@ -199,14 +199,14 @@
 <span class="sd">        Compute entropy for distribution :math:`H[z]`.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            entropy - batch_shape</span>
+<span class="sd">            entropy (*batch_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StructDistribution.argmax"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.argmax">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute an argmax for distribution :math:`\\arg\max p(z)`.</span>
+<span class="sd">        Compute an argmax for distribution :math:`\arg\max p(z)`.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            argmax (*batch_shape x event_shape*)</span>
@@ -244,7 +244,7 @@
 <span class="sd">            sample_shape (int): number of samples</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            samples - sample_shape x batch_shape x event_shape</span>
+<span class="sd">            samples (*sample_shape x batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
         <span class="n">nsamples</span> <span class="o">=</span> <span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -272,7 +272,7 @@
 <span class="sd">        Compute the full exponential enumeration set.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            (enum, enum_lengths) - tuple cardinality x batch_shape x event_shape</span>
+<span class="sd">            (enum, enum_lengths) - *tuple cardinality x batch_shape x event_shape*</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">()</span><span class="o">.</span><span class="n">enumerate</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
@@ -289,7 +289,7 @@
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">        log_potentials (tensor) : event shape ((N-1) x C x C ) e.g.</span>
+<span class="sd">        log_potentials (tensor) : event shape (*(N-1) x C x C*) e.g.</span>
 <span class="sd">                                  :math:`\phi(n,  z_{n+1}, z_{n})`</span>
 <span class="sd">        lengths (long tensor) : batch_shape integers for length masking.</span>
 
@@ -307,7 +307,7 @@
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">       log_potentials : event shape (N x K x C x C) e.g.</span>
+<span class="sd">       log_potentials : event shape (*N x K x C x C*) e.g.</span>
 <span class="sd">                        :math:`\phi(n, k, z_{n+1}, z_{n})`</span>
 <span class="sd">       lengths (long tensor) : batch shape integers for length masking.</span>
 
@@ -324,13 +324,13 @@
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">       log_potentials (tensor) : event shape (N x N) head, child  with</span>
+<span class="sd">       log_potentials (tensor) : event shape (*N x N*) head, child  with</span>
 <span class="sd">                                 arc scores with root scores on diagonal e.g.</span>
 <span class="sd">                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).</span>
 <span class="sd">       lengths (long tensor) : batch shape integers for length masking.</span>
 
 
-<span class="sd">    Compact representation: N long tensor in [0, N] (indexing is +1)</span>
+<span class="sd">    Compact representation: N long tensor in [0, .. N] (indexing is +1)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">DepTree</span></div>
@@ -343,11 +343,11 @@
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">        log_potentials (tensor) : event_shape N x N x NT, e.g.</span>
+<span class="sd">        log_potentials (tensor) : event_shape (*N x N x NT*), e.g.</span>
 <span class="sd">                                    :math:`\phi(i, j, nt)`</span>
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
 
-<span class="sd">    Compact representation:  N x N x NT long tensor (Same)</span>
+<span class="sd">    Compact representation:  *N x N x NT* long tensor (Same)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY_CRF</span></div>
 
@@ -361,12 +361,12 @@
 
 <span class="sd">    Parameters:</span>
 <span class="sd">        log_potentials (tuple) : event tuple with event shapes</span>
-<span class="sd">                         terms (N x T)</span>
-<span class="sd">                         rules (NT x (NT+T) x (NT+T))</span>
-<span class="sd">                         root  (NT)</span>
+<span class="sd">                         terms (*N x T*)</span>
+<span class="sd">                         rules (*NT x (NT+T) x (NT+T)*)</span>
+<span class="sd">                         root  (*NT*)</span>
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
 
-<span class="sd">    Compact representation:  N x N x NT long tensor</span>
+<span class="sd">    Compact representation:  *N x N x NT* long tensor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY</span>

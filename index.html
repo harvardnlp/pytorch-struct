@@ -207,7 +207,7 @@ distribution. The properties of interest are,</p>
 <dl class="attribute">
 <dt id="torch_struct.StructDistribution.argmax">
 <code class="sig-name descname">argmax</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\\arg\max p(z)\)</span>.</p>
+<dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\arg\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>argmax (<em>batch_shape x event_shape</em>)</p>
@@ -221,7 +221,7 @@ distribution. The properties of interest are,</p>
 <dd><p>Compute entropy for distribution <span class="math notranslate nohighlight">\(H[z]\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>entropy - batch_shape</p>
+<dd class="field-odd"><p>entropy (<em>batch_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -232,7 +232,7 @@ distribution. The properties of interest are,</p>
 <dd><p>Compute the full exponential enumeration set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(enum, enum_lengths) - tuple cardinality x batch_shape x event_shape</p>
+<dd class="field-odd"><p>(enum, enum_lengths) - <em>tuple cardinality x batch_shape x event_shape</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -249,7 +249,7 @@ distribution. The properties of interest are,</p>
 <dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – sample_sample x batch_shape x event_shapesss</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – sample_shape x batch_shape x event_shape</p>
 </dd>
 </dl>
 </dd></dl>
@@ -280,7 +280,7 @@ distribution. The properties of interest are,</p>
 <dd class="field-odd"><p><strong>sample_shape</strong> (<em>int</em>) – number of samples</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>samples - sample_shape x batch_shape x event_shape</p>
+<dd class="field-even"><p>samples (<em>sample_shape x batch_shape x event_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -303,7 +303,7 @@ distribution. The properties of interest are,</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape ((N-1) x C x C ) e.g.
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>(N-1) x C x C</em>) e.g.
 <span class="math notranslate nohighlight">\(\phi(n,  z_{n+1}, z_{n})\)</span></p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch_shape integers for length masking.</p></li>
 </ul>
@@ -323,7 +323,7 @@ distribution. The properties of interest are,</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> – event shape (N x K x C x C) e.g.
+<li><p><strong>log_potentials</strong> – event shape (<em>N x K x C x C</em>) e.g.
 <span class="math notranslate nohighlight">\(\phi(n, k, z_{n+1}, z_{n})\)</span></p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
@@ -343,14 +343,14 @@ distribution. The properties of interest are,</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (N x N) head, child  with
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child  with
 arc scores with root scores on diagonal e.g.
 <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Compact representation: N long tensor in [0, N] (indexing is +1)</p>
+<p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
 </dd></dl>
 
 </div>
@@ -364,13 +364,13 @@ arc scores with root scores on diagonal e.g.
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event_shape N x N x NT, e.g.
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event_shape (<em>N x N x NT</em>), e.g.
 <span class="math notranslate nohighlight">\(\phi(i, j, nt)\)</span></p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Compact representation:  N x N x NT long tensor (Same)</p>
+<p>Compact representation:  <em>N x N x NT</em> long tensor (Same)</p>
 </dd></dl>
 
 </div>
@@ -386,14 +386,14 @@ non-terminals NT and terminals T.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>log_potentials</strong> (<em>tuple</em>) – event tuple with event shapes
-terms (N x T)
-rules (NT x (NT+T) x (NT+T))
-root  (NT)</p></li>
+terms (<em>N x T</em>)
+rules (<em>NT x (NT+T) x (NT+T)</em>)
+root  (<em>NT</em>)</p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Compact representation:  N x N x NT long tensor</p>
+<p>Compact representation:  <em>N x N x NT</em> long tensor</p>
 </dd></dl>
 
 </div>
