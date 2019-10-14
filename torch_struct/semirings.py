@@ -105,7 +105,7 @@ class EntropySemiring(Semiring):
 
     @staticmethod
     def zero_(xs):
-        xs[0].fill_(-1e9)
+        xs[0].fill_(-1e5)
         xs[1].fill_(0)
         return xs
 
@@ -123,7 +123,7 @@ class _BaseLog(Semiring):
 
     @staticmethod
     def zero_(xs):
-        return xs.fill_(-1e9)
+        return xs.fill_(-1e5)
 
     @staticmethod
     def one_(xs):
