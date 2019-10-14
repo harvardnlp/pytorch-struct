@@ -304,7 +304,7 @@ class DepTree(_Struct):
         N = torch.randint(2, 4, (1,))
         return torch.rand(b, N, N), (b.item(), N.item())
 
-    def enumerate(self, arc_scores, non_proj=False):
+    def enumerate(self, arc_scores, non_proj=False, multi_root=True):
         semiring = self.semiring
         parses = []
         q = []
@@ -316,11 +316,25 @@ class DepTree(_Struct):
                 continue
             if not non_proj and not _is_projective(parse):
                 continue
+
+            if not multi_root and _is_multi_root(parse):
+                continue
+
             q.append(parse)
             parses.append(
                 semiring.times(*[arc_scores[:, parse[i], i] for i in range(1, N, 1)])
             )
         return semiring.sum(torch.stack(parses, dim=-1)), None
+
+
+def deptree_part(arc_scores, eps=1e-5):
+    input = arc_scores
+    eye = torch.eye(input.shape[1], device=input.device)
+    laplacian = input.exp() + eps
+    lap = laplacian.masked_fill(eye != 0, 0)
+    lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
+    lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+    return lap.det().log()
 
 
 def deptree_nonproj(arc_scores, eps=1e-5):
@@ -393,6 +407,14 @@ def _is_spanning(parse):
     if len(seen) != len(parse) - len([1 for p in parse if p is None]):
         return False
     return True
+
+
+def _is_multi_root(parse):
+    root_count = 0
+    for m, h in enumerate(parse):
+        if h == 0:
+            root_count += 1
+    return root_count > 1
 
 
 def _is_projective(parse):

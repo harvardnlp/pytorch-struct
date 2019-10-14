@@ -1,6 +1,6 @@
 from .cky import CKY
 from .cky_crf import CKY_CRF
-from .deptree import DepTree
+from .deptree import DepTree, deptree_nonproj, deptree_part
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
 from .semirings import (
@@ -97,6 +97,31 @@ def test_generic_a(data):
     score = struct.sum(vals)
     marginals = struct.marginals(vals)
     assert torch.isclose(score, struct.score(vals, marginals)).all()
+
+
+@given(data())
+@settings(max_examples=50, deadline=None)
+def test_non_proj(data):
+    model = data.draw(sampled_from([DepTree]))
+    semiring = data.draw(sampled_from([LogSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    alpha = deptree_part(vals)
+    count = struct.enumerate(vals, non_proj=True, multi_root=False)[0]
+
+    assert alpha.shape[0] == batch
+    assert count.shape[0] == batch
+    assert alpha.shape == count.shape
+    assert torch.isclose(count[0], alpha[0])
+
+    marginals = deptree_nonproj(vals)
+    print(marginals.sum(1))
+    # assert(False)
+    # vals, _ = model._rand()
+    # struct = model(MaxSemiring)
+    # score = struct.sum(vals)
+    # marginals = struct.marginals(vals)
+    # assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
 @given(data(), integers(min_value=1, max_value=20))
