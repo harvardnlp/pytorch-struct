@@ -2,6 +2,7 @@ import torch
 from .helpers import _Struct
 import math
 
+
 class LinearChain(_Struct):
     """
     Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
@@ -35,48 +36,62 @@ class LinearChain(_Struct):
         semiring = self.semiring
         log_potentials.requires_grad_(True)
         ssize = semiring.size()
-        log_potentials, batch, N, C, lengths = self._check_potentials(log_potentials,
-                                                                      lengths)
-        log_N = int(math.ceil(math.log(N-1, 2)))
+        log_potentials, batch, N, C, lengths = self._check_potentials(
+            log_potentials, lengths
+        )
+        log_N = int(math.ceil(math.log(N - 1, 2)))
         bin_N = int(math.pow(2, log_N))
 
         # Run linearscan
         def left(x, size):
-            return x[:, :, 0:size*2:2]
+            return x[:, :, 0 : size * 2 : 2]
+
         def right(x, size):
-            return x[:, :, 1:size*2:2]
+            return x[:, :, 1 : size * 2 : 2]
+
         def root(x):
             return x[:, :, 0]
+
         def parent(x, size):
             return x[:, :, :size]
 
         def merge(x, y, size):
-            return semiring.sum(semiring.times(
-                x.transpose(3,4).view(ssize, batch, size, 1, C, C),
-                y.view(ssize, batch, size, C, 1, C)))
+            return semiring.sum(
+                semiring.times(
+                    x.transpose(3, 4).view(ssize, batch, size, 1, C, C),
+                    y.view(ssize, batch, size, C, 1, C),
+                )
+            )
 
-        chart, chart2 = [self._make_chart(log_N+1, (batch, bin_N, C, C), log_potentials, force_grad)
-                         for _ in range(2)]
+        chart, chart2 = [
+            self._make_chart(
+                log_N + 1, (batch, bin_N, C, C), log_potentials, force_grad
+            )
+            for _ in range(2)
+        ]
 
         # Scan upward
-        chart[0][:, :, :N-1] = log_potentials
-        semiring.zero_(chart[0][:, :, N-1:])
+        chart[0][:, :, : N - 1] = log_potentials
+        semiring.zero_(chart[0][:, :, N - 1 :])
         size = bin_N
-        for n in range(1, log_N+1):
+        for n in range(1, log_N + 1):
             size = int(size / 2)
-            chart[n][:, :, :size] = merge(left(chart[n-1], size),
-                                          right(chart[n-1], size), size)
+            chart[n][:, :, :size] = merge(
+                left(chart[n - 1], size), right(chart[n - 1], size), size
+            )
         v = semiring.sum(semiring.sum(root(chart[-1][:])))
         # Scan downward
         semiring.zero_(root(chart2[-1][:]))
-        chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)] = \
-                semiring.one_(chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)])
+        chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)] = semiring.one_(
+            chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)]
+        )
 
         size = 1
-        for n in range(log_N-1, -1, -1):
-            left(chart2[n], size)[:] = parent(chart2[n+1], size)
-            right(chart2[n], size)[:] = merge(parent(chart2[n+1], size),
-                                              left(chart[n], size), size)
+        for n in range(log_N - 1, -1, -1):
+            left(chart2[n], size)[:] = parent(chart2[n + 1], size)
+            right(chart2[n], size)[:] = merge(
+                parent(chart2[n + 1], size), left(chart[n], size), size
+            )
             size = size * 2
 
         final = merge(chart2[0], chart[0], size)
@@ -84,7 +99,6 @@ class LinearChain(_Struct):
         ret = torch.stack(ret, dim=1)
         v = semiring.sum(semiring.sum(ret))
         return v, [log_potentials], None
-
 
     def _dp_standard(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
@@ -103,7 +117,6 @@ class LinearChain(_Struct):
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
 
-
         for n in range(1, N):
             edge_store[n - 1][:] = semiring.times(
                 alpha[n - 1].view(ssize, batch, 1, C),
@@ -111,13 +124,10 @@ class LinearChain(_Struct):
             )
             alpha[n][:] = semiring.sum(edge_store[n - 1])
 
-
-
         ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
         ret = torch.stack(ret, dim=1)
         v = semiring.sum(ret)
         return v, edge_store, alpha
-
 
     # def _dp_backward(self, edge, lengths, alpha_in, v=None):
     #     semiring = self.semiring
