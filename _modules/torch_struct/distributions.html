@@ -148,7 +148,7 @@
 <span class="kn">from</span> <span class="nn">.linearchain</span> <span class="k">import</span> <span class="n">LinearChain</span>
 <span class="kn">from</span> <span class="nn">.cky</span> <span class="k">import</span> <span class="n">CKY</span>
 <span class="kn">from</span> <span class="nn">.semimarkov</span> <span class="k">import</span> <span class="n">SemiMarkov</span>
-<span class="kn">from</span> <span class="nn">.deptree</span> <span class="k">import</span> <span class="n">DepTree</span>
+<span class="kn">from</span> <span class="nn">.deptree</span> <span class="k">import</span> <span class="n">DepTree</span><span class="p">,</span> <span class="n">deptree_nonproj</span><span class="p">,</span> <span class="n">deptree_part</span>
 <span class="kn">from</span> <span class="nn">.cky_crf</span> <span class="k">import</span> <span class="n">CKY_CRF</span>
 <span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="n">LogSemiring</span><span class="p">,</span> <span class="n">MaxSemiring</span><span class="p">,</span> <span class="n">EntropySemiring</span><span class="p">,</span> <span class="n">MultiSampledSemiring</span>
 
@@ -158,6 +158,12 @@
 <span class="sd">    Base structured distribution class.</span>
 
 <span class="sd">    Dynamic distribution for length N of structures :math:`p(z)`.</span>
+
+<span class="sd">    Implemented based on gradient identities from:</span>
+
+<span class="sd">    * Inside-outside and forward-backward algorithms are just backprop :cite:`eisner2016inside`</span>
+<span class="sd">    * Semiring Parsing :cite:`goodman1999semiring`</span>
+<span class="sd">    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`</span>
 
 <span class="sd">    Parameters:</span>
 <span class="sd">        log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`</span>
@@ -181,7 +187,10 @@
 <span class="sd">        Compute log probability over values :math:`p(z)`.</span>
 
 <span class="sd">        Parameters:</span>
-<span class="sd">            value (tensor): sample_shape x batch_shape x event_shape</span>
+<span class="sd">            value (tensor): One-hot events (*sample_shape x batch_shape x event_shape*)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            log_probs (*sample_shape x batch_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">d</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
@@ -212,6 +221,10 @@
 <span class="sd">            argmax (*batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+
+    <span class="nd">@lazy_property</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">argmax</span>
 
 <div class="viewcode-block" id="StructDistribution.marginals"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.marginals">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -286,6 +299,15 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents structured linear-chain CRFs with C classes.</span>
 
+<span class="sd">    For reference see:</span>
+
+<span class="sd">    * An introduction to conditional random fields :cite:`sutton2012introduction`</span>
+
+<span class="sd">    Example application:</span>
+
+<span class="sd">    * Bidirectional LSTM-CRF Models for Sequence Tagging :cite:`huang2015bidirectional`</span>
+
+
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
@@ -321,6 +343,10 @@
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a projective dependency CRF.</span>
 
+<span class="sd">    Reference:</span>
+
+<span class="sd">    * Bilexical grammars and their cubic-time parsing algorithms :cite:`eisner2000bilexical`</span>
+
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
@@ -339,6 +365,11 @@
 <div class="viewcode-block" id="TreeCRF"><a class="viewcode-back" href="../../index.html#torch_struct.TreeCRF">[docs]</a><span class="k">class</span> <span class="nc">TreeCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a 0th-order span parser with NT nonterminals.</span>
+
+
+<span class="sd">    For example usage see:</span>
+
+<span class="sd">    * A Minimal Span-Based Neural Constituency Parser :cite:`stern2017minimal`</span>
 
 <span class="sd">    Event shape is of the form:</span>
 
@@ -379,6 +410,63 @@
         <span class="nb">super</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">batch_shape</span><span class="o">=</span><span class="n">batch_shape</span><span class="p">,</span> <span class="n">event_shape</span><span class="o">=</span><span class="n">event_shape</span>
         <span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">NonProjectiveDependencyCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a non-projective dependency CRF.</span>
+
+<span class="sd">    For references see:</span>
+
+<span class="sd">    * Non-projective dependency parsing using spanning tree algorithms :cite:`mcdonald2005non`</span>
+<span class="sd">    * Structured prediction models via the matrix-tree theorem :cite:`koo2007structured`</span>
+
+<span class="sd">    Event shape is of the form:</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">       log_potentials (tensor) : event shape (*N x N*) head, child  with</span>
+<span class="sd">                                 arc scores with root scores on diagonal e.g.</span>
+<span class="sd">                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).</span>
+
+<span class="sd">    Compact representation: N long tensor in [0, .. N] (indexing is +1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">DepTree</span>
+
+    <span class="nd">@lazy_property</span>
+    <span class="k">def</span> <span class="nf">marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute marginals for distribution :math:`p(z_t)`.</span>
+
+<span class="sd">        Algorithm is :math:`O(N^3)` but very fast on batched GPU.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            marginals (*batch_shape x event_shape*)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deptree_nonproj</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="nd">@lazy_property</span>
+    <span class="k">def</span> <span class="nf">partition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the partition function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">deptree_part</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">)</span>
+
+    <span class="nd">@lazy_property</span>
+    <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Use Chiu-Liu Algorithm. :math:`O(N^2)`</span>
+
+<span class="sd">        (Currently not implemented)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="nd">@lazy_property</span>
+    <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
 </pre></div>
 
            </div>

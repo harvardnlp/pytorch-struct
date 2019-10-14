@@ -298,6 +298,54 @@
         <span class="k">return</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span></div>
 
 
+<span class="c1"># class KMaxSemiring(_BaseLog):</span>
+<span class="c1">#     def __init__(self, k):</span>
+<span class="c1">#         self.k = k</span>
+
+<span class="c1">#     @staticmethod</span>
+<span class="c1">#     def sum(xs, dim=-1):</span>
+<span class="c1">#         return torch.max(xs, dim=dim)[0]</span>
+
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def size(cls):</span>
+<span class="c1">#         return self.k</span>
+
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def times(cls, *ls):</span>
+<span class="c1">#         cur = ls[0]</span>
+<span class="c1">#         for l in ls[1:]:</span>
+<span class="c1">#             cur = cls.mul(cur, l)</span>
+<span class="c1">#         return cur</span>
+
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def plus(cls, *ls):</span>
+<span class="c1">#         return cls.sum(torch.stack(ls), dim=0)</span>
+
+<span class="c1">#     # @classmethod</span>
+<span class="c1">#     # def dot(cls, *ls):</span>
+<span class="c1">#     #     return cls.sum(cls.times(*ls))</span>
+
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def convert(cls, potentials):</span>
+<span class="c1">#         return potentials.unsqueeze(0)</span>
+
+<span class="c1">#     @classmethod</span>
+<span class="c1">#     def unconvert(cls, potentials):</span>
+<span class="c1">#         return potentials.squeeze(0)</span>
+
+<span class="c1">#     @staticmethod</span>
+<span class="c1">#     def mul(a, b):</span>
+<span class="c1">#         return torch.mul(a, b)</span>
+
+<span class="c1">#     @staticmethod</span>
+<span class="c1">#     def zero_(xs):</span>
+<span class="c1">#         return xs.fill_(0)</span>
+
+<span class="c1">#     @staticmethod</span>
+<span class="c1">#     def one_(xs):</span>
+<span class="c1">#         return xs.fill_(1)</span>
+
+
 <span class="k">class</span> <span class="nc">_SampledLogSumExp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>

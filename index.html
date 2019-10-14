@@ -196,6 +196,12 @@ distribution. The properties of interest are,</p>
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base structured distribution class.</p>
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
+<p>Implemented based on gradient identities from:</p>
+<ul class="simple">
+<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="#eisner2016inside" id="id1">[Eis16]</a></p></li>
+<li><p>Semiring Parsing <a class="bibtex reference internal" href="#goodman1999semiring" id="id2">[Goo99]</a></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="#li2009first" id="id3">[LE09]</a></p></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -249,7 +255,10 @@ distribution. The properties of interest are,</p>
 <dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – sample_shape x batch_shape x event_shape</p>
+<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – One-hot events (<em>sample_shape x batch_shape x event_shape</em>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>log_probs (<em>sample_shape x batch_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -299,6 +308,14 @@ distribution. The properties of interest are,</p>
 <dt id="torch_struct.LinearChainCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents structured linear-chain CRFs with C classes.</p>
+<p>For reference see:</p>
+<ul class="simple">
+<li><p>An introduction to conditional random fields <a class="bibtex reference internal" href="#sutton2012introduction" id="id4">[SM+12]</a></p></li>
+</ul>
+<p>Example application:</p>
+<ul class="simple">
+<li><p>Bidirectional LSTM-CRF Models for Sequence Tagging <a class="bibtex reference internal" href="#huang2015bidirectional" id="id5">[HXY15]</a></p></li>
+</ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -339,6 +356,10 @@ distribution. The properties of interest are,</p>
 <dt id="torch_struct.DependencyCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a projective dependency CRF.</p>
+<p>Reference:</p>
+<ul class="simple">
+<li><p>Bilexical grammars and their cubic-time parsing algorithms <a class="bibtex reference internal" href="#eisner2000bilexical" id="id6">[Eis00]</a></p></li>
+</ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -360,6 +381,10 @@ arc scores with root scores on diagonal e.g.
 <dt id="torch_struct.TreeCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a 0th-order span parser with NT nonterminals.</p>
+<p>For example usage see:</p>
+<ul class="simple">
+<li><p>A Minimal Span-Based Neural Constituency Parser <a class="bibtex reference internal" href="#stern2017minimal" id="id7">[SAK17]</a></p></li>
+</ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -500,7 +525,30 @@ arc_scores : b x N x N arc scores with root scores on diagonal.</p>
 </div>
 <div class="section" id="references">
 <h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
-<p id="bibtex-bibliography-index-0"></p>
+<p id="bibtex-bibliography-index-0"><dl class="citation">
+<dt class="bibtex label" id="eisner2000bilexical"><span class="brackets"><a class="fn-backref" href="#id6">Eis00</a></span></dt>
+<dd><p>Jason Eisner. Bilexical grammars and their cubic-time parsing algorithms. In <em>Advances in probabilistic and other parsing technologies</em>, pages 29–61. Springer, 2000.</p>
+</dd>
+<dt class="bibtex label" id="eisner2016inside"><span class="brackets"><a class="fn-backref" href="#id1">Eis16</a></span></dt>
+<dd><p>Jason Eisner. Inside-outside and forward-backward algorithms are just backprop (tutorial paper). In <em>Proceedings of the Workshop on Structured Prediction for NLP</em>, 1–17. 2016.</p>
+</dd>
+<dt class="bibtex label" id="goodman1999semiring"><span class="brackets"><a class="fn-backref" href="#id2">Goo99</a></span></dt>
+<dd><p>Joshua Goodman. Semiring parsing. <em>Computational Linguistics</em>, 25(4):573–605, 1999.</p>
+</dd>
+<dt class="bibtex label" id="huang2015bidirectional"><span class="brackets"><a class="fn-backref" href="#id5">HXY15</a></span></dt>
+<dd><p>Zhiheng Huang, Wei Xu, and Kai Yu. Bidirectional lstm-crf models for sequence tagging. <em>arXiv preprint arXiv:1508.01991</em>, 2015.</p>
+</dd>
+<dt class="bibtex label" id="li2009first"><span class="brackets"><a class="fn-backref" href="#id3">LE09</a></span></dt>
+<dd><p>Zhifei Li and Jason Eisner. First-and second-order expectation semirings with applications to minimum-risk training on translation forests. In <em>Proceedings of the 2009 Conference on Empirical Methods in Natural Language Processing: Volume 1-Volume 1</em>, 40–51. Association for Computational Linguistics, 2009.</p>
+</dd>
+<dt class="bibtex label" id="stern2017minimal"><span class="brackets"><a class="fn-backref" href="#id7">SAK17</a></span></dt>
+<dd><p>Mitchell Stern, Jacob Andreas, and Dan Klein. A minimal span-based neural constituency parser. <em>arXiv preprint arXiv:1705.03919</em>, 2017.</p>
+</dd>
+<dt class="bibtex label" id="sutton2012introduction"><span class="brackets"><a class="fn-backref" href="#id4">SM+12</a></span></dt>
+<dd><p>Charles Sutton, Andrew McCallum, and others. An introduction to conditional random fields. <em>Foundations and Trends® in Machine Learning</em>, 4(4):267–373, 2012.</p>
+</dd>
+</dl>
+</p>
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
