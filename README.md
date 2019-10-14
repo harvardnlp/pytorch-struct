@@ -124,8 +124,13 @@ Current distributions implemented:
 * LinearChainCRF 
 * SemiMarkovCRF 
 * DependencyCRF 
+* NonProjectiveDependencyCRF
 * TreeCRF 
+* NeuralPCFG / NeuralHMM
 
+Each distribution includes: 
+
+* Argmax, sampling, entropy, partition, masking, log_probs, k-max
 
 Extensions:
 
