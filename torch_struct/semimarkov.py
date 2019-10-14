@@ -24,9 +24,15 @@ class SemiMarkov(_Struct):
         edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
         edge.requires_grad_(True)
 
+        # Init
+        # All paths starting at N of len K
         alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
+
+        # All paths finishing at N with label C
         beta = self._make_chart(N, (batch, C), edge, force_grad)
         semiring.one_(beta[0].data)
+
+        # Main.
         for n in range(1, N):
             alpha[:, :, n - 1] = semiring.sum(
                 semiring.times(
