@@ -7,7 +7,6 @@ A, B = 0, 1
 class CKY_CRF(_Struct):
     def _dp(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
-        ssize = semiring.size()
         batch, N, _, NT = scores.shape
         scores = semiring.convert(scores)
         if lengths is None:
