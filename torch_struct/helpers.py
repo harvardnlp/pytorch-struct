@@ -110,3 +110,6 @@ class _Struct:
     @staticmethod
     def from_parts(spans):
         return spans, None
+
+    def _arrange_marginals(self, marg):
+        return marg[0]

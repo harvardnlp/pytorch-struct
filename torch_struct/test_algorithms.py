@@ -22,11 +22,13 @@ lint = integers(min_value=2, max_value=10)
 
 @given(smint, smint, smint)
 @settings(max_examples=50, deadline=None)
-def test_simple(batch, N, C):
+def test_simple_a(batch, N, C):
     vals = torch.ones(batch, N, C, C)
     semiring = StdSemiring
     alpha = LinearChain(semiring).sum(vals)
-    assert (alpha == pow(C, N + 1)).all()
+    c = pow(C, N + 1)
+    print(c)
+    assert (alpha == c).all()
     LinearChain(SampledSemiring).marginals(vals)
     LinearChain(MultiSampledSemiring).marginals(vals)
 
