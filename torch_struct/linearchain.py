@@ -68,7 +68,7 @@ class LinearChain(_Struct):
         # Init
         for b in range(lengths.shape[0]):
             end = lengths[b] - 1
-            semiring.zero_(chart[0][:, b, end :])
+            semiring.zero_(chart[0][:, b, end:])
             chart[0][:, b, end:, torch.arange(C), torch.arange(C)] = semiring.one_(
                 chart[0][:, b, end:, torch.arange(C), torch.arange(C)]
             )
@@ -87,9 +87,6 @@ class LinearChain(_Struct):
         v = semiring.sum(semiring.sum(root(chart[-1][:])))
 
         return v, [log_potentials], None
-
-
-
 
     def _dp_standard(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
@@ -245,8 +242,8 @@ class LinearChain(_Struct):
             enum_lengths,
         )
 
-            # def parent(x, size):
-            # return x[:, :, :size]
+        # def parent(x, size):
+        # return x[:, :, :size]
 
         # # Scan downward
         # print("a",  v)
