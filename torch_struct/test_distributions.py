@@ -36,6 +36,8 @@ def test_simple(data, seed):
     _, max_indices = log_probs.max(0)
 
     amax = edges[max_indices, torch.arange(batch)]
+    print(argmax.nonzero())
+    print((amax - argmax).nonzero(), lengths)
     assert (amax == argmax).all()
 
     samples = dist.sample((100,))
