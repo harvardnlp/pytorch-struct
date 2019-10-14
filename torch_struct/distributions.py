@@ -4,7 +4,7 @@ from torch.distributions.utils import lazy_property
 from .linearchain import LinearChain
 from .cky import CKY
 from .semimarkov import SemiMarkov
-from .deptree import DepTree
+from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
 from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring
 
@@ -14,6 +14,12 @@ class StructDistribution(Distribution):
     Base structured distribution class.
 
     Dynamic distribution for length N of structures :math:`p(z)`.
+
+    Implemented based on gradient identities from:
+
+    * Inside-outside and forward-backward algorithms are just backprop :cite:`eisner2016inside`
+    * Semiring Parsing :cite:`goodman1999semiring`
+    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
 
     Parameters:
         log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`
@@ -37,7 +43,10 @@ class StructDistribution(Distribution):
         Compute log probability over values :math:`p(z)`.
 
         Parameters:
-            value (tensor): sample_shape x batch_shape x event_shape
+            value (tensor): One-hot events (*sample_shape x batch_shape x event_shape*)
+
+        Returns:
+            log_probs (*sample_shape x batch_shape*)
         """
 
         d = value.dim()
@@ -68,6 +77,10 @@ class StructDistribution(Distribution):
             argmax (*batch_shape x event_shape*)
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
+
+    @lazy_property
+    def mode(self):
+        return self.argmax
 
     @lazy_property
     def marginals(self):
@@ -142,6 +155,15 @@ class LinearChainCRF(StructDistribution):
     r"""
     Represents structured linear-chain CRFs with C classes.
 
+    For reference see:
+
+    * An introduction to conditional random fields :cite:`sutton2012introduction`
+
+    Example application:
+
+    * Bidirectional LSTM-CRF Models for Sequence Tagging :cite:`huang2015bidirectional`
+
+
     Event shape is of the form:
 
     Parameters:
@@ -177,6 +199,10 @@ class DependencyCRF(StructDistribution):
     r"""
     Represents a projective dependency CRF.
 
+    Reference:
+
+    * Bilexical grammars and their cubic-time parsing algorithms :cite:`eisner2000bilexical`
+
     Event shape is of the form:
 
     Parameters:
@@ -195,6 +221,11 @@ class DependencyCRF(StructDistribution):
 class TreeCRF(StructDistribution):
     r"""
     Represents a 0th-order span parser with NT nonterminals.
+
+
+    For example usage see:
+
+    * A Minimal Span-Based Neural Constituency Parser :cite:`stern2017minimal`
 
     Event shape is of the form:
 
@@ -235,3 +266,60 @@ class SentCFG(StructDistribution):
         super(StructDistribution, self).__init__(
             batch_shape=batch_shape, event_shape=event_shape
         )
+
+
+class NonProjectiveDependencyCRF(StructDistribution):
+    r"""
+    Represents a non-projective dependency CRF.
+
+    For references see:
+
+    * Non-projective dependency parsing using spanning tree algorithms :cite:`mcdonald2005non`
+    * Structured prediction models via the matrix-tree theorem :cite:`koo2007structured`
+
+    Event shape is of the form:
+
+    Parameters:
+       log_potentials (tensor) : event shape (*N x N*) head, child  with
+                                 arc scores with root scores on diagonal e.g.
+                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).
+
+    Compact representation: N long tensor in [0, .. N] (indexing is +1)
+    """
+
+    struct = DepTree
+
+    @lazy_property
+    def marginals(self):
+        """
+        Compute marginals for distribution :math:`p(z_t)`.
+
+        Algorithm is :math:`O(N^3)` but very fast on batched GPU.
+
+        Returns:
+            marginals (*batch_shape x event_shape*)
+        """
+        return deptree_nonproj(self.log_potentials)
+
+    def sample(self, sample_shape=torch.Size()):
+        raise NotImplementedError()
+
+    @lazy_property
+    def partition(self):
+        """
+        Compute the partition function.
+        """
+        return deptree_part(self.log_potentials)
+
+    @lazy_property
+    def argmax(self):
+        """
+        Use Chiu-Liu Algorithm. :math:`O(N^2)`
+
+        (Currently not implemented)
+        """
+        raise NotImplementedError()
+
+    @lazy_property
+    def entropy(self):
+        raise NotImplementedError()

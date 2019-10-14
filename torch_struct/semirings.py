@@ -154,6 +154,54 @@ class MaxSemiring(_BaseLog):
         return a == b
 
 
+# class KMaxSemiring(_BaseLog):
+#     def __init__(self, k):
+#         self.k = k
+
+#     @staticmethod
+#     def sum(xs, dim=-1):
+#         return torch.max(xs, dim=dim)[0]
+
+#     @classmethod
+#     def size(cls):
+#         return self.k
+
+#     @classmethod
+#     def times(cls, *ls):
+#         cur = ls[0]
+#         for l in ls[1:]:
+#             cur = cls.mul(cur, l)
+#         return cur
+
+#     @classmethod
+#     def plus(cls, *ls):
+#         return cls.sum(torch.stack(ls), dim=0)
+
+#     # @classmethod
+#     # def dot(cls, *ls):
+#     #     return cls.sum(cls.times(*ls))
+
+#     @classmethod
+#     def convert(cls, potentials):
+#         return potentials.unsqueeze(0)
+
+#     @classmethod
+#     def unconvert(cls, potentials):
+#         return potentials.squeeze(0)
+
+#     @staticmethod
+#     def mul(a, b):
+#         return torch.mul(a, b)
+
+#     @staticmethod
+#     def zero_(xs):
+#         return xs.fill_(0)
+
+#     @staticmethod
+#     def one_(xs):
+#         return xs.fill_(1)
+
+
 class _SampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):

@@ -4,6 +4,7 @@ from .distributions import (
     LinearChainCRF,
     SemiMarkovCRF,
     DependencyCRF,
+    NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
 )
@@ -42,6 +43,7 @@ __all__ = [
     LinearChainCRF,
     SemiMarkovCRF,
     DependencyCRF,
+    NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
 ]
