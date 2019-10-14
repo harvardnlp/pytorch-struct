@@ -46,10 +46,12 @@ class DepTree(_Struct):
     arc_scores : b x N x N arc scores with root scores on diagonal.
     """
 
-    def _dp(self, arc_scores, lengths=None, force_grad=False):
+    def _dp(self, arc_scores_in, lengths=None, force_grad=False):
         semiring = self.semiring
-        arc_scores = _convert(arc_scores)
+        arc_scores = _convert(arc_scores_in)
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
+
+        arc_scores.requires_grad_(True)
         DIRS = 2
         alpha = [
             self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
@@ -61,11 +63,6 @@ class DepTree(_Struct):
 
         def sstack(a):
             return torch.stack([a, a], dim=1)
-
-        arcs = [
-            self._make_chart(1, (DIRS, batch, N - k), arc_scores, force_grad)[0]
-            for k in range(N)
-        ]
 
         # Inside step. assumes first token is root symbol
         semiring.one_(alpha[A][C][:, :, :, :, 0].data)
@@ -97,18 +94,12 @@ class DepTree(_Struct):
             ACL, ACR = AC2.unbind(dim=1)
             BCL, BCR = BC2.unbind(dim=1)
             start = semiring.dot(BCL, ACR)
-            # if k == 1:
-            arcs[k] = stack(
-                semiring.times(start, arc_scores[:, :, f[1], f[0]]),
-                semiring.times(start, arc_scores[:, :, f[0], f[1]]),
-            )
-            arcsL, arcR = arcs[k].unbind(dim=1)
-            # else:
-            #     arcs[k] = stack(semiring.times(start),   #, arc_scores[:, f[1], f[0]]),
-            #                     semiring.times(start)) #, arc_scores[:, f[0], f[1]]))
+
+            arcsL = semiring.times(start, arc_scores[:, :, f[1], f[0]])
+            arcsR = semiring.times(start, arc_scores[:, :, f[0], f[1]])
 
             AIR2 = torch.cat(
-                [torch.narrow(AIR, 2, 0, N - k), arcR.unsqueeze(-1)], dim=3
+                [torch.narrow(AIR, 2, 0, N - k), arcsR.unsqueeze(-1)], dim=3
             )
             BIL2 = torch.cat(
                 [arcsL.unsqueeze(-1), torch.narrow(BIL, 2, 1, N - k)], dim=3
@@ -121,8 +112,7 @@ class DepTree(_Struct):
             AIR = AIR2
             BIL = BIL2
         v = torch.stack([ends[l][:, i] for i, l in enumerate(lengths)], dim=1)
-        # v = torch.stack([alpha[A][C][R, i, 0, l] for i, l in enumerate(lengths)])
-        return (v, arcs[1:], alpha)
+        return (v, [arc_scores], alpha)
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
@@ -138,124 +128,8 @@ class DepTree(_Struct):
 
         return arc_scores, batch, N, lengths
 
-    # def _dp_backward(self, arc_scores, lengths, alpha_in, v=None, force_grad=False):
-
-    #     # This function is super complicated and was just too slow to include
-    #     semiring = self.semiring
-    #     arc_scores = _convert(arc_scores)
-    #     batch, N, lengths = self._check_potentials(arc_scores, lengths)
-    #     DIRS = 2
-
-    #     alpha = [
-    #         self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
-    #         for _ in range(2)
-    #     ]
-
-    #     def stack(a, b, dim=-1):
-    #         return torch.stack([a, b], dim=dim)
-
-    #     def sstack(a):
-    #         return torch.stack([a, a], dim=-1)
-
-    #     for k in range(N - 1, -1, -1):
-    #         # Initialize
-    #         if N - k - 1 > 0:
-    #             # R completes
-    #             # I -> C* C
-    #             # I -> C* C
-    #             # C -> I C*
-    #             a = semiring.sum(
-    #                 semiring.times(
-    #                     *roll2(
-    #                         stack(
-    #                             stack(alpha[A][I][R], alpha[A][I][L]),
-    #                             sstack(alpha_in[B][C][R]),
-    #                             dim=0,
-    #                         ),
-    #                         stack(
-    #                             sstack(alpha_in[A][C][L]),
-    #                             stack(alpha[B][I][L], alpha[B][I][R]),
-    #                             dim=0,
-    #                         ),
-    #                         N,
-    #                         k,
-    #                         1,
-    #                     )
-    #                 ).view(2, batch, N - k - 1, -1),
-    #                 dim=-1,
-    #             )
-    #             alpha[A][C][L, :, 1 : N - k, k] = a[1]
-    #             alpha[A][C][R, :, : N - k - 1, k] = a[0]
-
-    #         for b, l in enumerate(lengths):
-    #             if l == k:
-    #                 alpha[A][C][R, b, 0, l] = semiring.one()
-    #                 alpha[B][C][R, b, l, N - l - 1] = semiring.one()
-
-    #         c = semiring.sum(
-    #             semiring.times(
-    #                 *roll2(
-    #                     stack(alpha[A][C][L], alpha_in[B][I][R], dim=0),
-    #                     stack(alpha_in[A][I][L], alpha[B][C][R], dim=0),
-    #                     N,
-    #                     k,
-    #                     0,
-    #                 )
-    #             )
-    #         )
-    #         alpha[A][C][:, :, : N - k, k] = semiring.plus(
-    #             alpha[A][C][:, :, : N - k, k], c
-    #         )
-
-    #         # Compute reverses.
-    #         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
-
-    #         if k > 0:
-    #             f = torch.arange(N - k), torch.arange(k, N)
-    #             alpha[A][I][:, :, : N - k, k] = semiring.dot(
-    #                 stack(
-    #                     arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]], dim=0
-    #                 ).unsqueeze(-1),
-    #                 *roll2(
-    #                     stack(alpha_in[B][C][L], alpha[A][C][R], dim=0),
-    #                     stack(alpha[B][C][L], alpha_in[A][C][R], dim=0),
-    #                     N,
-    #                     k,
-    #                 )
-    #             )
-    #             alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
-
-    #     v = alpha[A][C][R, :, 0, 0]
-    #     left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
-    #     right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
-    #     ret = torch.zeros(batch, N, N, dtype=left.dtype)
-    #     for k in torch.arange(N):
-    #         f = torch.arange(N - k), torch.arange(k, N)
-    #         ret[:, f[1], k] = left[:, k, f[0]]
-    #         ret[:, k, f[1]] = right[:, k, f[0]]
-
-    #     ret = semiring.div_exp(ret - arc_scores, v.view(batch, 1, 1))
-    #     return _unconvert(ret)
-
     def _arrange_marginals(self, grads):
-        _, batch, N = grads[0][0].shape
-        N = N + 1
-
-        ret = torch.zeros(
-            batch, N, N, dtype=grads[0][0].dtype, device=grads[0][0].device
-        )
-        # for k in torch.arange(N):
-        #     f = torch.arange(N - k), torch.arange(k, N)
-        #     ret[:, f[1], k] = grad[L][:, k, f[0]]
-        #     ret[:, k, f[1]] = grad[L][:, k, f[0]]
-
-        # ret = torch.zeros(batch, N, N).cpu()
-        for k, grad in enumerate(grads, 1):
-            grad = self.semiring.unconvert(grad)
-            f = torch.arange(N - k), torch.arange(k, N)
-            ret[:, f[0], f[1]] = grad[R]
-            ret[:, f[1], f[0]] = grad[L]
-        return _unconvert(ret)
+        return _unconvert(self.semiring.unconvert(grads[0]))
 
     @staticmethod
     def to_parts(sequence, extra=None, lengths=None):
@@ -446,3 +320,102 @@ def _is_projective(parse):
                 ):
                     return False
     return True
+
+    # def _dp_backward(self, arc_scores, lengths, alpha_in, v=None, force_grad=False):
+
+    #     # This function is super complicated and was just too slow to include
+    #     semiring = self.semiring
+    #     arc_scores = _convert(arc_scores)
+    #     batch, N, lengths = self._check_potentials(arc_scores, lengths)
+    #     DIRS = 2
+
+    #     alpha = [
+    #         self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)
+    #         for _ in range(2)
+    #     ]
+
+    #     def stack(a, b, dim=-1):
+    #         return torch.stack([a, b], dim=dim)
+
+    #     def sstack(a):
+    #         return torch.stack([a, a], dim=-1)
+
+    #     for k in range(N - 1, -1, -1):
+    #         # Initialize
+    #         if N - k - 1 > 0:
+    #             # R completes
+    #             # I -> C* C
+    #             # I -> C* C
+    #             # C -> I C*
+    #             a = semiring.sum(
+    #                 semiring.times(
+    #                     *roll2(
+    #                         stack(
+    #                             stack(alpha[A][I][R], alpha[A][I][L]),
+    #                             sstack(alpha_in[B][C][R]),
+    #                             dim=0,
+    #                         ),
+    #                         stack(
+    #                             sstack(alpha_in[A][C][L]),
+    #                             stack(alpha[B][I][L], alpha[B][I][R]),
+    #                             dim=0,
+    #                         ),
+    #                         N,
+    #                         k,
+    #                         1,
+    #                     )
+    #                 ).view(2, batch, N - k - 1, -1),
+    #                 dim=-1,
+    #             )
+    #             alpha[A][C][L, :, 1 : N - k, k] = a[1]
+    #             alpha[A][C][R, :, : N - k - 1, k] = a[0]
+
+    #         for b, l in enumerate(lengths):
+    #             if l == k:
+    #                 alpha[A][C][R, b, 0, l] = semiring.one()
+    #                 alpha[B][C][R, b, l, N - l - 1] = semiring.one()
+
+    #         c = semiring.sum(
+    #             semiring.times(
+    #                 *roll2(
+    #                     stack(alpha[A][C][L], alpha_in[B][I][R], dim=0),
+    #                     stack(alpha_in[A][I][L], alpha[B][C][R], dim=0),
+    #                     N,
+    #                     k,
+    #                     0,
+    #                 )
+    #             )
+    #         )
+    #         alpha[A][C][:, :, : N - k, k] = semiring.plus(
+    #             alpha[A][C][:, :, : N - k, k], c
+    #         )
+
+    #         # Compute reverses.
+    #         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]
+
+    #         if k > 0:
+    #             f = torch.arange(N - k), torch.arange(k, N)
+    #             alpha[A][I][:, :, : N - k, k] = semiring.dot(
+    #                 stack(
+    #                     arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]], dim=0
+    #                 ).unsqueeze(-1),
+    #                 *roll2(
+    #                     stack(alpha_in[B][C][L], alpha[A][C][R], dim=0),
+    #                     stack(alpha[B][C][L], alpha_in[A][C][R], dim=0),
+    #                     N,
+    #                     k,
+    #                 )
+    #             )
+    #             alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]
+
+    #     v = alpha[A][C][R, :, 0, 0]
+    #     left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])
+    #     right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])
+    #     ret = torch.zeros(batch, N, N, dtype=left.dtype)
+    #     for k in torch.arange(N):
+    #         f = torch.arange(N - k), torch.arange(k, N)
+    #         ret[:, f[1], k] = left[:, k, f[0]]
+    #         ret[:, k, f[1]] = right[:, k, f[0]]
+
+    #     ret = semiring.div_exp(ret - arc_scores, v.view(batch, 1, 1))
+    #     return _unconvert(ret)

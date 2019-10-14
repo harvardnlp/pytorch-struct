@@ -39,7 +39,7 @@ class CKY_CRF(_Struct):
         return log_Z, [scores], beta
 
     def _arrange_marginals(self, grads):
-        return grads[0]
+        return self.semiring.unconvert(grads[0])
 
     def enumerate(self, scores):
         semiring = self.semiring
