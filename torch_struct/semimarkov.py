@@ -22,28 +22,35 @@ class SemiMarkov(_Struct):
         semiring = self.semiring
         ssize = semiring.size()
         edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
+        edge.requires_grad_(True)
 
-        spans = self._make_chart(N - 1, (batch, K, C, C), edge, force_grad)
-        alpha = self._make_chart(N, (batch, K, C), edge, force_grad)
+        # Init
+        # All paths starting at N of len K
+        alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
+
+        # All paths finishing at N with label C
         beta = self._make_chart(N, (batch, C), edge, force_grad)
         semiring.one_(beta[0].data)
+
+        # Main.
         for n in range(1, N):
-            spans[n - 1][:] = semiring.times(
-                beta[n - 1].view(ssize, batch, 1, 1, C),
-                edge[:, :, n - 1].view(ssize, batch, K, C, C),
+            alpha[:, :, n - 1] = semiring.sum(
+                semiring.times(
+                    beta[n - 1].view(ssize, batch, 1, 1, C),
+                    edge[:, :, n - 1].view(ssize, batch, K, C, C),
+                )
             )
-            alpha[n - 1][:] = semiring.sum(spans[n - 1])
             t = max(n - K, -1)
             f1 = torch.arange(n - 1, t, -1)
             f2 = torch.arange(1, len(f1) + 1)
             beta[n][:] = semiring.sum(
-                torch.stack([alpha[a][:, :, b] for a, b in zip(f1, f2)], dim=1), dim=1
+                torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
             )
         v = semiring.sum(
             torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1),
             dim=2,
         )
-        return v, spans, beta
+        return v, [edge], beta
 
     @staticmethod
     def _rand():
@@ -54,7 +61,7 @@ class SemiMarkov(_Struct):
         return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
 
     def _arrange_marginals(self, marg):
-        return torch.stack(marg, dim=2)
+        return self.semiring.unconvert(marg[0])
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
