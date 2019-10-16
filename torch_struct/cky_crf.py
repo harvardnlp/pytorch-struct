@@ -28,17 +28,12 @@ class CKY_CRF(_Struct):
             f = torch.arange(N - w)
             X = reduced_scores[:, :, f, f + w]
 
-            beta[A][:, :, : N - w, w] = semiring.times(
-                semiring.sum(semiring.times(Y, Z)), X
-            )
+            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), X)
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
 
         final = beta[A][:, :, 0]
         log_Z = torch.stack([final[:, b, l - 1] for b, l in enumerate(lengths)], dim=1)
         return log_Z, [scores], beta
-
-    def _arrange_marginals(self, grads):
-        return self.semiring.unconvert(grads[0])
 
     def enumerate(self, scores):
         semiring = self.semiring

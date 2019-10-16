@@ -129,7 +129,7 @@ class DepTree(_Struct):
         return arc_scores, batch, N, lengths
 
     def _arrange_marginals(self, grads):
-        return _unconvert(self.semiring.unconvert(grads[0]))
+        return self.semiring.convert(_unconvert(self.semiring.unconvert(grads[0])))
 
     @staticmethod
     def to_parts(sequence, extra=None, lengths=None):

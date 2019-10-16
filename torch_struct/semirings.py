@@ -7,19 +7,16 @@ class Semiring:
         return 1
 
     @classmethod
+    def dot(cls, *ls):
+        "Dot product along last dim"
+        return cls.sum(cls.times(*ls))
+
+    @classmethod
     def times(cls, *ls):
         cur = ls[0]
         for l in ls[1:]:
             cur = cls.mul(cur, l)
         return cur
-
-    @classmethod
-    def plus(cls, *ls):
-        return cls.sum(torch.stack(ls), dim=0)
-
-    @classmethod
-    def dot(cls, *ls):
-        return cls.sum(cls.times(*ls))
 
     @classmethod
     def convert(cls, potentials):
@@ -36,6 +33,10 @@ class _Base(Semiring):
         return torch.mul(a, b)
 
     @staticmethod
+    def prod(a, dim=-1):
+        return torch.prod(a, dim=dim)
+
+    @staticmethod
     def zero_(xs):
         return xs.fill_(0)
 
@@ -44,18 +45,28 @@ class _Base(Semiring):
         return xs.fill_(1)
 
 
+class _BaseLog(Semiring):
+    @staticmethod
+    def mul(a, b):
+        return a + b
+
+    @staticmethod
+    def zero_(xs):
+        return xs.fill_(-1e5)
+
+    @staticmethod
+    def one_(xs):
+        return xs.fill_(0.0)
+
+    @staticmethod
+    def prod(a, dim=-1):
+        return torch.sum(a, dim=dim)
+
+
 class StdSemiring(_Base):
     @staticmethod
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
-
-    # @staticmethod
-    # def div_exp(a, b):
-    #     return a.exp().div(b.exp())
-
-    @staticmethod
-    def prod(a, dim=-1):
-        return torch.prod(a, dim=dim)
 
 
 class EntropySemiring(Semiring):
@@ -93,15 +104,6 @@ class EntropySemiring(Semiring):
     @classmethod
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
-        # assert dim!=0 and xs.dim()-dim != 0
-
-        # if dim < 0: dim = xs.dim() + dim
-        # values = torch.zeros(*((s if x != dim else 1) for (x, s) in enumerate(xs.shape)) ).type_as(xs)
-        # cls.one_(values)
-        # for i in torch.arange(xs.shape[dim]):
-        #     values = cls.mul(values, xs.index_select(dim, i))
-        # values =  values.squeeze(dim)
-        # return values
 
     @staticmethod
     def zero_(xs):
@@ -116,28 +118,6 @@ class EntropySemiring(Semiring):
         return xs
 
 
-class _BaseLog(Semiring):
-    @staticmethod
-    def mul(a, b):
-        return a + b
-
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(-1e5)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(0.0)
-
-    # @staticmethod
-    # def div_exp(a, b):
-    #     return (a - b).exp()
-
-    @staticmethod
-    def prod(a, dim=-1):
-        return torch.sum(a, dim=dim)
-
-
 class LogSemiring(_BaseLog):
     @staticmethod
     def sum(xs, dim=-1):
@@ -149,57 +129,55 @@ class MaxSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
 
-    @staticmethod
-    def div_exp(a, b):
-        return a == b
 
+def KMaxSemiring(k):
+    class KMaxSemiring(_BaseLog):
+        @staticmethod
+        def size():
+            return k
 
-# class KMaxSemiring(_BaseLog):
-#     def __init__(self, k):
-#         self.k = k
+        @classmethod
+        def convert(cls, orig_potentials):
+            potentials = torch.zeros(
+                (k,) + orig_potentials.shape,
+                dtype=orig_potentials.dtype,
+                device=orig_potentials.device,
+            )
+            cls.zero_(potentials)
+            potentials[0] = orig_potentials
+            return potentials
 
-#     @staticmethod
-#     def sum(xs, dim=-1):
-#         return torch.max(xs, dim=dim)[0]
+        @staticmethod
+        def one_(xs):
+            xs[0].fill_(0)
+            return xs
 
-#     @classmethod
-#     def size(cls):
-#         return self.k
+        @staticmethod
+        def unconvert(potentials):
+            return potentials[0]
 
-#     @classmethod
-#     def times(cls, *ls):
-#         cur = ls[0]
-#         for l in ls[1:]:
-#             cur = cls.mul(cur, l)
-#         return cur
+        @staticmethod
+        def sum(xs, dim=-1):
+            if dim == -1:
+                xs = xs.permute(tuple(range(1, xs.dim())) + (0,))
+                xs = xs.contiguous().view(xs.shape[:-2] + (-1,))
+                xs = torch.topk(xs, k, dim=-1)[0]
+                xs = xs.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
+                assert xs.shape[0] == k
+                return xs
+            assert False
 
-#     @classmethod
-#     def plus(cls, *ls):
-#         return cls.sum(torch.stack(ls), dim=0)
+        @staticmethod
+        def mul(a, b):
+            a = a.view((k, 1) + a.shape[1:])
+            b = b.view((1, k) + b.shape[1:])
+            c = a + b
+            c = c.contiguous().view((k * k,) + c.shape[2:])
+            ret = torch.topk(c, k, 0)[0]
+            assert ret.shape[0] == k
+            return ret
 
-#     # @classmethod
-#     # def dot(cls, *ls):
-#     #     return cls.sum(cls.times(*ls))
-
-#     @classmethod
-#     def convert(cls, potentials):
-#         return potentials.unsqueeze(0)
-
-#     @classmethod
-#     def unconvert(cls, potentials):
-#         return potentials.squeeze(0)
-
-#     @staticmethod
-#     def mul(a, b):
-#         return torch.mul(a, b)
-
-#     @staticmethod
-#     def zero_(xs):
-#         return xs.fill_(0)
-
-#     @staticmethod
-#     def one_(xs):
-#         return xs.fill_(1)
+    return KMaxSemiring
 
 
 class _SampledLogSumExp(torch.autograd.Function):

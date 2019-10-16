@@ -6,7 +6,7 @@ from .cky import CKY
 from .semimarkov import SemiMarkov
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
-from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring
+from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring, KMaxSemiring
 
 
 class StructDistribution(Distribution):
@@ -77,6 +77,17 @@ class StructDistribution(Distribution):
             argmax (*batch_shape x event_shape*)
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
+
+    def kmax(self, k):
+        r"""
+        Compute the k-max for distribution :math:`k\max p(z)`.
+
+        Returns:
+            kmax (*k x batch_shape x event_shape*)
+        """
+        return self.struct(KMaxSemiring(k)).marginals(
+            self.log_potentials, self.lengths, _raw=True
+        )
 
     @lazy_property
     def mode(self):

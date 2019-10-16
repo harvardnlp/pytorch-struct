@@ -16,6 +16,7 @@ from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     StdSemiring,
+    KMaxSemiring,
     SampledSemiring,
     MaxSemiring,
     EntropySemiring,
@@ -36,6 +37,7 @@ __all__ = [
     StdSemiring,
     SampledSemiring,
     MaxSemiring,
+    KMaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,

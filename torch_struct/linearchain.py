@@ -48,11 +48,9 @@ class LinearChain(_Struct):
             return x[:, :, 0]
 
         def merge(x, y, size):
-            return semiring.sum(
-                semiring.times(
-                    x.transpose(3, 4).view(ssize, batch, size, 1, C, C),
-                    y.view(ssize, batch, size, C, 1, C),
-                )
+            return semiring.dot(
+                x.transpose(3, 4).view(ssize, batch, size, 1, C, C),
+                y.view(ssize, batch, size, C, 1, C),
             )
 
         chart = self._make_chart(
@@ -78,6 +76,7 @@ class LinearChain(_Struct):
             chart[n][:, :, :size] = merge(
                 left(chart[n - 1], size), right(chart[n - 1], size), size
             )
+        print(root(chart[-1][:]))
         v = semiring.sum(semiring.sum(root(chart[-1][:])))
 
         return v, [log_potentials], None
@@ -182,9 +181,9 @@ class LinearChain(_Struct):
         return scores
 
     @staticmethod
-    def _rand():
+    def _rand(min_n=2):
         b = torch.randint(2, 4, (1,))
-        N = torch.randint(2, 4, (1,))
+        N = torch.randint(min_n, 4, (1,))
         C = torch.randint(2, 4, (1,))
         return torch.rand(b, N, C, C), (b.item(), (N + 1).item())
 

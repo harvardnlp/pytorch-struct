@@ -74,7 +74,7 @@ class _Struct:
 
             return DPManual.apply(edge)
 
-    def marginals(self, edge, lengths=None, _autograd=True):
+    def marginals(self, edge, lengths=None, _autograd=True, _raw=False):
         """
         Compute the marginals of a structured model.
 
@@ -91,14 +91,28 @@ class _Struct:
             or not hasattr(self, "_dp_backward")
         ):
             v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
-            marg = torch.autograd.grad(
-                self.semiring.unconvert(v).sum(dim=0),
-                edges,
-                create_graph=True,
-                only_inputs=True,
-                allow_unused=False,
-            )
-            return self.semiring.unconvert(self._arrange_marginals(marg))
+            if _raw:
+                all_m = []
+                print(v)
+                for k in range(v.shape[0]):
+                    obj = v[k].sum(dim=0)
+
+                    marg = torch.autograd.grad(
+                        obj,
+                        edges,
+                        create_graph=True,
+                        only_inputs=True,
+                        allow_unused=False,
+                    )
+                    all_m.append(self.semiring.unconvert(self._arrange_marginals(marg)))
+                return torch.stack(all_m, dim=0)
+            else:
+                obj = self.semiring.unconvert(v).sum(dim=0)
+                marg = torch.autograd.grad(
+                    obj, edges, create_graph=True, only_inputs=True, allow_unused=False
+                )
+                a_m = self._arrange_marginals(marg)
+                return self.semiring.unconvert(a_m)
         else:
             v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
             return self._dp_backward(edge, lengths, alpha)

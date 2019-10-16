@@ -34,12 +34,11 @@ class SemiMarkov(_Struct):
 
         # Main.
         for n in range(1, N):
-            alpha[:, :, n - 1] = semiring.sum(
-                semiring.times(
-                    beta[n - 1].view(ssize, batch, 1, 1, C),
-                    edge[:, :, n - 1].view(ssize, batch, K, C, C),
-                )
+            alpha[:, :, n - 1] = semiring.dot(
+                beta[n - 1].view(ssize, batch, 1, 1, C),
+                edge[:, :, n - 1].view(ssize, batch, K, C, C),
             )
+
             t = max(n - K, -1)
             f1 = torch.arange(n - 1, t, -1)
             f2 = torch.arange(1, len(f1) + 1)
@@ -47,8 +46,7 @@ class SemiMarkov(_Struct):
                 torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
             )
         v = semiring.sum(
-            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1),
-            dim=2,
+            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
         )
         return v, [edge], beta
 
@@ -59,9 +57,6 @@ class SemiMarkov(_Struct):
         K = torch.randint(2, 4, (1,))
         C = torch.randint(2, 4, (1,))
         return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
-
-    def _arrange_marginals(self, marg):
-        return self.semiring.unconvert(marg[0])
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
