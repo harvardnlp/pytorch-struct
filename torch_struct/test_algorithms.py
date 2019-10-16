@@ -5,6 +5,7 @@ from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
 from .semirings import (
     LogSemiring,
+    KMaxSemiring,
     MaxSemiring,
     StdSemiring,
     SampledSemiring,
@@ -30,6 +31,7 @@ def test_simple_a(batch, N, C):
     print(c)
     assert (alpha == c).all()
     LinearChain(SampledSemiring).marginals(vals)
+
     LinearChain(MultiSampledSemiring).marginals(vals)
 
 
@@ -78,6 +80,33 @@ def test_entropy(data):
     entropy = -log_probs.mul(log_probs.exp()).sum(1).squeeze(0)
     assert entropy.shape == alpha.shape
     assert torch.isclose(entropy, alpha).all()
+
+
+@given(data())
+def test_kmax(data):
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree]))
+    K = 2
+    semiring = KMaxSemiring(K)
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    max1 = model(MaxSemiring).sum(vals)
+    alpha = struct.sum(vals, _raw=True)
+    assert (alpha[0] == max1).all()
+    assert (alpha[1] <= max1).all()
+
+
+    topk = struct.marginals(vals, _raw=True)
+    argmax = model(MaxSemiring).marginals(vals)
+    assert (topk[0] == argmax).all()
+    print(topk[0].nonzero(), topk[1].nonzero())
+    assert (topk[1] != topk[0]).any()
+
+    if model != DepTree:
+        log_probs = model(MaxSemiring).enumerate(vals)[1]
+        tops = torch.topk(torch.cat(log_probs, dim=0), 5, 0)[0]
+        assert(torch.isclose(struct.score(topk[1], vals), alpha[1]).all())
+        for k in range(K):
+            assert (torch.isclose(alpha[k], tops[k])).all()
 
 
 @given(data())
