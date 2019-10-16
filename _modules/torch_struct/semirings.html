@@ -151,19 +151,16 @@
         <span class="k">return</span> <span class="mi">1</span>
 
     <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">dot</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">ls</span><span class="p">):</span>
+        <span class="s2">&quot;Dot product along last dim&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="o">*</span><span class="n">ls</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">times</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">ls</span><span class="p">):</span>
         <span class="n">cur</span> <span class="o">=</span> <span class="n">ls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">ls</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
             <span class="n">cur</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cur</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">plus</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">ls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">ls</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">dot</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">ls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="o">*</span><span class="n">ls</span><span class="p">))</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">potentials</span><span class="p">):</span>
@@ -180,6 +177,10 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
@@ -188,18 +189,28 @@
         <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="StdSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.StdSemiring">[docs]</a><span class="k">class</span> <span class="nc">StdSemiring</span><span class="p">(</span><span class="n">_Base</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">_BaseLog</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
 
-    <span class="c1"># @staticmethod</span>
-    <span class="c1"># def div_exp(a, b):</span>
-    <span class="c1">#     return a.exp().div(b.exp())</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">1e5</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StdSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.StdSemiring">[docs]</a><span class="k">class</span> <span class="nc">StdSemiring</span><span class="p">(</span><span class="n">_Base</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EntropySemiring"><a class="viewcode-back" href="../../index.html#torch_struct.EntropySemiring">[docs]</a><span class="k">class</span> <span class="nc">EntropySemiring</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
@@ -237,15 +248,6 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
-        <span class="c1"># assert dim!=0 and xs.dim()-dim != 0</span>
-
-        <span class="c1"># if dim &lt; 0: dim = xs.dim() + dim</span>
-        <span class="c1"># values = torch.zeros(*((s if x != dim else 1) for (x, s) in enumerate(xs.shape)) ).type_as(xs)</span>
-        <span class="c1"># cls.one_(values)</span>
-        <span class="c1"># for i in torch.arange(xs.shape[dim]):</span>
-        <span class="c1">#     values = cls.mul(values, xs.index_select(dim, i))</span>
-        <span class="c1"># values =  values.squeeze(dim)</span>
-        <span class="c1"># return values</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
@@ -260,28 +262,6 @@
         <span class="k">return</span> <span class="n">xs</span></div>
 
 
-<span class="k">class</span> <span class="nc">_BaseLog</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">1e5</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-
-    <span class="c1"># @staticmethod</span>
-    <span class="c1"># def div_exp(a, b):</span>
-    <span class="c1">#     return (a - b).exp()</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
-
-
 <div class="viewcode-block" id="LogSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.LogSemiring">[docs]</a><span class="k">class</span> <span class="nc">LogSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
@@ -291,59 +271,57 @@
 <div class="viewcode-block" id="MaxSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.MaxSemiring">[docs]</a><span class="k">class</span> <span class="nc">MaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">div_exp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">==</span> <span class="n">b</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<span class="c1"># class KMaxSemiring(_BaseLog):</span>
-<span class="c1">#     def __init__(self, k):</span>
-<span class="c1">#         self.k = k</span>
+<span class="k">def</span> <span class="nf">KMaxSemiring</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+    <span class="k">class</span> <span class="nc">KMaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">size</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">k</span>
 
-<span class="c1">#     @staticmethod</span>
-<span class="c1">#     def sum(xs, dim=-1):</span>
-<span class="c1">#         return torch.max(xs, dim=dim)[0]</span>
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">orig_potentials</span><span class="p">):</span>
+            <span class="n">potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">k</span><span class="p">,)</span> <span class="o">+</span> <span class="n">orig_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">orig_potentials</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="n">device</span><span class="o">=</span><span class="n">orig_potentials</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">zero_</span><span class="p">(</span><span class="n">potentials</span><span class="p">)</span>
+            <span class="n">potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_potentials</span>
+            <span class="k">return</span> <span class="n">potentials</span>
 
-<span class="c1">#     @classmethod</span>
-<span class="c1">#     def size(cls):</span>
-<span class="c1">#         return self.k</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+            <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">xs</span>
 
-<span class="c1">#     @classmethod</span>
-<span class="c1">#     def times(cls, *ls):</span>
-<span class="c1">#         cur = ls[0]</span>
-<span class="c1">#         for l in ls[1:]:</span>
-<span class="c1">#             cur = cls.mul(cur, l)</span>
-<span class="c1">#         return cur</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">unconvert</span><span class="p">(</span><span class="n">potentials</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c1">#     @classmethod</span>
-<span class="c1">#     def plus(cls, *ls):</span>
-<span class="c1">#         return cls.sum(torch.stack(ls), dim=0)</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">permute</span><span class="p">((</span><span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+                <span class="k">assert</span> <span class="n">xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span>
+                <span class="k">return</span> <span class="n">xs</span>
+            <span class="k">assert</span> <span class="kc">False</span>
 
-<span class="c1">#     # @classmethod</span>
-<span class="c1">#     # def dot(cls, *ls):</span>
-<span class="c1">#     #     return cls.sum(cls.times(*ls))</span>
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">((</span><span class="n">k</span> <span class="o">*</span> <span class="n">k</span><span class="p">,)</span> <span class="o">+</span> <span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">ret</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span>
+            <span class="k">return</span> <span class="n">ret</span>
 
-<span class="c1">#     @classmethod</span>
-<span class="c1">#     def convert(cls, potentials):</span>
-<span class="c1">#         return potentials.unsqueeze(0)</span>
-
-<span class="c1">#     @classmethod</span>
-<span class="c1">#     def unconvert(cls, potentials):</span>
-<span class="c1">#         return potentials.squeeze(0)</span>
-
-<span class="c1">#     @staticmethod</span>
-<span class="c1">#     def mul(a, b):</span>
-<span class="c1">#         return torch.mul(a, b)</span>
-
-<span class="c1">#     @staticmethod</span>
-<span class="c1">#     def zero_(xs):</span>
-<span class="c1">#         return xs.fill_(0)</span>
-
-<span class="c1">#     @staticmethod</span>
-<span class="c1">#     def one_(xs):</span>
-<span class="c1">#         return xs.fill_(1)</span>
+    <span class="k">return</span> <span class="n">KMaxSemiring</span>
 
 
 <span class="k">class</span> <span class="nc">_SampledLogSumExp</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>

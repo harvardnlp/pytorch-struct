@@ -273,7 +273,7 @@
         <span class="k">return</span> <span class="n">arc_scores</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">lengths</span>
 
     <span class="k">def</span> <span class="nf">_arrange_marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grads</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">_unconvert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiring</span><span class="o">.</span><span class="n">unconvert</span><span class="p">(</span><span class="n">grads</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">_unconvert</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">semiring</span><span class="o">.</span><span class="n">unconvert</span><span class="p">(</span><span class="n">grads</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">to_parts</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
