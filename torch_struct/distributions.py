@@ -78,6 +78,17 @@ class StructDistribution(Distribution):
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
+    def kmax(self, k):
+        r"""
+        Compute the k-max for distribution :math:`k\max p(z)`.
+
+        Returns:
+            kmax (*k x batch_shape x event_shape*)
+        """
+        return self.struct(KMaxSemiring(k)).marginals(
+            self.log_potentials, self.lengths, _raw=True
+        )
+
     @lazy_property
     def mode(self):
         return self.argmax

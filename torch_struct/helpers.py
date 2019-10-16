@@ -104,17 +104,12 @@ class _Struct:
                         only_inputs=True,
                         allow_unused=False,
                     )
-                    all_m.append(self.semiring.unconvert(
-                        self._arrange_marginals(marg)))
+                    all_m.append(self.semiring.unconvert(self._arrange_marginals(marg)))
                 return torch.stack(all_m, dim=0)
             else:
                 obj = self.semiring.unconvert(v).sum(dim=0)
                 marg = torch.autograd.grad(
-                    obj,
-                    edges,
-                    create_graph=True,
-                    only_inputs=True,
-                    allow_unused=False,
+                    obj, edges, create_graph=True, only_inputs=True, allow_unused=False
                 )
                 a_m = self._arrange_marginals(marg)
                 return self.semiring.unconvert(a_m)

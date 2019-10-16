@@ -62,6 +62,7 @@ class _BaseLog(Semiring):
     def prod(a, dim=-1):
         return torch.sum(a, dim=dim)
 
+
 class StdSemiring(_Base):
     @staticmethod
     def sum(xs, dim=-1):
@@ -140,7 +141,8 @@ def KMaxSemiring(k):
             potentials = torch.zeros(
                 (k,) + orig_potentials.shape,
                 dtype=orig_potentials.dtype,
-                device=orig_potentials.device)
+                device=orig_potentials.device,
+            )
             cls.zero_(potentials)
             potentials[0] = orig_potentials
             return potentials
@@ -160,7 +162,7 @@ def KMaxSemiring(k):
                 xs = xs.permute(tuple(range(1, xs.dim())) + (0,))
                 xs = xs.contiguous().view(xs.shape[:-2] + (-1,))
                 xs = torch.topk(xs, k, dim=-1)[0]
-                xs = xs.permute((xs.dim()-1,) + tuple(range(0, xs.dim()-1)))
+                xs = xs.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
                 assert xs.shape[0] == k
                 return xs
             assert False
@@ -176,7 +178,6 @@ def KMaxSemiring(k):
             return ret
 
     return KMaxSemiring
-
 
 
 class _SampledLogSumExp(torch.autograd.Function):

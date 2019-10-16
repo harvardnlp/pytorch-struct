@@ -34,11 +34,10 @@ class SemiMarkov(_Struct):
 
         # Main.
         for n in range(1, N):
-            alpha[:, :, n - 1] = \
-                semiring.dot(
-                    beta[n - 1].view(ssize, batch, 1, 1, C),
-                    edge[:, :, n - 1].view(ssize, batch, K, C, C),
-                )
+            alpha[:, :, n - 1] = semiring.dot(
+                beta[n - 1].view(ssize, batch, 1, 1, C),
+                edge[:, :, n - 1].view(ssize, batch, K, C, C),
+            )
 
             t = max(n - K, -1)
             f1 = torch.arange(n - 1, t, -1)
@@ -47,7 +46,8 @@ class SemiMarkov(_Struct):
                 torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
             )
         v = semiring.sum(
-            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1))
+            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
+        )
         return v, [edge], beta
 
     @staticmethod

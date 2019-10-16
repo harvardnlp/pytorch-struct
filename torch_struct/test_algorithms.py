@@ -94,7 +94,6 @@ def test_kmax(data):
     assert (alpha[0] == max1).all()
     assert (alpha[1] <= max1).all()
 
-
     topk = struct.marginals(vals, _raw=True)
     argmax = model(MaxSemiring).marginals(vals)
     assert (topk[0] == argmax).all()
@@ -104,7 +103,7 @@ def test_kmax(data):
     if model != DepTree:
         log_probs = model(MaxSemiring).enumerate(vals)[1]
         tops = torch.topk(torch.cat(log_probs, dim=0), 5, 0)[0]
-        assert(torch.isclose(struct.score(topk[1], vals), alpha[1]).all())
+        assert torch.isclose(struct.score(topk[1], vals), alpha[1]).all()
         for k in range(K):
             assert (torch.isclose(alpha[k], tops[k])).all()
 

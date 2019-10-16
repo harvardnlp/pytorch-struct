@@ -22,6 +22,7 @@ class NeuralCFG(torch.nn.Module):
     """
     NeuralCFG From Kim et al
     """
+
     def __init__(self, V, T, NT, H):
         super().__init__()
         self.NT = NT

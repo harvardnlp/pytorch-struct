@@ -49,9 +49,9 @@ class LinearChain(_Struct):
 
         def merge(x, y, size):
             return semiring.dot(
-                    x.transpose(3, 4).view(ssize, batch, size, 1, C, C),
-                    y.view(ssize, batch, size, C, 1, C),
-                )
+                x.transpose(3, 4).view(ssize, batch, size, 1, C, C),
+                y.view(ssize, batch, size, C, 1, C),
+            )
 
         chart = self._make_chart(
             log_N + 1, (batch, bin_N, C, C), log_potentials, force_grad
