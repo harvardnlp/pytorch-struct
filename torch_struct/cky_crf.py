@@ -25,10 +25,8 @@ class CKY_CRF(_Struct):
         for w in range(1, N):
             Y = beta[A][:, :, : N - w, :w]
             Z = beta[B][:, :, w:, N - w :]
-            f = torch.arange(N - w)
-            X = reduced_scores[:, :, f, f + w]
-
-            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), X)
+            score = torch.diagonal(reduced_scores, w, 2, 3)
+            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), score)
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
 
         final = beta[A][:, :, 0]
