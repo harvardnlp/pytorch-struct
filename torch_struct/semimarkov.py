@@ -33,10 +33,8 @@ class SemiMarkov(_Struct):
         log_N = int(math.ceil(math.log(N - 1, 2)))
         bin_N = int(math.pow(2, log_N))
         chart = self._make_chart(
-            log_N + 1, (batch, bin_N, K-1, K-1, C, C), log_potentials, force_grad
+            log_N + 1, (batch, bin_N, K - 1, K - 1, C, C), log_potentials, force_grad
         )
-
-        print(N, bin_N)
 
         # Init
         for b in range(lengths.shape[0]):
@@ -49,25 +47,35 @@ class SemiMarkov(_Struct):
 
         for b in range(lengths.shape[0]):
             end = lengths[b] - 1
-            chart[0][:, b, :end, 0, 0] = \
-                    log_potentials[:, b, :end, 1]
+            chart[0][:, b, :end, 0, 0] = log_potentials[:, b, :end, 1]
 
-            for k in range(K-1):
+            for k in range(K - 1):
                 if k == 0:
-                    chart[0][:, b, :end - k, 1+k:(K-1), k] = \
-                        log_potentials[:, b, :end-k, 2+k:K]
+                    chart[0][:, b, : end - k, 1 + k : (K - 1), k] = log_potentials[
+                        :, b, : end - k, 2 + k : K
+                    ]
 
                 if k >= 1:
                     cs = torch.arange(C)
-                    chart[0][:, b, :end-(k-1), k-1, k, cs, cs] = semiring.one_(
-                        chart[0][:, b, :end-(k-1), k-1, k].diagonal(0, 2, 3))
+                    chart[0][:, b, : end - (k - 1), k - 1, k, cs, cs] = semiring.one_(
+                        chart[0][:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3)
+                    )
 
         # Scan
         def merge(x, size):
-            return semiring.sum(semiring.sum(semiring.times(
-                x[:, :, 0 : size * 2 : 2].transpose(-1, -2).transpose(-3, -4).view(ssize, batch, size, 1, K-1, K-1, 1, C, C),
-                x[:, :, 1 : size * 2 : 2].view(ssize, batch, size, K-1, 1, K-1, C, 1, C),
-            ), dim=-1), dim=5)
+            return semiring.sum(
+                semiring.sum(
+                    semiring.times(
+                        x[:, :, 0 : size * 2 : 2]
+                        .transpose(-1, -2)
+                        .transpose(-3, -4)
+                        .view(ssize, batch, size, 1, K - 1, K - 1, 1, C, C),
+                        x[:, :, 1 : size * 2 : 2].view(
+                            ssize, batch, size, K - 1, 1, K - 1, C, 1, C
+                        ),
+                    )
+                ).transpose(-1, 5),
+            ).transpose(-1, -2)
 
         size = bin_N
         for n in range(1, log_N + 1):
@@ -75,7 +83,6 @@ class SemiMarkov(_Struct):
             chart[n][:, :, :size] = merge(chart[n - 1], size)
         v = semiring.sum(semiring.sum(chart[-1][:, :, 0, 0, 0, :, :]))
         return v, [log_potentials], None
-
 
     def _dp_standard(self, edge, lengths=None, force_grad=False):
         semiring = self.semiring
@@ -108,7 +115,6 @@ class SemiMarkov(_Struct):
             torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
         )
         return v, [edge], beta
-
 
     @staticmethod
     def _rand():

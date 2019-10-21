@@ -34,6 +34,7 @@ def test_simple_a(batch, N, C):
 
     LinearChain(MultiSampledSemiring).marginals(vals)
 
+
 @given(smint, smint, smint, smint)
 @settings(max_examples=50, deadline=None)
 def test_simple_b(batch, N, K, C):

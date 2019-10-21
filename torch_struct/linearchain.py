@@ -57,7 +57,9 @@ class LinearChain(_Struct):
         # Scan
         def merge(x, size):
             return semiring.dot(
-                x[:, :, 0 : size * 2 : 2].transpose(3, 4).view(ssize, batch, size, 1, C, C),
+                x[:, :, 0 : size * 2 : 2]
+                .transpose(3, 4)
+                .view(ssize, batch, size, 1, C, C),
                 x[:, :, 1 : size * 2 : 2].view(ssize, batch, size, C, 1, C),
             )
 
