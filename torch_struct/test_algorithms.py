@@ -34,6 +34,18 @@ def test_simple_a(batch, N, C):
 
     LinearChain(MultiSampledSemiring).marginals(vals)
 
+@given(smint, smint, smint, smint)
+@settings(max_examples=50, deadline=None)
+def test_simple_b(batch, N, K, C):
+    print(N)
+    N = 14
+    vals = torch.ones(batch, N, 5, C, C)
+    semiring = StdSemiring
+    alpha = SemiMarkov(semiring).sum(vals)
+    c = pow(C, N + 1)
+    SemiMarkov(SampledSemiring).marginals(vals)
+    SemiMarkov(MultiSampledSemiring).marginals(vals)
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)
