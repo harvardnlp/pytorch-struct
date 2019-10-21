@@ -46,24 +46,23 @@ class SemiMarkov(_Struct):
 
         for b in range(lengths.shape[0]):
             end = lengths[b] - 1
-            chart[0][:, b, : end ,   : (K - 1), 0] = log_potentials[
-                :, b, : end , 1  : K
-            ]
+            chart[0][:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
             cs = torch.arange(C)
             for k in range(1, K - 1):
                 chart[0][:, b, : end - (k - 1), k - 1, k, cs, cs] = semiring.one_(
                     chart[0][:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3)
                 )
 
-        K_1 = K-1
+        K_1 = K - 1
         # Scan
+
         def merge(x, size):
             left = x[:, :, 0 : size * 2 : 2].permute(0, 1, 2, 4, 6, 3, 5).contiguous()
             right = x[:, :, 1 : size * 2 : 2].permute(0, 1, 2, 3, 5, 4, 6).contiguous()
             return semiring.dot(
-                    left.view(ssize, batch, size, 1, K_1, 1, C, K_1* C),
-                    right.view(ssize, batch, size, K_1, 1, C, 1, K_1* C),
-                )
+                left.view(ssize, batch, size, 1, K_1, 1, C, K_1 * C),
+                right.view(ssize, batch, size, K_1, 1, C, 1, K_1 * C),
+            )
 
         size = bin_N
         for n in range(1, log_N + 1):
