@@ -70,34 +70,34 @@ class LinearChain(_Struct):
         v = semiring.sum(semiring.sum(chart[-1][:, :, 0]))
         return v, [log_potentials], None
 
-    def _dp_standard(self, edge, lengths=None, force_grad=False):
-        semiring = self.semiring
-        ssize = semiring.size()
-        edge, batch, N, C, lengths = self._check_potentials(edge, lengths)
+    # def _dp_standard(self, edge, lengths=None, force_grad=False):
+    #     semiring = self.semiring
+    #     ssize = semiring.size()
+    #     edge, batch, N, C, lengths = self._check_potentials(edge, lengths)
 
-        alpha = self._make_chart(N, (batch, C), edge, force_grad)
-        edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
+    #     alpha = self._make_chart(N, (batch, C), edge, force_grad)
+    #     edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
-        semiring.one_(alpha[0].data)
+    #     semiring.one_(alpha[0].data)
 
-        for n in range(1, N):
-            edge_store[n - 1][:] = semiring.times(
-                alpha[n - 1].view(ssize, batch, 1, C),
-                edge[:, :, n - 1].view(ssize, batch, C, C),
-            )
-            alpha[n][:] = semiring.sum(edge_store[n - 1])
+    #     for n in range(1, N):
+    #         edge_store[n - 1][:] = semiring.times(
+    #             alpha[n - 1].view(ssize, batch, 1, C),
+    #             edge[:, :, n - 1].view(ssize, batch, C, C),
+    #         )
+    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
 
-        for n in range(1, N):
-            edge_store[n - 1][:] = semiring.times(
-                alpha[n - 1].view(ssize, batch, 1, C),
-                edge[:, :, n - 1].view(ssize, batch, C, C),
-            )
-            alpha[n][:] = semiring.sum(edge_store[n - 1])
+    #     for n in range(1, N):
+    #         edge_store[n - 1][:] = semiring.times(
+    #             alpha[n - 1].view(ssize, batch, 1, C),
+    #             edge[:, :, n - 1].view(ssize, batch, C, C),
+    #         )
+    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
 
-        ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
-        ret = torch.stack(ret, dim=1)
-        v = semiring.sum(ret)
-        return v, edge_store, alpha
+    #     ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
+    #     ret = torch.stack(ret, dim=1)
+    #     v = semiring.sum(ret)
+    #     return v, edge_store, alpha
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):

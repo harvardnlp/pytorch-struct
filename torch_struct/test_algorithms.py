@@ -42,8 +42,6 @@ def test_simple_b(batch, N, K, C):
     N = 14
     vals = torch.ones(batch, N, 5, C, C)
     semiring = StdSemiring
-    alpha = SemiMarkov(semiring).sum(vals)
-    c = pow(C, N + 1)
     SemiMarkov(SampledSemiring).marginals(vals)
     SemiMarkov(MultiSampledSemiring).marginals(vals)
 
