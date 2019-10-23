@@ -68,6 +68,7 @@ class StructDistribution(Distribution):
         """
         return self.struct(EntropySemiring).sum(self.log_potentials, self.lengths)
 
+
     @lazy_property
     def argmax(self):
         r"""
@@ -78,7 +79,7 @@ class StructDistribution(Distribution):
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
-    def kmax(self, k):
+    def topk(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
 

@@ -149,8 +149,9 @@ def KMaxSemiring(k):
             potentials[0] = orig_potentials
             return potentials
 
-        @staticmethod
-        def one_(xs):
+        @classmethod
+        def one_(cls, xs):
+            cls.zero_(xs)
             xs[0].fill_(0)
             return xs
 
@@ -175,7 +176,7 @@ def KMaxSemiring(k):
                 xs = xs.contiguous().view(xs.shape[:-2] + (-1,))
                 xs, xs2 = torch.topk(xs, k, dim=-1)
                 xs = xs.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
-                xs, xs2 = xs.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
+                xs2 = xs2.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
                 assert xs.shape[0] == k
                 return xs, xs2
             assert False

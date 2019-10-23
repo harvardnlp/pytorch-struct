@@ -1,5 +1,5 @@
 import torch
-from .semirings import MaxSemiring
+from .semirings import MaxSemiring, KMaxSemiring
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import lazy_property
 
@@ -17,14 +17,13 @@ class Autoregressive(Distribution):
         n_length (int): max length of sequence
 
     """
-
     def __init__(self, model, init, n_classes, n_length):
         self.model = model
         self.init = init
         self.n_length = n_length
         self.n_classes = n_classes
         event_shape = (n_length, n_classes)
-        batch_shape = start_state.shape[:1]
+        batch_shape = init.shape[:1]
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
 
@@ -46,21 +45,45 @@ class Autoregressive(Distribution):
 
     def _beam_search(self, semiring):
         # beam size
-        beam = semiring.ones_(
-            torch.zeros(semiring.size(), self.batch_shape))
+        beam = semiring.one_(
+            torch.zeros((semiring.size(),) + self.batch_shape))
+        beam.requires_grad_(True)
         state = self.init.unsqueeze(0).expand((semiring.size(),) + self.init.shape)
+        all_beams = []
         for t in range(0, self.n_length):
-            logits = self.model.logits(init)
+            logits = self.model.log_probs(state)
             # ssize x batch_size x C
-            beam = semiring.times(beam.unsqueeze(-1), logits.log_softmax(-1))
+            ex_beam = beam.unsqueeze(-1) + logits
+            ex_beam.requires_grad_(True)
+            all_beams.append(ex_beam)
             # ssize x batch_size x C
-            beam, backpointers = semiring.sparse_sum(beam)
+            beam, tokens = semiring.sparse_sum(ex_beam)
             # ssize x batch_size
-            state = self.model.update_state(state, backpointers)
-        return beam
+            state = self.model.update_state(state, tokens)
 
-    def greedy_max(self):
-        return _beam_search(self, MaxSemiring)
+
+
+        v = beam
+        print(beam)
+        all_m = []
+        for k in range(v.shape[0]):
+            obj = v[k].sum(dim=0)
+            marg = torch.autograd.grad(
+                obj,
+                all_beams,
+                create_graph=True,
+                only_inputs=True,
+                allow_unused=False,
+            )
+            marg = torch.stack(marg, dim=2)
+            all_m.append(marg.sum(0))
+        return torch.stack(all_m, dim=0)
+
+    def greedy_argmax(self):
+        return self._beam_search(MaxSemiring).squeeze(0)
+
+    def beam_topk(self, K):
+        return self._beam_search(KMaxSemiring(K))
 
     def sample(self, sample_shape=torch.Size()):
         r"""

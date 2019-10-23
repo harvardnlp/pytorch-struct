@@ -76,7 +76,6 @@ class LinearChain(_Struct):
             chart[n][:, :, :size] = merge(
                 left(chart[n - 1], size), right(chart[n - 1], size), size
             )
-        print(root(chart[-1][:]))
         v = semiring.sum(semiring.sum(root(chart[-1][:])))
 
         return v, [log_potentials], None

@@ -93,7 +93,6 @@ class _Struct:
             v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             if _raw:
                 all_m = []
-                print(v)
                 for k in range(v.shape[0]):
                     obj = v[k].sum(dim=0)
 

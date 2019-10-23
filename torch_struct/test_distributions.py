@@ -1,4 +1,5 @@
 from .distributions import LinearChainCRF
+from .autoregressive import Autoregressive
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -43,3 +44,61 @@ def test_simple(data, seed):
     samples = dist.sample((100,))
     marginals = dist.marginals
     assert ((samples.mean(0) - marginals).abs() < 0.2).all()
+
+
+@given(data(), integers(min_value=1, max_value=20))
+@settings(max_examples=50, deadline=None)
+def test_autoregressive(data, seed):
+    model = Autoregressive
+    n_classes = 2
+    n_length = 5
+    batch = 3
+
+    values = torch.rand(batch, n_length, n_classes)
+
+
+    values2 = values.unsqueeze(-1).expand(batch, n_length, n_classes, n_classes).clone()
+    values2[:, 0, :, :] = -1e9
+    values2[:, 0, torch.arange(n_classes), torch.arange(n_classes)] = values[:, 0]
+
+    init = torch.zeros(batch, 5).long()
+    class Model:
+        def update_state(self, prev_state, inputs):
+            K, batch, hidden = prev_state.shape
+            return prev_state + 1
+
+        def sequence_logits(self, init, seq_inputs):
+            pass
+
+        def log_probs(self, state):
+            K, batch, hidden = state.shape
+            t = state[0,0,0]
+            x = values[:, t, :].unsqueeze(0).expand(K, batch, n_classes)
+            return x
+
+    auto = Autoregressive(Model(), init, n_classes, n_length)
+    v = auto.greedy_argmax()
+    assert((v == LinearChainCRF(values2).argmax.sum(-1)).all())
+    crf = LinearChainCRF(values2)
+    v2 = auto.beam_topk(K=5)
+
+    print(crf.struct().score(crf.topk(5), values2, batch_dims=[0,1]))
+    print(crf.topk(5)[0].nonzero())
+    print(crf.topk(5)[1].nonzero())
+
+    # print(v2.shape)
+    print(v2[0].nonzero())
+
+
+    print(v2[1].nonzero())
+
+    # print(crf.topk(5).sum(-1).nonzero().shape)
+    assert((v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all())
+
+
+    # print(v, LinearChainCRF(values2).max)
+    # print('0', v[0])
+    # print('1', v[1])
+    # print('2', v[2])
+    # print("q", LinearChainCRF(values2).max)
+    assert((v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all())
