@@ -27,7 +27,7 @@ class Autoregressive(Distribution):
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
 
-    def log_prob(self, value):
+    def log_prob(self, value, normalize=True):
         """
         Compute log probability over values :math:`p(z)`.
 
@@ -37,11 +37,18 @@ class Autoregressive(Distribution):
         Returns:
             log_probs (*sample_shape x batch_shape*)
         """
+        batch_shape, n_length, n_classes = value.shape
+        value = value.long()
         logits = self.model.sequence_logits(self.init, value)
+        if normalize:
+            log_probs = logits.log_softmax(-1)
+        else:
+            log_probs = logits
+
         # batch_shape x event_shape (N x C)
-        log_probs = logits.log_softmax(-1)
         positions = torch.arange(self.n_length)
-        return log_probs[:, positions, value[positions]].sum(-1)
+        batch = torch.arange(batch_shape)
+        return log_probs.masked_fill_(value==0, 0).sum(-1).sum(-1)
 
     def _beam_search(self, semiring):
         # beam size
@@ -51,20 +58,15 @@ class Autoregressive(Distribution):
         state = self.init.unsqueeze(0).expand((semiring.size(),) + self.init.shape)
         all_beams = []
         for t in range(0, self.n_length):
-            logits = self.model.log_probs(state)
+            logits = self.model.local_logits(state)
             # ssize x batch_size x C
             ex_beam = beam.unsqueeze(-1) + logits
             ex_beam.requires_grad_(True)
             all_beams.append(ex_beam)
-            # ssize x batch_size x C
             beam, tokens = semiring.sparse_sum(ex_beam)
-            # ssize x batch_size
             state = self.model.update_state(state, tokens)
 
-
-
         v = beam
-        print(beam)
         all_m = []
         for k in range(v.shape[0]):
             obj = v[k].sum(dim=0)
@@ -95,4 +97,13 @@ class Autoregressive(Distribution):
         Returns:
             samples (*sample_shape x batch_shape x event_shape*)
         """
-        pass
+        sample_shape = sample_shape[0]
+        beam = torch.zeros((sample_shape,) + self.batch_shape)
+        state = self.init.unsqueeze(0).expand((sample_shape,) + self.init.shape)
+        all_tokens = []
+        for t in range(0, self.n_length):
+            logits = self.model.local_logits(state)
+            tokens = torch.distributions.OneHotCategorical(logits).sample((1,))[0]
+            state = self.model.update_state(state, tokens)
+            all_tokens.append(tokens)
+        return torch.stack(all_tokens, dim=2)

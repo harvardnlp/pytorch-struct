@@ -1,5 +1,5 @@
 import torch
-
+import torch.distributions
 
 class Semiring:
     @classmethod
@@ -131,6 +131,7 @@ class MaxSemiring(_BaseLog):
 
     def sparse_sum(xs, dim=-1):
         return torch.max(xs, dim=dim)
+
 
 def KMaxSemiring(k):
     class KMaxSemiring(_BaseLog):
