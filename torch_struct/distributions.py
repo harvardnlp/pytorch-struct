@@ -6,7 +6,13 @@ from .cky import CKY
 from .semimarkov import SemiMarkov
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
-from .semirings import LogSemiring, MaxSemiring, EntropySemiring, MultiSampledSemiring, KMaxSemiring
+from .semirings import (
+    LogSemiring,
+    MaxSemiring,
+    EntropySemiring,
+    MultiSampledSemiring,
+    KMaxSemiring,
+)
 
 
 class StructDistribution(Distribution):
@@ -67,7 +73,6 @@ class StructDistribution(Distribution):
             entropy (*batch_shape*)
         """
         return self.struct(EntropySemiring).sum(self.log_potentials, self.lengths)
-
 
     @lazy_property
     def argmax(self):

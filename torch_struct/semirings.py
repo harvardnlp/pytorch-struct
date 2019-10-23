@@ -1,6 +1,7 @@
 import torch
 import torch.distributions
 
+
 class Semiring:
     @classmethod
     def size(cls):
@@ -181,7 +182,6 @@ def KMaxSemiring(k):
                 assert xs.shape[0] == k
                 return xs, xs2
             assert False
-
 
         @staticmethod
         def mul(a, b):

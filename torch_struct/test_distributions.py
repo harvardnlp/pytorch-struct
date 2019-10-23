@@ -61,6 +61,7 @@ def test_autoregressive(data, seed):
     values2[:, 0, torch.arange(n_classes), torch.arange(n_classes)] = values[:, 0]
 
     init = torch.zeros(batch, 5).long()
+
     class Model:
         def update_state(self, prev_state, inputs):
             K, batch, hidden = prev_state.shape
@@ -71,13 +72,13 @@ def test_autoregressive(data, seed):
 
         def local_logits(self, state):
             K, batch, hidden = state.shape
-            t = state[0,0,0]
+            t = state[0, 0, 0]
             x = values[:, t, :].unsqueeze(0).expand(K, batch, n_classes)
             return x
 
     auto = Autoregressive(Model(), init, n_classes, n_length)
     v = auto.greedy_argmax()
-    assert((v == LinearChainCRF(values2).argmax.sum(-1)).all())
+    assert (v == LinearChainCRF(values2).argmax.sum(-1)).all()
     crf = LinearChainCRF(values2)
     v2 = auto.beam_topk(K=5)
 
@@ -85,11 +86,20 @@ def test_autoregressive(data, seed):
     # print(crf.topk(5)[0].nonzero())
     # print(crf.topk(5)[1].nonzero())
 
-    assert((v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all())
-    assert((v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all())
+    assert (v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all()
+    assert (v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all()
 
     print(auto.log_prob(v, normalize=False))
     print(crf.struct().score(crf.argmax, values2))
-    assert ((auto.log_prob(v, normalize=False) == crf.struct().score(crf.argmax, values2)).all())
+    assert (
+        auto.log_prob(v, normalize=False) == crf.struct().score(crf.argmax, values2)
+    ).all()
 
-    assert(auto.sample((7,)).shape == (7, batch, n_length, n_classes))
+    assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
+
+    assert auto.sample_without_replacement((7,)).shape == (
+        7,
+        batch,
+        n_length,
+        n_classes,
+    )
