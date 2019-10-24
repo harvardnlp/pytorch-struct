@@ -16,8 +16,8 @@ class CKY_CRF(_Struct):
 
         # Initialize
         reduced_scores = semiring.sum(scores)
+        rule_use = reduced_scores.diagonal(0, 2, 3)
         ns = torch.arange(N)
-        rule_use = reduced_scores[:, :, ns, ns]
         beta[A][:, :, ns, 0] = rule_use
         beta[B][:, :, ns, N - 1] = rule_use
 
@@ -25,14 +25,12 @@ class CKY_CRF(_Struct):
         for w in range(1, N):
             Y = beta[A][:, :, : N - w, :w]
             Z = beta[B][:, :, w:, N - w :]
-            f = torch.arange(N - w)
-            X = reduced_scores[:, :, f, f + w]
-
-            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), X)
+            score = reduced_scores.diagonal(w, 2, 3)
+            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), score)
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
 
         final = beta[A][:, :, 0]
-        log_Z = torch.stack([final[:, b, l - 1] for b, l in enumerate(lengths)], dim=1)
+        log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
 
     def enumerate(self, scores):
