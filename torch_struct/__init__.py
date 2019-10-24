@@ -8,6 +8,7 @@ from .distributions import (
     TreeCRF,
     SentCFG,
 )
+from .autoregressive import Autoregressive
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
@@ -42,6 +43,7 @@ __all__ = [
     MultiSampledSemiring,
     SelfCritical,
     StructDistribution,
+    Autoregressive,
     LinearChainCRF,
     SemiMarkovCRF,
     DependencyCRF,

@@ -84,7 +84,7 @@ class StructDistribution(Distribution):
         """
         return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
-    def kmax(self, k):
+    def topk(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
 
