@@ -250,17 +250,6 @@ distribution. The properties of interest are,</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="torch_struct.StructDistribution.kmax">
-<code class="sig-name descname">kmax</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.kmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.kmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="torch_struct.StructDistribution.log_prob">
 <code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.log_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
@@ -309,6 +298,17 @@ distribution. The properties of interest are,</p>
 <dt id="torch_struct.StructDistribution.to_event">
 <code class="sig-name descname">to_event</code><span class="sig-paren">(</span><em class="sig-param">sequence</em>, <em class="sig-param">extra</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.to_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.to_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert simple representation to event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.topk">
+<code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

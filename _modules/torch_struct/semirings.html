@@ -143,6 +143,7 @@
             
   <h1>Source code for torch_struct.semirings</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.distributions</span>
 
 
 <span class="k">class</span> <span class="nc">Semiring</span><span class="p">:</span>
@@ -271,7 +272,11 @@
 <div class="viewcode-block" id="MaxSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.MaxSemiring">[docs]</a><span class="k">class</span> <span class="nc">MaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sparse_sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">KMaxSemiring</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
@@ -291,8 +296,9 @@
             <span class="n">potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_potentials</span>
             <span class="k">return</span> <span class="n">potentials</span>
 
-        <span class="nd">@staticmethod</span>
-        <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+        <span class="nd">@classmethod</span>
+        <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">xs</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
             <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">xs</span>
 
@@ -309,6 +315,18 @@
                 <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">permute</span><span class="p">((</span><span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
                 <span class="k">assert</span> <span class="n">xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span>
                 <span class="k">return</span> <span class="n">xs</span>
+            <span class="k">assert</span> <span class="kc">False</span>
+
+        <span class="nd">@staticmethod</span>
+        <span class="k">def</span> <span class="nf">sparse_sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">0</span><span class="p">,))</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))</span>
+                <span class="n">xs</span><span class="p">,</span> <span class="n">xs2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">xs</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">permute</span><span class="p">((</span><span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+                <span class="n">xs2</span> <span class="o">=</span> <span class="n">xs2</span><span class="o">.</span><span class="n">permute</span><span class="p">((</span><span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">xs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+                <span class="k">assert</span> <span class="n">xs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span>
+                <span class="k">return</span> <span class="n">xs</span><span class="p">,</span> <span class="n">xs2</span>
             <span class="k">assert</span> <span class="kc">False</span>
 
         <span class="nd">@staticmethod</span>
