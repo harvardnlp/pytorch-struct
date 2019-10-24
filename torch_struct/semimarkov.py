@@ -1,4 +1,5 @@
 import torch
+import math
 from .helpers import _Struct
 
 
@@ -18,37 +19,89 @@ class SemiMarkov(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, K, C, lengths
 
-    def _dp(self, edge, lengths=None, force_grad=False):
+    def _dp(self, log_potentials, lengths=None, force_grad=False):
+        "Compute forward pass by linear scan"
+
+        # Setup
         semiring = self.semiring
+        log_potentials.requires_grad_(True)
         ssize = semiring.size()
-        edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
-        edge.requires_grad_(True)
+        log_potentials, batch, N, K, C, lengths = self._check_potentials(
+            log_potentials, lengths
+        )
+        log_N = int(math.ceil(math.log(N - 1, 2)))
+        bin_N = int(math.pow(2, log_N))
+        chart = self._make_chart(
+            log_N + 1, (batch, bin_N, K - 1, K - 1, C, C), log_potentials, force_grad
+        )
 
         # Init
-        # All paths starting at N of len K
-        alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
-
-        # All paths finishing at N with label C
-        beta = self._make_chart(N, (batch, C), edge, force_grad)
-        semiring.one_(beta[0].data)
-
-        # Main.
-        for n in range(1, N):
-            alpha[:, :, n - 1] = semiring.dot(
-                beta[n - 1].view(ssize, batch, 1, 1, C),
-                edge[:, :, n - 1].view(ssize, batch, K, C, C),
+        for b in range(lengths.shape[0]):
+            end = lengths[b] - 1
+            semiring.zero_(chart[0][:, b, end:])
+            cs = torch.arange(C)
+            chart[0][:, b, end:, 0, 0, cs, cs] = semiring.one_(
+                chart[0][:, b, end:, 0, 0].diagonal(0, 2, 3)
             )
 
-            t = max(n - K, -1)
-            f1 = torch.arange(n - 1, t, -1)
-            f2 = torch.arange(1, len(f1) + 1)
-            beta[n][:] = semiring.sum(
-                torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
+        for b in range(lengths.shape[0]):
+            end = lengths[b] - 1
+            chart[0][:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
+            cs = torch.arange(C)
+            for k in range(1, K - 1):
+                chart[0][:, b, : end - (k - 1), k - 1, k, cs, cs] = semiring.one_(
+                    chart[0][:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3)
+                )
+
+        K_1 = K - 1
+        # Scan
+
+        def merge(x, size):
+            left = x[:, :, 0 : size * 2 : 2].permute(0, 1, 2, 4, 6, 3, 5).contiguous()
+            right = x[:, :, 1 : size * 2 : 2].permute(0, 1, 2, 3, 5, 4, 6).contiguous()
+            return semiring.dot(
+                left.view(ssize, batch, size, 1, K_1, 1, C, K_1 * C),
+                right.view(ssize, batch, size, K_1, 1, C, 1, K_1 * C),
             )
-        v = semiring.sum(
-            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
-        )
-        return v, [edge], beta
+
+        size = bin_N
+        for n in range(1, log_N + 1):
+            size = int(size / 2)
+            chart[n][:, :, :size] = merge(chart[n - 1], size)
+        v = semiring.sum(semiring.sum(chart[-1][:, :, 0, 0, 0, :, :]))
+        return v, [log_potentials], None
+
+    # def _dp_standard(self, edge, lengths=None, force_grad=False):
+    #     semiring = self.semiring
+    #     ssize = semiring.size()
+    #     edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
+    #     edge.requires_grad_(True)
+
+    #     # Init
+    #     # All paths starting at N of len K
+    #     alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
+
+    #     # All paths finishing at N with label C
+    #     beta = self._make_chart(N, (batch, C), edge, force_grad)
+    #     semiring.one_(beta[0].data)
+
+    #     # Main.
+    #     for n in range(1, N):
+    #         alpha[:, :, n - 1] = semiring.dot(
+    #             beta[n - 1].view(ssize, batch, 1, 1, C),
+    #             edge[:, :, n - 1].view(ssize, batch, K, C, C),
+    #         )
+
+    #         t = max(n - K, -1)
+    #         f1 = torch.arange(n - 1, t, -1)
+    #         f2 = torch.arange(1, len(f1) + 1)
+    #         beta[n][:] = semiring.sum(
+    #             torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
+    #         )
+    #     v = semiring.sum(
+    #         torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
+    #     )
+    #     return v, [edge], beta
 
     @staticmethod
     def _rand():
