@@ -307,9 +307,12 @@ class MultiSampledSemiring(_BaseLog):
         mbits = bits.type_as(xs)
         return (((xs % mbits[i + 1]) - (xs % mbits[i]) + final) != 0).type_as(xs)
 
+
 class SparseMaxSemiring(_BaseLog):
+    @staticmethod
     def sum(xs, dim=-1):
         return _SimplexProject.apply(xs, dim)
+
 
 class _SimplexProject(torch.autograd.Function):
     @staticmethod
@@ -326,8 +329,11 @@ class _SimplexProject(torch.autograd.Function):
 
         grad_input = None
         if ctx.needs_input_grad[0]:
-            grad_input = grad_output.unsqueeze(dim).mul(_SparseMaxGrad.apply(w_star, dim))
+            grad_input = grad_output.unsqueeze(dim).mul(
+                _SparseMaxGrad.apply(w_star, dim)
+            )
         return grad_input, None, None
+
 
 class _SparseMaxGrad(torch.autograd.Function):
     @staticmethod
@@ -341,15 +347,17 @@ class _SparseMaxGrad(torch.autograd.Function):
         print(grad_output.shape, w_star.shape, dim)
         return sparsemax_grad(grad_output, w_star, dim.item()), None
 
+
 def project_simplex(v, dim, z=1):
     v_sorted, _ = torch.sort(v, dim=dim, descending=True)
     cssv = torch.cumsum(v_sorted, dim=dim) - z
     ind = torch.arange(1, 1 + len(v)).to(dtype=v.dtype)
     cond = v_sorted - cssv / ind >= 0
     k = cond.sum(dim=dim, keepdim=True)
-    tau = cssv.gather(dim, k-1) / k.to(dtype=v.dtype)
+    tau = cssv.gather(dim, k - 1) / k.to(dtype=v.dtype)
     w = torch.clamp(v - tau, min=0)
     return w
+
 
 def sparsemax_grad(dout, w_star, dim):
     out = dout.clone()

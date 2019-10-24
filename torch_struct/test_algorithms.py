@@ -300,15 +300,14 @@ def test_hmm():
     out = LinearChain.hmm(transition, emission, init, observations)
     LinearChain().sum(out)
 
+
 @given(data())
 def test_sparse_max(data):
     model = data.draw(sampled_from([LinearChain]))
-    K = 2
     semiring = SparseMaxSemiring
-    struct = model(semiring)
     vals, (batch, N) = model._rand()
     vals.requires_grad_(True)
-    max1 = model(semiring).sum(vals)
+    model(semiring).sum(vals)
     sparsemax = model(semiring).marginals(vals)
     print(vals.requires_grad)
     sparsemax.sum().backward()
