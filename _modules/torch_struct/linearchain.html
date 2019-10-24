@@ -172,6 +172,7 @@
 
     <span class="k">def</span> <span class="nf">_dp_scan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="s2">&quot;Compute forward pass by linear scan&quot;</span>
+        <span class="c1"># Setup</span>
         <span class="n">semiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span>
         <span class="n">log_potentials</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">ssize</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
@@ -180,23 +181,6 @@
         <span class="p">)</span>
         <span class="n">log_N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
         <span class="n">bin_N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">log_N</span><span class="p">))</span>
-
-        <span class="c1"># setup scan</span>
-        <span class="k">def</span> <span class="nf">left</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span> <span class="p">:</span> <span class="n">size</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span>
-
-        <span class="k">def</span> <span class="nf">right</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">size</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span>
-
-        <span class="k">def</span> <span class="nf">root</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span>
-
-        <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
-                <span class="n">x</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-                <span class="n">y</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-            <span class="p">)</span>
-
         <span class="n">chart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_chart</span><span class="p">(</span>
             <span class="n">log_N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">bin_N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">force_grad</span>
         <span class="p">)</span>
@@ -205,8 +189,9 @@
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lengths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="n">end</span> <span class="o">=</span> <span class="n">lengths</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="n">semiring</span><span class="o">.</span><span class="n">zero_</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">end</span><span class="p">:])</span>
-            <span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">end</span><span class="p">:,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">)]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span>
-                <span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">end</span><span class="p">:,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">)]</span>
+            <span class="n">cs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+            <span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">end</span><span class="p">:,</span> <span class="n">cs</span><span class="p">,</span> <span class="n">cs</span><span class="p">]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span>
+                <span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="n">end</span><span class="p">:]</span><span class="o">.</span><span class="n">diagonal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lengths</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
@@ -214,45 +199,49 @@
             <span class="n">chart</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">b</span><span class="p">,</span> <span class="p">:</span><span class="n">end</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="p">[:,</span> <span class="n">b</span><span class="p">,</span> <span class="p">:</span><span class="n">end</span><span class="p">]</span>
 
         <span class="c1"># Scan</span>
+        <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span> <span class="p">:</span> <span class="n">size</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span>
+                <span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
+                <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">size</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">:</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
+            <span class="p">)</span>
+
         <span class="n">size</span> <span class="o">=</span> <span class="n">bin_N</span>
         <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">log_N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">chart</span><span class="p">[</span><span class="n">n</span><span class="p">][:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span>
-                <span class="n">left</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">),</span> <span class="n">right</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">),</span> <span class="n">size</span>
-            <span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">root</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:]))</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">root</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:])))</span>
-
+            <span class="n">chart</span><span class="p">[</span><span class="n">n</span><span class="p">][:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">size</span><span class="p">]</span> <span class="o">=</span> <span class="n">merge</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">chart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]))</span>
         <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="p">[</span><span class="n">log_potentials</span><span class="p">],</span> <span class="kc">None</span>
 
-    <span class="k">def</span> <span class="nf">_dp_standard</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="n">semiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span>
-        <span class="n">ssize</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
-        <span class="n">edge</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_potentials</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
+    <span class="c1"># def _dp_standard(self, edge, lengths=None, force_grad=False):</span>
+    <span class="c1">#     semiring = self.semiring</span>
+    <span class="c1">#     ssize = semiring.size()</span>
+    <span class="c1">#     edge, batch, N, C, lengths = self._check_potentials(edge, lengths)</span>
 
-        <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_chart</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">edge</span><span class="p">,</span> <span class="n">force_grad</span><span class="p">)</span>
-        <span class="n">edge_store</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_chart</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span> <span class="n">edge</span><span class="p">,</span> <span class="n">force_grad</span><span class="p">)</span>
+    <span class="c1">#     alpha = self._make_chart(N, (batch, C), edge, force_grad)</span>
+    <span class="c1">#     edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)</span>
 
-        <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="c1">#     semiring.one_(alpha[0].data)</span>
 
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-            <span class="n">edge_store</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">times</span><span class="p">(</span>
-                <span class="n">alpha</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-                <span class="n">edge</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">n</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">edge_store</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1">#     for n in range(1, N):</span>
+    <span class="c1">#         edge_store[n - 1][:] = semiring.times(</span>
+    <span class="c1">#             alpha[n - 1].view(ssize, batch, 1, C),</span>
+    <span class="c1">#             edge[:, :, n - 1].view(ssize, batch, C, C),</span>
+    <span class="c1">#         )</span>
+    <span class="c1">#         alpha[n][:] = semiring.sum(edge_store[n - 1])</span>
 
-        <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-            <span class="n">edge_store</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">times</span><span class="p">(</span>
-                <span class="n">alpha</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-                <span class="n">edge</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">),</span>
-            <span class="p">)</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">n</span><span class="p">][:]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">edge_store</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="c1">#     for n in range(1, N):</span>
+    <span class="c1">#         edge_store[n - 1][:] = semiring.times(</span>
+    <span class="c1">#             alpha[n - 1].view(ssize, batch, 1, C),</span>
+    <span class="c1">#             edge[:, :, n - 1].view(ssize, batch, C, C),</span>
+    <span class="c1">#         )</span>
+    <span class="c1">#         alpha[n][:] = semiring.sum(edge_store[n - 1])</span>
 
-        <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">alpha</span><span class="p">[</span><span class="n">lengths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch</span><span class="p">)]</span>
-        <span class="n">ret</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">edge_store</span><span class="p">,</span> <span class="n">alpha</span>
+    <span class="c1">#     ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]</span>
+    <span class="c1">#     ret = torch.stack(ret, dim=1)</span>
+    <span class="c1">#     v = semiring.sum(ret)</span>
+    <span class="c1">#     return v, edge_store, alpha</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">to_parts</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>

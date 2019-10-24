@@ -150,7 +150,13 @@
 <span class="kn">from</span> <span class="nn">.semimarkov</span> <span class="k">import</span> <span class="n">SemiMarkov</span>
 <span class="kn">from</span> <span class="nn">.deptree</span> <span class="k">import</span> <span class="n">DepTree</span><span class="p">,</span> <span class="n">deptree_nonproj</span><span class="p">,</span> <span class="n">deptree_part</span>
 <span class="kn">from</span> <span class="nn">.cky_crf</span> <span class="k">import</span> <span class="n">CKY_CRF</span>
-<span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="n">LogSemiring</span><span class="p">,</span> <span class="n">MaxSemiring</span><span class="p">,</span> <span class="n">EntropySemiring</span><span class="p">,</span> <span class="n">MultiSampledSemiring</span><span class="p">,</span> <span class="n">KMaxSemiring</span>
+<span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">LogSemiring</span><span class="p">,</span>
+    <span class="n">MaxSemiring</span><span class="p">,</span>
+    <span class="n">EntropySemiring</span><span class="p">,</span>
+    <span class="n">MultiSampledSemiring</span><span class="p">,</span>
+    <span class="n">KMaxSemiring</span><span class="p">,</span>
+<span class="p">)</span>
 
 
 <div class="viewcode-block" id="StructDistribution"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution">[docs]</a><span class="k">class</span> <span class="nc">StructDistribution</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
