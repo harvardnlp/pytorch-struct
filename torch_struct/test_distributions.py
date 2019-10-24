@@ -49,7 +49,6 @@ def test_simple(data, seed):
 @given(data(), integers(min_value=1, max_value=20))
 @settings(max_examples=50, deadline=None)
 def test_autoregressive(data, seed):
-    model = Autoregressive
     n_classes = 2
     n_length = 5
     batch = 3

@@ -130,6 +130,7 @@ class MaxSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
 
+    @staticmethod
     def sparse_sum(xs, dim=-1):
         return torch.max(xs, dim=dim)
 
@@ -172,6 +173,7 @@ def KMaxSemiring(k):
                 return xs
             assert False
 
+        @staticmethod
         def sparse_sum(xs, dim=-1):
             if dim == -1:
                 xs = xs.permute(tuple(range(1, xs.dim())) + (0,))

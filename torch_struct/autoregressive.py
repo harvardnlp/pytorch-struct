@@ -1,7 +1,6 @@
 import torch
 from .semirings import MaxSemiring, KMaxSemiring
 from torch.distributions.distribution import Distribution
-from torch.distributions.utils import lazy_property
 
 
 class AutoregressiveModel:
@@ -91,8 +90,6 @@ class Autoregressive(Distribution):
             log_probs = logits
 
         # batch_shape x event_shape (N x C)
-        positions = torch.arange(self.n_length)
-        batch = torch.arange(batch_shape)
         return log_probs.masked_fill_(value == 0, 0).sum(-1).sum(-1)
 
     def _beam_search(self, semiring, gumbel=True):
@@ -156,7 +153,6 @@ class Autoregressive(Distribution):
             samples (*sample_shape x batch_shape x event_shape*)
         """
         sample_shape = sample_shape[0]
-        beam = torch.zeros((sample_shape,) + self.batch_shape)
         state = self.init.unsqueeze(0).expand((sample_shape,) + self.init.shape)
         all_tokens = []
         for t in range(0, self.n_length):
