@@ -7,7 +7,7 @@ from .distributions import (
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
-    AlignmentCRF
+    AlignmentCRF,
 )
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
@@ -51,5 +51,5 @@ __all__ = [
     TreeCRF,
     SentCFG,
     AlignmentCRF,
-    Alignment
+    Alignment,
 ]

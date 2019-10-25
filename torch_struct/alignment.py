@@ -38,10 +38,7 @@ class Alignment(_Struct):
 
         # Create a chart N, N, back
         chart = self._make_chart(
-            log_MN + 1,
-            (batch, bin_MN, bin_MN, bin_MN, 3),
-            log_potentials,
-            force_grad,
+            log_MN + 1, (batch, bin_MN, bin_MN, bin_MN, 3), log_potentials, force_grad
         )
 
         # Init

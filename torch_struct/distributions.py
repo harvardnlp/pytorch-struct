@@ -4,6 +4,7 @@ from torch.distributions.utils import lazy_property
 from .linearchain import LinearChain
 from .cky import CKY
 from .semimarkov import SemiMarkov
+from .alignment import Alignment
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
 from .semirings import (
@@ -254,6 +255,7 @@ class TreeCRF(StructDistribution):
     Compact representation:  *N x N x NT* long tensor (Same)
     """
     struct = CKY_CRF
+
 
 class AlignmentCRF(StructDistribution):
     r"""
