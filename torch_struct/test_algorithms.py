@@ -112,8 +112,9 @@ def test_kmax(data):
 @given(data())
 @settings(max_examples=50, deadline=None)
 def test_generic_a(data):
-    model = data.draw(sampled_from([Alignment, LinearChain, SemiMarkov,
-                                    CKY, CKY_CRF, DepTree]))
+    model = data.draw(
+        sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+    )
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
@@ -216,7 +217,9 @@ def test_parts_from_sequence(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree]))
+    model = data.draw(
+        sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+    )
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -260,7 +263,9 @@ def test_generic_lengths(data, seed):
 
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
-    model = data.draw(sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF]))
+    model = data.draw(
+        sampled_from([Alignment, DepTree, SemiMarkov, DepTree, CKY, CKY_CRF])
+    )
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -281,6 +286,7 @@ def test_params(data, seed):
         c = vals.grad.detach()
         assert torch.isclose(b, c).all()
 
+
 @given(data())
 @settings(max_examples=50, deadline=None)
 def test_alignment(data):
@@ -290,7 +296,7 @@ def test_alignment(data):
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
-    assert (torch.isclose(count, alpha).all())
+    assert torch.isclose(count, alpha).all()
 
 
 def test_hmm():
