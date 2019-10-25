@@ -36,13 +36,17 @@ class Alignment(_Struct):
 
         Down, Mid, Up = 0, 1, 2
 
+        # Create a chart N, N, back
         chart = self._make_chart(
             log_MN + 1,
-            (batch, bin_MN, bin_MN, bin_MN, 3),  # right  # left
+            (batch, bin_MN, bin_MN, bin_MN, 3),
             log_potentials,
             force_grad,
         )
 
+        # Init
+        # This part is complicated. Rotate the scores by 45% and
+        # then compress one.
         grid_x = torch.arange(N).view(N, 1).expand(N, M)
         grid_y = torch.arange(M).view(1, M).expand(N, M)
         rot_x = grid_x + grid_y
@@ -55,11 +59,11 @@ class Alignment(_Struct):
             end = lengths[b]
             # Add path to end.
             point = (end + M) // 2
+            point = (end + M) // 2
+            lim = point * 2
             chart[1][:, b, point : bin_MN // 2, ind, ind, Mid] = semiring.one_(
                 chart[1][:, b, point : bin_MN // 2, ind, ind, Mid]
             )
-            point = (end + M) // 2
-            lim = point * 2
             chart[0][
                 :, b, rot_x[: end + M], rot_y[:lim], rot_y[:lim], :
             ] = log_potentials[:, b, : end + M]
