@@ -7,11 +7,13 @@ from .distributions import (
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
+    AlignmentCRF
 )
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
+from .alignment import Alignment
 from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
@@ -48,4 +50,6 @@ __all__ = [
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
+    AlignmentCRF,
+    Alignment
 ]
