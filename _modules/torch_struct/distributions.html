@@ -148,6 +148,7 @@
 <span class="kn">from</span> <span class="nn">.linearchain</span> <span class="k">import</span> <span class="n">LinearChain</span>
 <span class="kn">from</span> <span class="nn">.cky</span> <span class="k">import</span> <span class="n">CKY</span>
 <span class="kn">from</span> <span class="nn">.semimarkov</span> <span class="k">import</span> <span class="n">SemiMarkov</span>
+<span class="kn">from</span> <span class="nn">.alignment</span> <span class="k">import</span> <span class="n">Alignment</span>
 <span class="kn">from</span> <span class="nn">.deptree</span> <span class="k">import</span> <span class="n">DepTree</span><span class="p">,</span> <span class="n">deptree_nonproj</span><span class="p">,</span> <span class="n">deptree_part</span>
 <span class="kn">from</span> <span class="nn">.cky_crf</span> <span class="k">import</span> <span class="n">CKY_CRF</span>
 <span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="p">(</span>
@@ -398,6 +399,22 @@
 <span class="sd">    Compact representation:  *N x N x NT* long tensor (Same)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY_CRF</span></div>
+
+
+<span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</span>
+
+<span class="sd">    Event shape is of the form:</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.</span>
+<span class="sd">                                    :math:`\phi(i, j, op)`</span>
+<span class="sd">                                  Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</span>
+<span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span>
 
 
 <div class="viewcode-block" id="SentCFG"><a class="viewcode-back" href="../../index.html#torch_struct.SentCFG">[docs]</a><span class="k">class</span> <span class="nc">SentCFG</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
