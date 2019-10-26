@@ -396,7 +396,6 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
-        <span class="c1"># assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()</span>
 
         <span class="n">logits</span><span class="p">,</span> <span class="n">part</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
         <span class="n">grad_input</span> <span class="o">=</span> <span class="kc">None</span>
@@ -451,6 +450,67 @@
         <span class="n">final</span> <span class="o">=</span> <span class="n">xs</span> <span class="o">%</span> <span class="mi">2</span>
         <span class="n">mbits</span> <span class="o">=</span> <span class="n">bits</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">(((</span><span class="n">xs</span> <span class="o">%</span> <span class="n">mbits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="p">(</span><span class="n">xs</span> <span class="o">%</span> <span class="n">mbits</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="n">final</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">SparseMaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_SimplexProject</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_SimplexProject</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">w_star</span> <span class="o">=</span> <span class="n">project_simplex</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">w_star</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">w_star</span> <span class="o">-</span> <span class="nb">input</span><span class="p">)</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">w_star</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">grad_input</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ctx</span><span class="o">.</span><span class="n">needs_input_grad</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">grad_input</span> <span class="o">=</span> <span class="n">grad_output</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span>
+                <span class="n">_SparseMaxGrad</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<span class="k">class</span> <span class="nc">_SparseMaxGrad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">w_star</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+        <span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">grad_output</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">w_star</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sparsemax_grad</span><span class="p">(</span><span class="n">grad_output</span><span class="p">,</span> <span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span><span class="o">.</span><span class="n">item</span><span class="p">()),</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">project_simplex</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">v_sorted</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">cssv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">v_sorted</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">cond</span> <span class="o">=</span> <span class="n">v_sorted</span> <span class="o">-</span> <span class="n">cssv</span> <span class="o">/</span> <span class="n">ind</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">cond</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">tau</span> <span class="o">=</span> <span class="n">cssv</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">k</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">tau</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">w</span>
+
+
+<span class="k">def</span> <span class="nf">sparsemax_grad</span><span class="p">(</span><span class="n">dout</span><span class="p">,</span> <span class="n">w_star</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">dout</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="n">supp</span> <span class="o">=</span> <span class="n">w_star</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">w_star</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">nnz</span> <span class="o">=</span> <span class="n">supp</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">dout</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">-</span> <span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">/</span> <span class="n">nnz</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">w_star</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">out</span>
 </pre></div>
 
            </div>
