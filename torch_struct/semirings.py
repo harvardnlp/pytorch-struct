@@ -252,7 +252,6 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        # assert ((grad_output == 64) + (grad_output == 0) + (grad_output ==1)).all()
 
         logits, part, dim = ctx.saved_tensors
         grad_input = None
@@ -307,3 +306,64 @@ class MultiSampledSemiring(_BaseLog):
         final = xs % 2
         mbits = bits.type_as(xs)
         return (((xs % mbits[i + 1]) - (xs % mbits[i]) + final) != 0).type_as(xs)
+
+
+class SparseMaxSemiring(_BaseLog):
+    @staticmethod
+    def sum(xs, dim=-1):
+        return _SimplexProject.apply(xs, dim)
+
+
+class _SimplexProject(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input, dim, z=1):
+        w_star = project_simplex(input, dim)
+        ctx.save_for_backward(w_star.clone(), torch.tensor(dim))
+        x = (w_star - input).norm(p=2, dim=dim)
+        return x
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        w_star, dim = ctx.saved_tensors
+        w_star.requires_grad_(True)
+
+        grad_input = None
+        if ctx.needs_input_grad[0]:
+            grad_input = grad_output.unsqueeze(dim).mul(
+                _SparseMaxGrad.apply(w_star, dim)
+            )
+        return grad_input, None, None
+
+
+class _SparseMaxGrad(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, w_star, dim):
+        ctx.save_for_backward(w_star, dim)
+        return w_star
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        w_star, dim = ctx.saved_tensors
+        print(grad_output.shape, w_star.shape, dim)
+        return sparsemax_grad(grad_output, w_star, dim.item()), None
+
+
+def project_simplex(v, dim, z=1):
+    v_sorted, _ = torch.sort(v, dim=dim, descending=True)
+    cssv = torch.cumsum(v_sorted, dim=dim) - z
+    ind = torch.arange(1, 1 + len(v)).to(dtype=v.dtype)
+    cond = v_sorted - cssv / ind >= 0
+    k = cond.sum(dim=dim, keepdim=True)
+    tau = cssv.gather(dim, k - 1) / k.to(dtype=v.dtype)
+    w = torch.clamp(v - tau, min=0)
+    return w
+
+
+def sparsemax_grad(dout, w_star, dim):
+    out = dout.clone()
+    supp = w_star > 0
+    out[w_star <= 0] = 0
+    nnz = supp.to(dtype=dout.dtype).sum(dim=dim, keepdim=True)
+    out = out - (out.sum(dim=dim, keepdim=True) / nnz)
+    out[w_star <= 0] = 0
+    return out

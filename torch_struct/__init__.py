@@ -7,17 +7,20 @@ from .distributions import (
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
+    AlignmentCRF,
 )
 from .autoregressive import Autoregressive
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
+from .alignment import Alignment
 from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     StdSemiring,
     KMaxSemiring,
+    SparseMaxSemiring,
     SampledSemiring,
     MaxSemiring,
     EntropySemiring,
@@ -38,6 +41,7 @@ __all__ = [
     StdSemiring,
     SampledSemiring,
     MaxSemiring,
+    SparseMaxSemiring,
     KMaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
@@ -50,4 +54,6 @@ __all__ = [
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
+    AlignmentCRF,
+    Alignment,
 ]
