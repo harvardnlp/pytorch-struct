@@ -6,6 +6,7 @@ from .semimarkov import SemiMarkov
 from .semirings import (
     LogSemiring,
     KMaxSemiring,
+    SparseMaxSemiring,
     MaxSemiring,
     StdSemiring,
     SampledSemiring,
@@ -298,3 +299,15 @@ def test_hmm():
     observations = torch.randint(0, V, (batch, N))
     out = LinearChain.hmm(transition, emission, init, observations)
     LinearChain().sum(out)
+
+
+@given(data())
+def test_sparse_max(data):
+    model = data.draw(sampled_from([LinearChain]))
+    semiring = SparseMaxSemiring
+    vals, (batch, N) = model._rand()
+    vals.requires_grad_(True)
+    model(semiring).sum(vals)
+    sparsemax = model(semiring).marginals(vals)
+    print(vals.requires_grad)
+    sparsemax.sum().backward()
