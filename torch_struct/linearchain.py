@@ -1,4 +1,4 @@
-"""
+r"""
 
 A linear-chain dynamic program.
 

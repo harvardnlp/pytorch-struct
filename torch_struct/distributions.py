@@ -195,6 +195,7 @@ class LinearChainCRF(StructDistribution):
 
     struct = LinearChain
 
+
 class HMM(StructDistribution):
     r"""
     Represents hidden-markov smoothing with C hidden states.
@@ -209,7 +210,8 @@ class HMM(StructDistribution):
 
     Compact representation: N long tensor in [0, ..., C-1]
     """
-    def __init__(self, transitions, emission, init, observations, lengths=None):
+
+    def __init__(self, transition, emission, init, observations, lengths=None):
         log_potentials = HMM.struct.hmm(transition, emission, init, observations)
         super().__init__(log_potentials, lengths)
 
