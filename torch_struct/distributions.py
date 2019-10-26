@@ -4,6 +4,7 @@ from torch.distributions.utils import lazy_property
 from .linearchain import LinearChain
 from .cky import CKY
 from .semimarkov import SemiMarkov
+from .alignment import Alignment
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
 from .semirings import (
@@ -254,6 +255,22 @@ class TreeCRF(StructDistribution):
     Compact representation:  *N x N x NT* long tensor (Same)
     """
     struct = CKY_CRF
+
+
+class AlignmentCRF(StructDistribution):
+    r"""
+    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.
+
+    Event shape is of the form:
+
+    Parameters:
+        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.
+                                    :math:`\phi(i, j, op)`
+                                  Ops are 0 -> j-1, 1->i-1,j-1, and 2->i-1
+        lengths (long tensor) : batch shape integers for length masking.
+
+    """
+    struct = Alignment
 
 
 class SentCFG(StructDistribution):
