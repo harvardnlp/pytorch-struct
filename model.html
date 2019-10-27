@@ -1,0 +1,1071 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Model &mdash; pytorch-struct 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Networks" href="networks.html" />
+    <link rel="prev" title="Pytorch-Struct" href="README.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pytorch-struct
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Linear-Chain">Linear Chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#HMM">HMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Semi-Markov">Semi-Markov</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Alignment">Alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Dependency-Trees">Dependency Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Non-Projective-Dependency-Trees">Non-Projective Dependency Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Binary-Labeled-Trees">Binary Labeled Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Probabilistic-Context-Free-Grammars">Probabilistic Context-Free Grammars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Autoregressive">Autoregressive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Base-Class">Base Class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pytorch-struct</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Model</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/model.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Model">
+<h1>Model<a class="headerlink" href="#Model" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>import torch_struct
+import torch
+import matplotlib.pyplot as plt
+import matplotlib
+
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>matplotlib.rcParams[&#39;figure.figsize&#39;] = (7.0, 7.0)
+</pre></div>
+</div>
+</div>
+<div class="section" id="Linear-Chain">
+<h2>Linear Chain<a class="headerlink" href="#Linear-Chain" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.LinearChainCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents structured linear-chain CRFs with C classes.</p>
+<p>For reference see:</p>
+<ul class="simple">
+<li><p>An introduction to conditional random fields <a class="bibtex reference internal" href="refs.html#sutton2012introduction" id="id1">[SM+12]</a></p></li>
+</ul>
+<p>Example application:</p>
+<ul class="simple">
+<li><p>Bidirectional LSTM-CRF Models for Sequence Tagging <a class="bibtex reference internal" href="refs.html#huang2015bidirectional" id="id2">[HXY15]</a></p></li>
+</ul>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>(N-1) x C x C</em>) e.g.
+<span class="math notranslate nohighlight">\(\phi(n,  z_{n+1}, z_{n})\)</span></p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch_shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation: N long tensor in [0, …, C-1]</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, C = 3, 10, 2
+def show_chain(chain):
+    plt.imshow(chain.detach().sum(-1).transpose(0, 1))
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, C, C)
+dist = torch_struct.LinearChainCRF(log_potentials)
+show_chain(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_6_0.png" src="_images/model_6_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_chain(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_7_0.png" src="_images/model_7_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>event = dist.to_event(torch.tensor([[0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1]]), 2)
+show_chain(event[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_8_0.png" src="_images/model_8_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="HMM">
+<h2>HMM<a class="headerlink" href="#HMM" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="Semi-Markov">
+<h2>Semi-Markov<a class="headerlink" href="#Semi-Markov" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.SemiMarkovCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a semi-markov or segmental CRF with C classes of max width K</p>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> – event shape (<em>N x K x C x C</em>) e.g.
+<span class="math notranslate nohighlight">\(\phi(n, k, z_{n+1}, z_{n})\)</span></p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation: N long tensor in [-1, 0, …, C-1]</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, C, K = 3, 20, 2, 6
+def show_sm(chain):
+    plt.imshow(chain.detach().sum(1).sum(-1).transpose(0, 1))
+
+# batch, N, K, z_n, z_n_1
+log_potentials = torch.rand(batch, N, K, C, C)
+log_potentials[:, :, :3] = -1e9
+dist = torch_struct.SemiMarkovCRF(log_potentials)
+show_sm(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_13_0.png" src="_images/model_13_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_sm(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_14_0.png" src="_images/model_14_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Use -1 for segments.
+event = dist.to_event(torch.tensor([[0, 1, -1, 1, -1, -1, 0, 1, 0, 1, 1]]), (2, 6))
+show_sm(event[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_15_0.png" src="_images/model_15_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Alignment">
+<h2>Alignment<a class="headerlink" href="#Alignment" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.AlignmentCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AlignmentCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</p>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – <dl class="simple">
+<dt>event_shape (<em>N x M x 3</em>), e.g.</dt><dd><p><span class="math notranslate nohighlight">\(\phi(i, j, op)\)</span></p>
+</dd>
+</dl>
+<p>Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</p>
+</p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, M = 3, 15, 20
+def show_deps(tree):
+    plt.imshow(tree.detach())
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, M, 3)
+dist = torch_struct.AlignmentCRF(log_potentials)
+show_deps(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_18_0.png" src="_images/model_18_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_deps(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_19_1.png" src="_images/model_19_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Dependency-Trees">
+<h2>Dependency Trees<a class="headerlink" href="#Dependency-Trees" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.DependencyCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a projective dependency CRF.</p>
+<p>Reference:</p>
+<ul class="simple">
+<li><p>Bilexical grammars and their cubic-time parsing algorithms <a class="bibtex reference internal" href="refs.html#eisner2000bilexical" id="id3">[Eis00]</a></p></li>
+</ul>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child  with
+arc scores with root scores on diagonal e.g.
+<span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, N = 3, 10, 10
+def show_deps(tree):
+    plt.imshow(tree.detach())
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, N)
+dist = torch_struct.DependencyCRF(log_potentials)
+show_deps(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_22_0.png" src="_images/model_22_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_deps(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Convert from 1-index standard format. (Head is 0)
+event = dist.to_event(torch.tensor([[2, 3, 4, 1, 0, 4]]), None)
+show_deps(event[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Non-Projective-Dependency-Trees">
+<h2>Non-Projective Dependency Trees<a class="headerlink" href="#Non-Projective-Dependency-Trees" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.NonProjectiveDependencyCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a non-projective dependency CRF.</p>
+<p>For references see:</p>
+<ul class="simple">
+<li><p>Non-projective dependency parsing using spanning tree algorithms <a class="bibtex reference internal" href="refs.html#mcdonald2005non" id="id4">[MPRHajivc05]</a></p></li>
+<li><p>Structured prediction models via the matrix-tree theorem <a class="bibtex reference internal" href="refs.html#koo2007structured" id="id5">[KGCPerezC07]</a></p></li>
+</ul>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child  with
+arc scores with root scores on diagonal e.g.
+<span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p>
+</dd>
+</dl>
+<p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
+</dd></dl>
+
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, N = 3, 10, 10
+def show_deps(tree):
+    plt.imshow(tree.detach())
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, N)
+dist = torch_struct.NonProjectiveDependencyCRF(log_potentials)
+show_deps(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Binary-Labeled-Trees">
+<h2>Binary Labeled Trees<a class="headerlink" href="#Binary-Labeled-Trees" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="class">
+<dt id="torch_struct.TreeCRF">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a 0th-order span parser with NT nonterminals.</p>
+<p>For example usage see:</p>
+<ul class="simple">
+<li><p>A Minimal Span-Based Neural Constituency Parser <a class="bibtex reference internal" href="refs.html#stern2017minimal" id="id6">[SAK17]</a></p></li>
+</ul>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event_shape (<em>N x N x NT</em>), e.g.
+<span class="math notranslate nohighlight">\(\phi(i, j, nt)\)</span></p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation:  <em>N x N x NT</em> long tensor (Same)</p>
+</dd></dl>
+
+</div></blockquote>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, NT = 3, 20, 3
+def show_tree(tree):
+    t = tree.detach()
+    plt.imshow(t[ :, : , 0] +
+               2 * t[ :,:, 1] +
+               3 * t[ :,:, 2])
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, N, NT)
+dist = torch_struct.TreeCRF(log_potentials)
+show_tree(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_tree(dist.marginals[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Probabilistic-Context-Free-Grammars">
+<h2>Probabilistic Context-Free Grammars<a class="headerlink" href="#Probabilistic-Context-Free-Grammars" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="class">
+<dt id="torch_struct.SentCFG">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SentCFG</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a full generative context-free grammar with
+non-terminals NT and terminals T.</p>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tuple</em>) – event tuple with event shapes
+terms (<em>N x T</em>)
+rules (<em>NT x (NT+T) x (NT+T)</em>)
+root  (<em>NT</em>)</p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation:  <em>N x N x NT</em> long tensor</p>
+</dd></dl>
+
+</div></blockquote>
+</div>
+<div class="section" id="Autoregressive">
+<h2>Autoregressive<a class="headerlink" href="#Autoregressive" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>    .. autoclass:: torch_struct.Autoregressive
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Base-Class">
+<h2>Base Class<a class="headerlink" href="#Base-Class" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.StructDistribution">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base structured distribution class.</p>
+<p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
+<p>Implemented based on gradient identities from:</p>
+<ul class="simple">
+<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="refs.html#eisner2016inside" id="id7">[Eis16]</a></p></li>
+<li><p>Semiring Parsing <a class="bibtex reference internal" href="refs.html#goodman1999semiring" id="id8">[Goo99]</a></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id9">[LE09]</a></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_potentials</strong> (<em>tensor</em><em>, </em><em>batch_shape x event_shape</em>) – log-potentials <span class="math notranslate nohighlight">\(\phi\)</span></p></li>
+<li><p><strong>lengths</strong> (<em>long tensor</em><em>, </em><em>batch_shape</em>) – integers for length masking</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="torch_struct.StructDistribution.argmax">
+<code class="sig-name descname">argmax</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\arg\max p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>argmax (<em>batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="torch_struct.StructDistribution.entropy">
+<code class="sig-name descname">entropy</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute entropy for distribution <span class="math notranslate nohighlight">\(H[z]\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>entropy (<em>batch_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.enumerate_support">
+<code class="sig-name descname">enumerate_support</code><span class="sig-paren">(</span><em class="sig-param">expand=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.enumerate_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.enumerate_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the full exponential enumeration set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>(enum, enum_lengths) - <em>tuple cardinality x batch_shape x event_shape</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.from_event">
+<code class="sig-name descname">from_event</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.from_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.from_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert event to simple representation.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.log_prob">
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.log_prob" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – One-hot events (<em>sample_shape x batch_shape x event_shape</em>)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>log_probs (<em>sample_shape x batch_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="torch_struct.StructDistribution.marginals">
+<code class="sig-name descname">marginals</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.marginals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute marginals for distribution <span class="math notranslate nohighlight">\(p(z_t)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>marginals (<em>batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="torch_struct.StructDistribution.partition">
+<code class="sig-name descname">partition</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the partition function.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sample_shape</strong> (<em>int</em>) – number of samples</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>samples (<em>sample_shape x batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.to_event">
+<code class="sig-name descname">to_event</code><span class="sig-paren">(</span><em class="sig-param">sequence</em>, <em class="sig-param">extra</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.to_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.to_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert simple representation to event.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.StructDistribution.topk">
+<code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="networks.html" class="btn btn-neutral float-right" title="Networks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="README.html" class="btn btn-neutral float-left" title="Pytorch-Struct" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sasha Rush
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

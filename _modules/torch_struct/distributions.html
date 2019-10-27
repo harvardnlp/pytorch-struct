@@ -25,7 +25,9 @@
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
         <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -79,8 +81,16 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs.html">References</a></li>
+</ul>
+
             
           
         </div>
@@ -160,7 +170,7 @@
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="StructDistribution"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution">[docs]</a><span class="k">class</span> <span class="nc">StructDistribution</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution">[docs]</a><span class="k">class</span> <span class="nc">StructDistribution</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base structured distribution class.</span>
 
@@ -189,7 +199,7 @@
     <span class="k">def</span> <span class="nf">_new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StructDistribution.log_prob"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.log_prob">[docs]</a>    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution.log_prob"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.log_prob">[docs]</a>    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute log probability over values :math:`p(z)`.</span>
 
@@ -209,7 +219,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">partition</span></div>
 
-<div class="viewcode-block" id="StructDistribution.entropy"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.entropy">[docs]</a>    <span class="nd">@lazy_property</span>
+<div class="viewcode-block" id="StructDistribution.entropy"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.entropy">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute entropy for distribution :math:`H[z]`.</span>
@@ -219,7 +229,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.argmax"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.argmax">[docs]</a>    <span class="nd">@lazy_property</span>
+<div class="viewcode-block" id="StructDistribution.argmax"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.argmax">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute an argmax for distribution :math:`\arg\max p(z)`.</span>
@@ -229,7 +239,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.topk"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.topk">[docs]</a>    <span class="k">def</span> <span class="nf">topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution.topk"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.topk">[docs]</a>    <span class="k">def</span> <span class="nf">topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the k-max for distribution :math:`k\max p(z)`.</span>
 
@@ -244,7 +254,7 @@
     <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">argmax</span>
 
-<div class="viewcode-block" id="StructDistribution.marginals"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.marginals">[docs]</a>    <span class="nd">@lazy_property</span>
+<div class="viewcode-block" id="StructDistribution.marginals"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.marginals">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute marginals for distribution :math:`p(z_t)`.</span>
@@ -262,12 +272,12 @@
     <span class="c1"># def param_shape(self):</span>
     <span class="c1">#     return self._param.size()</span>
 
-<div class="viewcode-block" id="StructDistribution.partition"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.partition">[docs]</a>    <span class="nd">@lazy_property</span>
+<div class="viewcode-block" id="StructDistribution.partition"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.partition">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">partition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the partition function.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.sample"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
+<div class="viewcode-block" id="StructDistribution.sample"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute structured samples from the distribution :math:`z \sim p(z)`.</span>
 
@@ -290,15 +300,15 @@
             <span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp_sample</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.to_event"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.to_event">[docs]</a>    <span class="k">def</span> <span class="nf">to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution.to_event"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.to_event">[docs]</a>    <span class="k">def</span> <span class="nf">to_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="s2">&quot;Convert simple representation to event.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="o">.</span><span class="n">to_parts</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.from_event"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.from_event">[docs]</a>    <span class="k">def</span> <span class="nf">from_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution.from_event"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.from_event">[docs]</a>    <span class="k">def</span> <span class="nf">from_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
         <span class="s2">&quot;Convert event to simple representation.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="o">.</span><span class="n">from_parts</span><span class="p">(</span><span class="n">event</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.enumerate_support"><a class="viewcode-back" href="../../index.html#torch_struct.StructDistribution.enumerate_support">[docs]</a>    <span class="k">def</span> <span class="nf">enumerate_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="StructDistribution.enumerate_support"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.enumerate_support">[docs]</a>    <span class="k">def</span> <span class="nf">enumerate_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the full exponential enumeration set.</span>
 
@@ -313,7 +323,7 @@
         <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span></div></div>
 
 
-<div class="viewcode-block" id="LinearChainCRF"><a class="viewcode-back" href="../../index.html#torch_struct.LinearChainCRF">[docs]</a><span class="k">class</span> <span class="nc">LinearChainCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="LinearChainCRF"><a class="viewcode-back" href="../../model.html#torch_struct.LinearChainCRF">[docs]</a><span class="k">class</span> <span class="nc">LinearChainCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents structured linear-chain CRFs with C classes.</span>
 
@@ -340,7 +350,29 @@
     <span class="n">struct</span> <span class="o">=</span> <span class="n">LinearChain</span></div>
 
 
-<div class="viewcode-block" id="SemiMarkovCRF"><a class="viewcode-back" href="../../index.html#torch_struct.SemiMarkovCRF">[docs]</a><span class="k">class</span> <span class="nc">SemiMarkovCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">HMM</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents hidden-markov smoothing with C hidden states.</span>
+
+<span class="sd">    Event shape is of the form:</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        transition: C X C</span>
+<span class="sd">        emission: V x C</span>
+<span class="sd">        init: C</span>
+<span class="sd">        observations: b x N between [0, V-1]</span>
+
+<span class="sd">    Compact representation: N long tensor in [0, ..., C-1]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">log_potentials</span> <span class="o">=</span> <span class="n">HMM</span><span class="o">.</span><span class="n">struct</span><span class="o">.</span><span class="n">hmm</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
+
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">LinearChain</span>
+
+
+<div class="viewcode-block" id="SemiMarkovCRF"><a class="viewcode-back" href="../../model.html#torch_struct.SemiMarkovCRF">[docs]</a><span class="k">class</span> <span class="nc">SemiMarkovCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a semi-markov or segmental CRF with C classes of max width K</span>
 
@@ -357,7 +389,7 @@
     <span class="n">struct</span> <span class="o">=</span> <span class="n">SemiMarkov</span></div>
 
 
-<div class="viewcode-block" id="DependencyCRF"><a class="viewcode-back" href="../../index.html#torch_struct.DependencyCRF">[docs]</a><span class="k">class</span> <span class="nc">DependencyCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="DependencyCRF"><a class="viewcode-back" href="../../model.html#torch_struct.DependencyCRF">[docs]</a><span class="k">class</span> <span class="nc">DependencyCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a projective dependency CRF.</span>
 
@@ -380,7 +412,7 @@
     <span class="n">struct</span> <span class="o">=</span> <span class="n">DepTree</span></div>
 
 
-<div class="viewcode-block" id="TreeCRF"><a class="viewcode-back" href="../../index.html#torch_struct.TreeCRF">[docs]</a><span class="k">class</span> <span class="nc">TreeCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="TreeCRF"><a class="viewcode-back" href="../../model.html#torch_struct.TreeCRF">[docs]</a><span class="k">class</span> <span class="nc">TreeCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a 0th-order span parser with NT nonterminals.</span>
 
@@ -401,7 +433,7 @@
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY_CRF</span></div>
 
 
-<span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentCRF"><a class="viewcode-back" href="../../model.html#torch_struct.AlignmentCRF">[docs]</a><span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</span>
 
@@ -414,10 +446,10 @@
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span></div>
 
 
-<div class="viewcode-block" id="SentCFG"><a class="viewcode-back" href="../../index.html#torch_struct.SentCFG">[docs]</a><span class="k">class</span> <span class="nc">SentCFG</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="SentCFG"><a class="viewcode-back" href="../../model.html#torch_struct.SentCFG">[docs]</a><span class="k">class</span> <span class="nc">SentCFG</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a full generative context-free grammar with</span>
 <span class="sd">    non-terminals NT and terminals T.</span>
@@ -446,7 +478,7 @@
         <span class="p">)</span></div>
 
 
-<span class="k">class</span> <span class="nc">NonProjectiveDependencyCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="NonProjectiveDependencyCRF"><a class="viewcode-back" href="../../model.html#torch_struct.NonProjectiveDependencyCRF">[docs]</a><span class="k">class</span> <span class="nc">NonProjectiveDependencyCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents a non-projective dependency CRF.</span>
 
@@ -500,7 +532,7 @@
 
     <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 </pre></div>
 
            </div>

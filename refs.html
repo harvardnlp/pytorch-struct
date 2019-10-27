@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; pytorch-struct 0.2 documentation</title>
+  <title>References &mdash; pytorch-struct 0.2 documentation</title>
   
 
   
@@ -28,7 +28,6 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script type="text/javascript" src="_static/searchtools.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -38,7 +37,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="#" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Advanced Usage: Semirings" href="advanced.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -65,7 +65,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -83,13 +83,13 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
 <li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">References</a></li>
 </ul>
 
             
@@ -135,12 +135,14 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+      <li>References</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="_sources/refs.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -152,24 +154,76 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
 
-  
-  <div id="search-results">
-  
-  </div>
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
+<p id="bibtex-bibliography-refs-0"><dl class="citation">
+<dt class="bibtex label" id="eisner2000bilexical"><span class="brackets">Eis00</span></dt>
+<dd><p>Jason Eisner. Bilexical grammars and their cubic-time parsing algorithms. In <em>Advances in probabilistic and other parsing technologies</em>, pages 29–61. Springer, 2000.</p>
+</dd>
+<dt class="bibtex label" id="eisner2016inside"><span class="brackets">Eis16</span></dt>
+<dd><p>Jason Eisner. Inside-outside and forward-backward algorithms are just backprop (tutorial paper). In <em>Proceedings of the Workshop on Structured Prediction for NLP</em>, 1–17. 2016.</p>
+</dd>
+<dt class="bibtex label" id="goodman1999semiring"><span class="brackets">Goo99</span></dt>
+<dd><p>Joshua Goodman. Semiring parsing. <em>Computational Linguistics</em>, 25(4):573–605, 1999.</p>
+</dd>
+<dt class="bibtex label" id="huang2015bidirectional"><span class="brackets">HXY15</span></dt>
+<dd><p>Zhiheng Huang, Wei Xu, and Kai Yu. Bidirectional lstm-crf models for sequence tagging. <em>arXiv preprint arXiv:1508.01991</em>, 2015.</p>
+</dd>
+<dt class="bibtex label" id="koo2007structured"><span class="brackets">KGCPerezC07</span></dt>
+<dd><p>Terry Koo, Amir Globerson, Xavier Carreras Pérez, and Michael Collins. Structured prediction models via the matrix-tree theorem. In <em>Joint Conference on Empirical Methods in Natural Language Processing and Computational Natural Language Learning (EMNLP-CoNLL)</em>, 141–150. 2007.</p>
+</dd>
+<dt class="bibtex label" id="li2009first"><span class="brackets">LE09</span></dt>
+<dd><p>Zhifei Li and Jason Eisner. First-and second-order expectation semirings with applications to minimum-risk training on translation forests. In <em>Proceedings of the 2009 Conference on Empirical Methods in Natural Language Processing: Volume 1-Volume 1</em>, 40–51. Association for Computational Linguistics, 2009.</p>
+</dd>
+<dt class="bibtex label" id="mcdonald2005non"><span class="brackets">MPRHajivc05</span></dt>
+<dd><p>Ryan McDonald, Fernando Pereira, Kiril Ribarov, and Jan Hajič. Non-projective dependency parsing using spanning tree algorithms. In <em>Proceedings of the conference on Human Language Technology and Empirical Methods in Natural Language Processing</em>, 523–530. Association for Computational Linguistics, 2005.</p>
+</dd>
+<dt class="bibtex label" id="stern2017minimal"><span class="brackets">SAK17</span></dt>
+<dd><p>Mitchell Stern, Jacob Andreas, and Dan Klein. A minimal span-based neural constituency parser. <em>arXiv preprint arXiv:1705.03919</em>, 2017.</p>
+</dd>
+<dt class="bibtex label" id="sutton2012introduction"><span class="brackets">SM+12</span></dt>
+<dd><p>Charles Sutton, Andrew McCallum, and others. An introduction to conditional random fields. <em>Foundations and Trends® in Machine Learning</em>, 4(4):267–373, 2012.</p>
+</dd>
+</dl>
+</p>
+</div>
+
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="advanced.html" class="btn btn-neutral float-left" title="Advanced Usage: Semirings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
@@ -202,14 +256,7 @@
   
   
     
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

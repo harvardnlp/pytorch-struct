@@ -25,7 +25,9 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -35,7 +37,8 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Pytorch-Struct" href="README.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -79,31 +82,16 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"><ul>
-<li><a class="reference internal" href="#">PyTorch-Struct</a></li>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-<li><a class="reference internal" href="#distributional-interface">Distributional Interface</a><ul>
-<li><a class="reference internal" href="#linear-chain">Linear Chain</a></li>
-<li><a class="reference internal" href="#semi-markov">Semi-Markov</a></li>
-<li><a class="reference internal" href="#dependency-tree">Dependency Tree</a></li>
-<li><a class="reference internal" href="#binary-tree">Binary Tree</a></li>
-<li><a class="reference internal" href="#context-free-grammar">Context-Free Grammar</a></li>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
 </ul>
-</li>
-<li><a class="reference internal" href="#networks">Networks</a></li>
-<li><a class="reference internal" href="#data">Data</a></li>
-<li><a class="reference internal" href="#advanced-usage-semirings">Advanced Usage: Semirings</a><ul>
-<li><a class="reference internal" href="#standard-semirings">Standard Semirings</a></li>
-<li><a class="reference internal" href="#higher-order-semirings">Higher-Order Semirings</a></li>
-<li><a class="reference internal" href="#sampling-semirings">Sampling Semirings</a></li>
-<li><a class="reference internal" href="#dynamic-programming">Dynamic Programming</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#references">References</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
-</div>
+
             
           
         </div>
@@ -166,408 +154,75 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="pytorch-struct">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="pytorch-struct">
 <h1>PyTorch-Struct<a class="headerlink" href="#pytorch-struct" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-</div>
-</div>
-<div class="section" id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
-<p>A library for structured prediction.</p>
-</div>
-<div class="section" id="distributional-interface">
-<h1>Distributional Interface<a class="headerlink" href="#distributional-interface" title="Permalink to this headline">¶</a></h1>
-<p>The main interface is through a structured distribution objects. Each
-of these implement a conditional random field over a class of
-structures. Roughly, these represent specialized softmax’s over
-exponentially sized spaces. Each distribution object takes in
-log_potentials (generalized logits) and can return properties of the
-distribution. The properties of interest are,</p>
-<ul class="simple">
-<li><p>Partition (e.g. logsumexp)</p></li>
-<li><p>Marginals (e.g. softmax)</p></li>
-<li><p>Argmax</p></li>
-<li><p>Entropy</p></li>
-<li><p>Samples</p></li>
-<li><p>to_event / from_event (adapters)</p></li>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="README.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#library">Library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#low-level-api">Low-level API:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="README.html#examples">Examples</a></li>
 </ul>
-<dl class="class">
-<dt id="torch_struct.StructDistribution">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
-<dd><p>Base structured distribution class.</p>
-<p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
-<p>Implemented based on gradient identities from:</p>
-<ul class="simple">
-<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="#eisner2016inside" id="id1">[Eis16]</a></p></li>
-<li><p>Semiring Parsing <a class="bibtex reference internal" href="#goodman1999semiring" id="id2">[Goo99]</a></p></li>
-<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="#li2009first" id="id3">[LE09]</a></p></li>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Linear-Chain">Linear Chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#HMM">HMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Semi-Markov">Semi-Markov</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Alignment">Alignment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Dependency-Trees">Dependency Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Non-Projective-Dependency-Trees">Non-Projective Dependency Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Binary-Labeled-Trees">Binary Labeled Trees</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Probabilistic-Context-Free-Grammars">Probabilistic Context-Free Grammars</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Autoregressive">Autoregressive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="model.html#Base-Class">Base Class</a></li>
 </ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em><em>, </em><em>batch_shape x event_shape</em>) – log-potentials <span class="math notranslate nohighlight">\(\phi\)</span></p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em><em>, </em><em>batch_shape</em>) – integers for length masking</p></li>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#standard-semirings">Standard Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#higher-order-semirings">Higher-Order Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#sampling-semirings">Sampling Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="advanced.html#dynamic-programming">Dynamic Programming</a></li>
 </ul>
-</dd>
-</dl>
-<dl class="attribute">
-<dt id="torch_struct.StructDistribution.argmax">
-<code class="sig-name descname">argmax</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\arg\max p(z)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>argmax (<em>batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="torch_struct.StructDistribution.entropy">
-<code class="sig-name descname">entropy</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute entropy for distribution <span class="math notranslate nohighlight">\(H[z]\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>entropy (<em>batch_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.enumerate_support">
-<code class="sig-name descname">enumerate_support</code><span class="sig-paren">(</span><em class="sig-param">expand=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.enumerate_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.enumerate_support" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the full exponential enumeration set.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(enum, enum_lengths) - <em>tuple cardinality x batch_shape x event_shape</em></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.from_event">
-<code class="sig-name descname">from_event</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.from_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.from_event" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert event to simple representation.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.log_prob">
-<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.log_prob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>value</strong> (<em>tensor</em>) – One-hot events (<em>sample_shape x batch_shape x event_shape</em>)</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>log_probs (<em>sample_shape x batch_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="torch_struct.StructDistribution.marginals">
-<code class="sig-name descname">marginals</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.marginals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute marginals for distribution <span class="math notranslate nohighlight">\(p(z_t)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>marginals (<em>batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="torch_struct.StructDistribution.partition">
-<code class="sig-name descname">partition</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the partition function.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.sample">
-<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sample_shape</strong> (<em>int</em>) – number of samples</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>samples (<em>sample_shape x batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.to_event">
-<code class="sig-name descname">to_event</code><span class="sig-paren">(</span><em class="sig-param">sequence</em>, <em class="sig-param">extra</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.to_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.to_event" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert simple representation to event.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="torch_struct.StructDistribution.topk">
-<code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<div class="section" id="linear-chain">
-<h2>Linear Chain<a class="headerlink" href="#linear-chain" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.LinearChainCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents structured linear-chain CRFs with C classes.</p>
-<p>For reference see:</p>
-<ul class="simple">
-<li><p>An introduction to conditional random fields <a class="bibtex reference internal" href="#sutton2012introduction" id="id4">[SM+12]</a></p></li>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
 </ul>
-<p>Example application:</p>
-<ul class="simple">
-<li><p>Bidirectional LSTM-CRF Models for Sequence Tagging <a class="bibtex reference internal" href="#huang2015bidirectional" id="id5">[HXY15]</a></p></li>
-</ul>
-<p>Event shape is of the form:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>(N-1) x C x C</em>) e.g.
-<span class="math notranslate nohighlight">\(\phi(n,  z_{n+1}, z_{n})\)</span></p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch_shape integers for length masking.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Compact representation: N long tensor in [0, …, C-1]</p>
-</dd></dl>
-
-</div>
-<div class="section" id="semi-markov">
-<h2>Semi-Markov<a class="headerlink" href="#semi-markov" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.SemiMarkovCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a semi-markov or segmental CRF with C classes of max width K</p>
-<p>Event shape is of the form:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> – event shape (<em>N x K x C x C</em>) e.g.
-<span class="math notranslate nohighlight">\(\phi(n, k, z_{n+1}, z_{n})\)</span></p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Compact representation: N long tensor in [-1, 0, …, C-1]</p>
-</dd></dl>
-
-</div>
-<div class="section" id="dependency-tree">
-<h2>Dependency Tree<a class="headerlink" href="#dependency-tree" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.DependencyCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a projective dependency CRF.</p>
-<p>Reference:</p>
-<ul class="simple">
-<li><p>Bilexical grammars and their cubic-time parsing algorithms <a class="bibtex reference internal" href="#eisner2000bilexical" id="id6">[Eis00]</a></p></li>
-</ul>
-<p>Event shape is of the form:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child  with
-arc scores with root scores on diagonal e.g.
-<span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
-</dd></dl>
-
-</div>
-<div class="section" id="binary-tree">
-<h2>Binary Tree<a class="headerlink" href="#binary-tree" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.TreeCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 0th-order span parser with NT nonterminals.</p>
-<p>For example usage see:</p>
-<ul class="simple">
-<li><p>A Minimal Span-Based Neural Constituency Parser <a class="bibtex reference internal" href="#stern2017minimal" id="id7">[SAK17]</a></p></li>
-</ul>
-<p>Event shape is of the form:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event_shape (<em>N x N x NT</em>), e.g.
-<span class="math notranslate nohighlight">\(\phi(i, j, nt)\)</span></p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Compact representation:  <em>N x N x NT</em> long tensor (Same)</p>
-</dd></dl>
-
-</div>
-<div class="section" id="context-free-grammar">
-<h2>Context-Free Grammar<a class="headerlink" href="#context-free-grammar" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.SentCFG">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SentCFG</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a full generative context-free grammar with
-non-terminals NT and terminals T.</p>
-<p>Event shape is of the form:</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tuple</em>) – event tuple with event shapes
-terms (<em>N x T</em>)
-rules (<em>NT x (NT+T) x (NT+T)</em>)
-root  (<em>NT</em>)</p></li>
-<li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
-</ul>
-</dd>
-</dl>
-<p>Compact representation:  <em>N x N x NT</em> long tensor</p>
-</dd></dl>
-
-</div>
-</div>
-<div class="section" id="networks">
-<h1>Networks<a class="headerlink" href="#networks" title="Permalink to this headline">¶</a></h1>
-<p>Common structured networks.</p>
-<dl class="class">
-<dt id="torch_struct.networks.TreeLSTM">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">TreeLSTM</code><span class="sig-paren">(</span><em class="sig-param">hidden</em>, <em class="sig-param">in_size</em>, <em class="sig-param">out_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/TreeLSTM.html#TreeLSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.TreeLSTM" title="Permalink to this definition">¶</a></dt>
-<dd><p>TreeLSTM from DGL.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.networks.NeuralCFG">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">NeuralCFG</code><span class="sig-paren">(</span><em class="sig-param">V</em>, <em class="sig-param">T</em>, <em class="sig-param">NT</em>, <em class="sig-param">H</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/NeuralCFG.html#NeuralCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.NeuralCFG" title="Permalink to this definition">¶</a></dt>
-<dd><p>NeuralCFG From Kim et al</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.networks.SpanLSTM">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">SpanLSTM</code><span class="sig-paren">(</span><em class="sig-param">NT</em>, <em class="sig-param">V</em>, <em class="sig-param">H</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/SpanLSTM.html#SpanLSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.SpanLSTM" title="Permalink to this definition">¶</a></dt>
-<dd><p>SpanLSTM model.</p>
-</dd></dl>
-
-</div>
-<div class="section" id="data">
-<h1>Data<a class="headerlink" href="#data" title="Permalink to this headline">¶</a></h1>
-<p>Datasets for common structured prediction tasks.</p>
-</div>
-<div class="section" id="advanced-usage-semirings">
-<h1>Advanced Usage: Semirings<a class="headerlink" href="#advanced-usage-semirings" title="Permalink to this headline">¶</a></h1>
-<p>All of the distributional code is implemented through a series of
-semiring objects. These are passed through dynamic programming
-backends to compute the distributions.</p>
-<div class="section" id="standard-semirings">
-<h2>Standard Semirings<a class="headerlink" href="#standard-semirings" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.LogSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.StdSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.MaxSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="higher-order-semirings">
-<h2>Higher-Order Semirings<a class="headerlink" href="#higher-order-semirings" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.EntropySemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="sampling-semirings">
-<h2>Sampling Semirings<a class="headerlink" href="#sampling-semirings" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.SampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.MultiSampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-<div class="section" id="dynamic-programming">
-<h2>Dynamic Programming<a class="headerlink" href="#dynamic-programming" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="torch_struct.LinearChain">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChain</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/linearchain.html#LinearChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
-and anything with chain-like dynamics.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.SemiMarkov">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkov</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/semimarkov.html#SemiMarkov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkov" title="Permalink to this definition">¶</a></dt>
-<dd><p>edge : b x N x K x C x C semimarkov potentials</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.DepTree">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DepTree</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/deptree.html#DepTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DepTree" title="Permalink to this definition">¶</a></dt>
-<dd><p>A projective dependency CRF.</p>
-<p>Parameters:
-arc_scores : b x N x N arc scores with root scores on diagonal.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="torch_struct.CKY">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">CKY</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/cky.html#CKY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.CKY" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</div>
-</div>
-<div class="section" id="references">
-<h1>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h1>
-<p id="bibtex-bibliography-index-0"><dl class="citation">
-<dt class="bibtex label" id="eisner2000bilexical"><span class="brackets"><a class="fn-backref" href="#id6">Eis00</a></span></dt>
-<dd><p>Jason Eisner. Bilexical grammars and their cubic-time parsing algorithms. In <em>Advances in probabilistic and other parsing technologies</em>, pages 29–61. Springer, 2000.</p>
-</dd>
-<dt class="bibtex label" id="eisner2016inside"><span class="brackets"><a class="fn-backref" href="#id1">Eis16</a></span></dt>
-<dd><p>Jason Eisner. Inside-outside and forward-backward algorithms are just backprop (tutorial paper). In <em>Proceedings of the Workshop on Structured Prediction for NLP</em>, 1–17. 2016.</p>
-</dd>
-<dt class="bibtex label" id="goodman1999semiring"><span class="brackets"><a class="fn-backref" href="#id2">Goo99</a></span></dt>
-<dd><p>Joshua Goodman. Semiring parsing. <em>Computational Linguistics</em>, 25(4):573–605, 1999.</p>
-</dd>
-<dt class="bibtex label" id="huang2015bidirectional"><span class="brackets"><a class="fn-backref" href="#id5">HXY15</a></span></dt>
-<dd><p>Zhiheng Huang, Wei Xu, and Kai Yu. Bidirectional lstm-crf models for sequence tagging. <em>arXiv preprint arXiv:1508.01991</em>, 2015.</p>
-</dd>
-<dt class="bibtex label" id="li2009first"><span class="brackets"><a class="fn-backref" href="#id3">LE09</a></span></dt>
-<dd><p>Zhifei Li and Jason Eisner. First-and second-order expectation semirings with applications to minimum-risk training on translation forests. In <em>Proceedings of the 2009 Conference on Empirical Methods in Natural Language Processing: Volume 1-Volume 1</em>, 40–51. Association for Computational Linguistics, 2009.</p>
-</dd>
-<dt class="bibtex label" id="stern2017minimal"><span class="brackets"><a class="fn-backref" href="#id7">SAK17</a></span></dt>
-<dd><p>Mitchell Stern, Jacob Andreas, and Dan Klein. A minimal span-based neural constituency parser. <em>arXiv preprint arXiv:1705.03919</em>, 2017.</p>
-</dd>
-<dt class="bibtex label" id="sutton2012introduction"><span class="brackets"><a class="fn-backref" href="#id4">SM+12</a></span></dt>
-<dd><p>Charles Sutton, Andrew McCallum, and others. An introduction to conditional random fields. <em>Foundations and Trends® in Machine Learning</em>, 4(4):267–373, 2012.</p>
-</dd>
-</dl>
-</p>
 </div>
 <div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+</div>
 </div>
 
 
@@ -575,6 +230,13 @@ arc_scores : b x N x N arc scores with root scores on diagonal.</p>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="README.html" class="btn btn-neutral float-right" title="Pytorch-Struct" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
   
 
   <hr/>

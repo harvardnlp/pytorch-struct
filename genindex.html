@@ -26,7 +26,9 @@
         <script type="text/javascript" src="_static/underscore.js"></script>
         <script type="text/javascript" src="_static/doctools.js"></script>
         <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -80,8 +82,16 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
             
           
         </div>
@@ -162,7 +172,11 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.argmax">argmax (torch_struct.StructDistribution attribute)</a>
+      <li><a href="model.html#torch_struct.AlignmentCRF">AlignmentCRF (class in torch_struct)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="model.html#torch_struct.StructDistribution.argmax">argmax (torch_struct.StructDistribution attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -170,7 +184,7 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.CKY">CKY (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.CKY">CKY (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -178,11 +192,11 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.DependencyCRF">DependencyCRF (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.DependencyCRF">DependencyCRF (class in torch_struct)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.DepTree">DepTree (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.DepTree">DepTree (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -190,13 +204,13 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.entropy">entropy (torch_struct.StructDistribution attribute)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.entropy">entropy (torch_struct.StructDistribution attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.EntropySemiring">EntropySemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.EntropySemiring">EntropySemiring (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.StructDistribution.enumerate_support">enumerate_support() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.enumerate_support">enumerate_support() (torch_struct.StructDistribution method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -204,7 +218,7 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.from_event">from_event() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.from_event">from_event() (torch_struct.StructDistribution method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -212,15 +226,15 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.LinearChain">LinearChain (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.LinearChain">LinearChain (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.LinearChainCRF">LinearChainCRF (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.LinearChainCRF">LinearChainCRF (class in torch_struct)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.log_prob">log_prob() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.log_prob">log_prob() (torch_struct.StructDistribution method)</a>
 </li>
-      <li><a href="index.html#torch_struct.LogSemiring">LogSemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.LogSemiring">LogSemiring (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -228,13 +242,13 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.marginals">marginals (torch_struct.StructDistribution attribute)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.marginals">marginals (torch_struct.StructDistribution attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.MaxSemiring">MaxSemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.MaxSemiring">MaxSemiring (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.MultiSampledSemiring">MultiSampledSemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.MultiSampledSemiring">MultiSampledSemiring (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -242,7 +256,11 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.networks.NeuralCFG">NeuralCFG (class in torch_struct.networks)</a>
+      <li><a href="networks.html#torch_struct.networks.NeuralCFG">NeuralCFG (class in torch_struct.networks)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="model.html#torch_struct.NonProjectiveDependencyCRF">NonProjectiveDependencyCRF (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -250,7 +268,7 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.partition">partition (torch_struct.StructDistribution attribute)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.partition">partition (torch_struct.StructDistribution attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -258,23 +276,23 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.sample">sample() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.sample">sample() (torch_struct.StructDistribution method)</a>
 </li>
-      <li><a href="index.html#torch_struct.SampledSemiring">SampledSemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.SampledSemiring">SampledSemiring (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.SemiMarkov">SemiMarkov (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.SemiMarkov">SemiMarkov (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.SemiMarkovCRF">SemiMarkovCRF (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.SemiMarkovCRF">SemiMarkovCRF (class in torch_struct)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.SentCFG">SentCFG (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.SentCFG">SentCFG (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.networks.SpanLSTM">SpanLSTM (class in torch_struct.networks)</a>
+      <li><a href="networks.html#torch_struct.networks.SpanLSTM">SpanLSTM (class in torch_struct.networks)</a>
 </li>
-      <li><a href="index.html#torch_struct.StdSemiring">StdSemiring (class in torch_struct)</a>
+      <li><a href="advanced.html#torch_struct.StdSemiring">StdSemiring (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.StructDistribution">StructDistribution (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.StructDistribution">StructDistribution (class in torch_struct)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -282,15 +300,15 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.StructDistribution.to_event">to_event() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.to_event">to_event() (torch_struct.StructDistribution method)</a>
 </li>
-      <li><a href="index.html#torch_struct.StructDistribution.topk">topk() (torch_struct.StructDistribution method)</a>
+      <li><a href="model.html#torch_struct.StructDistribution.topk">topk() (torch_struct.StructDistribution method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="index.html#torch_struct.TreeCRF">TreeCRF (class in torch_struct)</a>
+      <li><a href="model.html#torch_struct.TreeCRF">TreeCRF (class in torch_struct)</a>
 </li>
-      <li><a href="index.html#torch_struct.networks.TreeLSTM">TreeLSTM (class in torch_struct.networks)</a>
+      <li><a href="networks.html#torch_struct.networks.TreeLSTM">TreeLSTM (class in torch_struct.networks)</a>
 </li>
   </ul></td>
 </tr></table>

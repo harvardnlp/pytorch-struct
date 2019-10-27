@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Advanced Usage: Semirings &mdash; pytorch-struct 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="refs.html" />
+    <link rel="prev" title="Networks" href="networks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pytorch-struct
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Usage: Semirings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#standard-semirings">Standard Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#higher-order-semirings">Higher-Order Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sampling-semirings">Sampling Semirings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dynamic-programming">Dynamic Programming</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pytorch-struct</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Advanced Usage: Semirings</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/advanced.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="advanced-usage-semirings">
+<h1>Advanced Usage: Semirings<a class="headerlink" href="#advanced-usage-semirings" title="Permalink to this headline">¶</a></h1>
+<p>All of the distributional code is implemented through a series of
+semiring objects. These are passed through dynamic programming
+backends to compute the distributions.</p>
+<div class="section" id="standard-semirings">
+<h2>Standard Semirings<a class="headerlink" href="#standard-semirings" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.LogSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.StdSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.MaxSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="higher-order-semirings">
+<h2>Higher-Order Semirings<a class="headerlink" href="#higher-order-semirings" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.EntropySemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="sampling-semirings">
+<h2>Sampling Semirings<a class="headerlink" href="#sampling-semirings" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.SampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.MultiSampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="dynamic-programming">
+<h2>Dynamic Programming<a class="headerlink" href="#dynamic-programming" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.LinearChain">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChain</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/linearchain.html#LinearChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
+and anything with chain-like dynamics.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.SemiMarkov">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkov</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/semimarkov.html#SemiMarkov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkov" title="Permalink to this definition">¶</a></dt>
+<dd><p>edge : b x N x K x C x C semimarkov potentials</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.DepTree">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DepTree</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/deptree.html#DepTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DepTree" title="Permalink to this definition">¶</a></dt>
+<dd><p>A projective dependency CRF.</p>
+<p>Parameters:
+arc_scores : b x N x N arc scores with root scores on diagonal.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.CKY">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">CKY</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/cky.html#CKY"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.CKY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="refs.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="networks.html" class="btn btn-neutral float-left" title="Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sasha Rush
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

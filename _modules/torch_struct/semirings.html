@@ -25,7 +25,9 @@
         <script type="text/javascript" src="../../_static/underscore.js"></script>
         <script type="text/javascript" src="../../_static/doctools.js"></script>
         <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -79,8 +81,16 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs.html">References</a></li>
+</ul>
+
             
           
         </div>
@@ -208,13 +218,13 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="StdSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.StdSemiring">[docs]</a><span class="k">class</span> <span class="nc">StdSemiring</span><span class="p">(</span><span class="n">_Base</span><span class="p">):</span>
+<div class="viewcode-block" id="StdSemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.StdSemiring">[docs]</a><span class="k">class</span> <span class="nc">StdSemiring</span><span class="p">(</span><span class="n">_Base</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="EntropySemiring"><a class="viewcode-back" href="../../index.html#torch_struct.EntropySemiring">[docs]</a><span class="k">class</span> <span class="nc">EntropySemiring</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
+<div class="viewcode-block" id="EntropySemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.EntropySemiring">[docs]</a><span class="k">class</span> <span class="nc">EntropySemiring</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
     <span class="c1"># (z1, h1) ⊕ (z2, h2) = (logsumexp(z1,z2), h1 + h2), (65)</span>
     <span class="c1"># (z1, h1) ⊗ (z2, h2) = (z1 + z2, z1.exp()h2 + z2.exp()h1), (66)</span>
 
@@ -263,13 +273,13 @@
         <span class="k">return</span> <span class="n">xs</span></div>
 
 
-<div class="viewcode-block" id="LogSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.LogSemiring">[docs]</a><span class="k">class</span> <span class="nc">LogSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+<div class="viewcode-block" id="LogSemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.LogSemiring">[docs]</a><span class="k">class</span> <span class="nc">LogSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="MaxSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.MaxSemiring">[docs]</a><span class="k">class</span> <span class="nc">MaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+<div class="viewcode-block" id="MaxSemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.MaxSemiring">[docs]</a><span class="k">class</span> <span class="nc">MaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -378,7 +388,7 @@
         <span class="k">return</span> <span class="n">grad_input</span><span class="p">,</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="SampledSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.SampledSemiring">[docs]</a><span class="k">class</span> <span class="nc">SampledSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+<div class="viewcode-block" id="SampledSemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.SampledSemiring">[docs]</a><span class="k">class</span> <span class="nc">SampledSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_SampledLogSumExp</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span></div>
@@ -439,7 +449,7 @@
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">grad_input</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="MultiSampledSemiring"><a class="viewcode-back" href="../../index.html#torch_struct.MultiSampledSemiring">[docs]</a><span class="k">class</span> <span class="nc">MultiSampledSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiSampledSemiring"><a class="viewcode-back" href="../../advanced.html#torch_struct.MultiSampledSemiring">[docs]</a><span class="k">class</span> <span class="nc">MultiSampledSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">_MultiSampledLogSumExp</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
