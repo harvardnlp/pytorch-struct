@@ -3,3 +3,5 @@ sphinx-jinja
 sphinxcontrib-bibtex
 sphinx-rtd-theme
 recommonmark
+nbsphinx
+pandoc

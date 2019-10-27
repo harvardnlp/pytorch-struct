@@ -30,7 +30,9 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.napoleon',
               'sphinxcontrib.jinja',
               'sphinxcontrib.bibtex',
-              'sphinx.ext.intersphinx'
+              'sphinx.ext.intersphinx',
+              'recommonmark',
+              'nbsphinx'
 ]
 
 

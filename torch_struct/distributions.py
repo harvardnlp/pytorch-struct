@@ -196,6 +196,28 @@ class LinearChainCRF(StructDistribution):
     struct = LinearChain
 
 
+class HMM(StructDistribution):
+    r"""
+    Represents hidden-markov smoothing with C hidden states.
+
+    Event shape is of the form:
+
+    Parameters:
+        transition: C X C
+        emission: V x C
+        init: C
+        observations: b x N between [0, V-1]
+
+    Compact representation: N long tensor in [0, ..., C-1]
+    """
+
+    def __init__(self, transition, emission, init, observations, lengths=None):
+        log_potentials = HMM.struct.hmm(transition, emission, init, observations)
+        super().__init__(log_potentials, lengths)
+
+    struct = LinearChain
+
+
 class SemiMarkovCRF(StructDistribution):
     r"""
     Represents a semi-markov or segmental CRF with C classes of max width K

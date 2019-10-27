@@ -1,3 +1,22 @@
+r"""
+
+A linear-chain dynamic program.
+
+Considers parameterized functions of the form :math:`f: {\cal Y} \rightarrow \mathbb{R}`.
+
+Combinatorial set :math:`{y_{1:N} \in \cal Y}` with each :math:`y_n \in {1, \ldots, C}`
+
+Function factors as :math:`f(y) = \prod_{n=1}^N \phi(n, y_n, y_n{-1})`
+
+Example use cases:
+
+* Part-of-Speech Tagging
+* Sequence Labeling
+* Hidden Markov Models
+
+"""
+
+
 import torch
 from .helpers import _Struct
 import math

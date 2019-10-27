@@ -5,6 +5,7 @@ cache: pip
 before_install:
   - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
   - sudo apt-get update
+  - sudo apt-get install pandoc
   - pip install -r requirements.txt
   - pip install -r requirements.dev.txt
   - pip install coveralls
