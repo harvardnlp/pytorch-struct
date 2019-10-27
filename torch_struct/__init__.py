@@ -8,8 +8,9 @@ from .distributions import (
     TreeCRF,
     SentCFG,
     AlignmentCRF,
+    HMM
 )
-from .autoregressive import Autoregressive
+from .autoregressive import Autoregressive, AutoregressiveModel
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
@@ -48,12 +49,14 @@ __all__ = [
     SelfCritical,
     StructDistribution,
     Autoregressive,
+    AutoregressiveModel,
     LinearChainCRF,
     SemiMarkovCRF,
     DependencyCRF,
     NonProjectiveDependencyCRF,
     TreeCRF,
     SentCFG,
+    HMM,
     AlignmentCRF,
     Alignment,
 ]

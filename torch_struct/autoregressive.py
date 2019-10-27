@@ -3,49 +3,30 @@ from .semirings import MaxSemiring, KMaxSemiring
 from torch.distributions.distribution import Distribution
 
 
-class AutoregressiveModel:
+class AutoregressiveModel(torch.nn.Module):
     """
     User should implement as their favorite RNN / Transformer / etc.
     """
 
-    def sequence_logits(self, init, seq_inputs):
-        """
-        Compute the logits for all tokens in a batched sequence :math:`p(y_1, ... y_{T})`
+    def forward(self, inputs, state=None):
+        r"""
+        Compute the logits for all tokens in a batched sequence :math:`p(y_{t+1}, ... y_{T}| y_1 \ldots t)`
 
         Parameters:
-            init (batch_size x hidden_shape): everything needed for conditioning.
             inputs (batch_size x N x C): next tokens to update representation
+            state (tuple of batch_size x ...): everything needed for conditioning.
 
         Retuns:
             logits (batch_size x C): next set of logits.
+            state (tuple of batch_size x ...): next set of logits.
         """
         pass
 
-    def local_logits(self, state):
-        """
-        Compute the local logits of :math:`p(y_t | y_{1:t-1})`
 
-        Parameters:
-            state (batch_size x hidden_shape): everything needed for conditioning.
-
-        Retuns:
-            logits (batch_size x C): next set of logits.
-        """
-        pass
-
-    def update_state(self, prev_state, inputs):
-        """
-        Update the model state based on previous state and inputs
-
-        Parameters:
-            prev_state (batch_size x hidden_shape): everything needed for conditioning.
-            inputs (batch_size x C): next tokens to update representation
-
-        Retuns:
-            state (batch_size x hidden_shape): everything needed for next conditioning.
-        """
-        pass
-
+def wrap(state, ssize):
+    return state.contiguous().view(ssize, -1, *state.shape[1:])
+def unwrap(state):
+    return state.contiguous().view(-1, *state.shape[2:])
 
 class Autoregressive(Distribution):
     """
@@ -56,10 +37,9 @@ class Autoregressive(Distribution):
 
     Parameters:
         model (AutoregressiveModel): A lazily computed autoregressive model.
-        init (tensor, batch_shape x hidden_shape): initial state of autoregressive model.
+        init (tuple of tensors, batch_shape x ...): initial state of autoregressive model.
         n_classes (int): number of classes in each time step
         n_length (int): max length of sequence
-
     """
 
     def __init__(self, model, init, n_classes, n_length):
@@ -68,7 +48,7 @@ class Autoregressive(Distribution):
         self.n_length = n_length
         self.n_classes = n_classes
         event_shape = (n_length, n_classes)
-        batch_shape = init.shape[:1]
+        batch_shape = init[0].shape[:1]
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
     def log_prob(self, value, normalize=True):
@@ -76,14 +56,14 @@ class Autoregressive(Distribution):
         Compute log probability over values :math:`p(z)`.
 
         Parameters:
-            value (tensor): One-hot events (*sample_shape x batch_shape x event_shape*)
+            value (tensor): One-hot events (*sample_shape x batch_shape x N*)
 
         Returns:
             log_probs (*sample_shape x batch_shape*)
         """
-        batch_shape, n_length, n_classes = value.shape
+        n_length, batch_shape, n_classes = value.shape
         value = value.long()
-        logits = self.model.sequence_logits(self.init, value)
+        logits, _ = self.model(value, self.init)
         if normalize:
             log_probs = logits.log_softmax(-1)
         else:
@@ -92,24 +72,35 @@ class Autoregressive(Distribution):
         # batch_shape x event_shape (N x C)
         return log_probs.masked_fill_(value == 0, 0).sum(-1).sum(-1)
 
-    def _beam_search(self, semiring, gumbel=True):
+    def _beam_search(self, semiring, gumbel=False):
         beam = semiring.one_(torch.zeros((semiring.size(),) + self.batch_shape))
-        state = self.init.unsqueeze(0).expand((semiring.size(),) + self.init.shape)
+        ssize = semiring.size()
+
+        def take(state, indices):
+            return tuple((
+                s.contiguous()[(indices +
+                                torch.arange(self.batch_shape[0]).unsqueeze(0) * ssize).contiguous().view(-1)]
+                for s in state))
+        tokens = torch.zeros((ssize * self.batch_shape[0])).long()
+        state = tuple((
+            unwrap(i.unsqueeze(0).expand((ssize,) + i.shape))
+            for i in self.init))
 
         # Beam Search
         all_beams = []
         for t in range(0, self.n_length):
-            logits = self.model.local_logits(state)
+            logits, state  = self.model(unwrap(tokens).unsqueeze(1),
+                                        state)
+            logits = wrap(logits.squeeze(1), ssize)
             if gumbel:
                 logits = logits + torch.distributions.Gumbel(0.0, 0.0).sample(
                     logits.shape
                 )
-
             ex_beam = beam.unsqueeze(-1) + logits
             ex_beam.requires_grad_(True)
             all_beams.append(ex_beam)
-            beam, tokens = semiring.sparse_sum(ex_beam)
-            state = self.model.update_state(state, tokens)
+            beam, (positions, tokens) = semiring.sparse_sum(ex_beam)
+            state = take(state, positions)
 
         # Back pointers
         v = beam
@@ -153,11 +144,17 @@ class Autoregressive(Distribution):
             samples (*sample_shape x batch_shape x event_shape*)
         """
         sample_shape = sample_shape[0]
-        state = self.init.unsqueeze(0).expand((sample_shape,) + self.init.shape)
+        state = tuple((
+            unwrap(i.unsqueeze(0).expand((sample_shape,) + i.shape))
+            for i in self.init))
         all_tokens = []
+        tokens = torch.zeros((sample_shape * self.batch_shape[0])).long()
         for t in range(0, self.n_length):
-            logits = self.model.local_logits(state)
-            tokens = torch.distributions.OneHotCategorical(logits).sample((1,))[0]
-            state = self.model.update_state(state, tokens)
+            print(tokens.unsqueeze(-1).shape)
+            logits, state = self.model(tokens.unsqueeze(-1), state)
+            print("l", logits.shape)
+            tokens = torch.distributions.Categorical(logits).sample((1,))[0]
+            print("t", tokens.shape)
             all_tokens.append(tokens)
-        return torch.stack(all_tokens, dim=2)
+        v = wrap(torch.stack(all_tokens, dim=1), sample_shape)
+        return torch.nn.functional.one_hot(v, self.n_classes)

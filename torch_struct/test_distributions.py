@@ -59,31 +59,30 @@ def test_autoregressive(data, seed):
     values2[:, 0, :, :] = -1e9
     values2[:, 0, torch.arange(n_classes), torch.arange(n_classes)] = values[:, 0]
 
-    init = torch.zeros(batch, 5).long()
+    init = (torch.zeros(batch, 5).long(),)
 
-    class Model:
-        def update_state(self, prev_state, inputs):
-            K, batch, hidden = prev_state.shape
-            return prev_state + 1
-
-        def sequence_logits(self, init, seq_inputs):
-            return values
-
-        def local_logits(self, state):
-            K, batch, hidden = state.shape
-            t = state[0, 0, 0]
-            x = values[:, t, :].unsqueeze(0).expand(K, batch, n_classes)
-            return x
+    class Model(torch.nn.Module):
+        def forward(self, inputs, state):
+            if inputs.shape[1] == 1:
+                state, = state
+                in_batch, hidden = state.shape
+                t = state[0, 0]
+                batch = values.shape[0]
+                x = values[:, t, :].unsqueeze(0).expand(in_batch//batch, batch, n_classes)
+                state = (state + 1,)
+                return x.contiguous().view(in_batch, n_classes), state
+            else:
+                return values, state
 
     auto = Autoregressive(Model(), init, n_classes, n_length)
     v = auto.greedy_argmax()
+    batch, n, c = v.shape
+    assert(n == n_length)
+    assert(c == n_classes)
+
     assert (v == LinearChainCRF(values2).argmax.sum(-1)).all()
     crf = LinearChainCRF(values2)
     v2 = auto.beam_topk(K=5)
-
-    # print(crf.struct().score(crf.topk(5), values2, batch_dims=[0,1]))
-    # print(crf.topk(5)[0].nonzero())
-    # print(crf.topk(5)[1].nonzero())
 
     assert (v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all()
     assert (v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all()
@@ -102,3 +101,53 @@ def test_autoregressive(data, seed):
         n_length,
         n_classes,
     )
+
+
+def test_ar2():
+    batch, N, C, H = 3, 10, 2, 5
+    layer = 1
+
+    def t(a):
+        return tuple((t.transpose(0, 1) for t in a))
+
+    init = (torch.zeros(batch, layer, H),)
+    class AR(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.rnn = torch.nn.RNN(H, H, batch_first=True)
+            self.proj = torch.nn.Linear(H, C)
+            self.embed = torch.nn.Embedding(C, H)
+
+        def forward(self, inputs, state):
+            inputs = self.embed(inputs)
+            out, state = self.rnn(inputs,
+                                  t(state)[0])
+            out = self.proj(out)
+            return out, t((state,))
+
+    dist = Autoregressive(AR(), init, C, N)
+    dist.greedy_argmax()
+    dist.beam_topk(7)
+
+    lstm = torch.nn.LSTM(H, H)
+    proj = torch.nn.Linear(H, C)
+    embed = torch.nn.Embedding(C, H)
+
+    init = (torch.zeros(batch, layer, H),
+            torch.zeros(batch, layer, H))
+    class AR(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.rnn = torch.nn.LSTM(H, H, batch_first=True)
+            self.proj = torch.nn.Linear(H, C)
+            self.embed = torch.nn.Embedding(C, H)
+
+        def forward(self, inputs, state):
+            inputs = self.embed(inputs)
+            out, state = self.rnn(inputs, t(state))
+            out = self.proj(out)
+            return out, t(state)
+
+    dist = Autoregressive(AR(), init, C, N)
+    dist.greedy_argmax()
+    dist.beam_topk(5)

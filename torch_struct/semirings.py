@@ -132,7 +132,8 @@ class MaxSemiring(_BaseLog):
 
     @staticmethod
     def sparse_sum(xs, dim=-1):
-        return torch.max(xs, dim=dim)
+        m, a = torch.max(xs, dim=dim)
+        return m, (torch.zeros(a.shape).long(), a)
 
 
 def KMaxSemiring(k):
@@ -176,13 +177,14 @@ def KMaxSemiring(k):
         @staticmethod
         def sparse_sum(xs, dim=-1):
             if dim == -1:
+                total = xs.shape[-1]
                 xs = xs.permute(tuple(range(1, xs.dim())) + (0,))
                 xs = xs.contiguous().view(xs.shape[:-2] + (-1,))
                 xs, xs2 = torch.topk(xs, k, dim=-1)
                 xs = xs.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
                 xs2 = xs2.permute((xs.dim() - 1,) + tuple(range(0, xs.dim() - 1)))
                 assert xs.shape[0] == k
-                return xs, xs2
+                return xs, (xs2 // k, xs2 % total)
             assert False
 
         @staticmethod
