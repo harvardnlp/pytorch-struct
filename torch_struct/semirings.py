@@ -3,17 +3,28 @@ import torch.distributions
 
 
 class Semiring:
+    """
+    Base semiring class.
+
+    Based on description in:
+
+    * Semiring parsing :cite:`goodman1999semiring`
+
+    """
+
     @classmethod
     def size(cls):
+        "Additional *ssize* first dimension needed."
         return 1
 
     @classmethod
     def dot(cls, *ls):
-        "Dot product along last dim"
+        "Dot product along last dim."
         return cls.sum(cls.times(*ls))
 
     @classmethod
     def times(cls, *ls):
+        "Multiply a list of tensors together"
         cur = ls[0]
         for l in ls[1:]:
             cur = cls.mul(cur, l)
@@ -21,11 +32,28 @@ class Semiring:
 
     @classmethod
     def convert(cls, potentials):
+        "Convert to semiring by adding an extra first dimension."
         return potentials.unsqueeze(0)
 
     @classmethod
     def unconvert(cls, potentials):
+        "Unconvert from semiring by removing extra first dimension."
         return potentials.squeeze(0)
+
+    @staticmethod
+    def zero_(xs):
+        "Fill *ssize x ...* tensor with additive identity."
+        raise NotImplementedError()
+
+    @staticmethod
+    def one_(xs):
+        "Fill *ssize x ...* tensor with multiplicative identity."
+        raise NotImplementedError()
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        "Sum over *dim* of tensor."
+        raise NotImplementedError()
 
 
 class _Base(Semiring):
@@ -65,67 +93,35 @@ class _BaseLog(Semiring):
 
 
 class StdSemiring(_Base):
+    """
+    Implements the counting semiring (+, *, 0, 1).
+
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
 
 
-class EntropySemiring(Semiring):
-    # (z1, h1) ⊕ (z2, h2) = (logsumexp(z1,z2), h1 + h2), (65)
-    # (z1, h1) ⊗ (z2, h2) = (z1 + z2, z1.exp()h2 + z2.exp()h1), (66)
-
-    @staticmethod
-    def size():
-        return 2
-
-    @staticmethod
-    def convert(xs):
-        values = torch.zeros((2,) + xs.shape).type_as(xs)
-        values[0] = xs
-        values[1] = 0
-        return values
-
-    @staticmethod
-    def unconvert(xs):
-        return xs[1]
-
-    @staticmethod
-    def sum(xs, dim=-1):
-        assert dim != 0
-        d = dim - 1 if dim > 0 else dim
-        part = torch.logsumexp(xs[0], dim=d)
-        log_sm = xs[0] - part.unsqueeze(d)
-        sm = log_sm.exp()
-        return torch.stack((part, torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d)))
-
-    @staticmethod
-    def mul(a, b):
-        return torch.stack((a[0] + b[0], a[1] + b[1]))
-
-    @classmethod
-    def prod(cls, xs, dim=-1):
-        return xs.sum(dim)
-
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(0)
-        return xs
-
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        return xs
-
-
 class LogSemiring(_BaseLog):
+    """
+    Implements the log-space semiring (logsumexp, +, -inf, 0).
+
+    Gradients give marginals.
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
 
 
 class MaxSemiring(_BaseLog):
+    """
+    Implements the max semiring (max, +, -inf, 0).
+
+    Gradients give argmax.
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return torch.max(xs, dim=dim)[0]
@@ -137,6 +133,12 @@ class MaxSemiring(_BaseLog):
 
 
 def KMaxSemiring(k):
+    """
+    Implements the k-max semiring (kmax, +, [-inf, -inf..], [0, -inf, ...]).
+
+    Gradients give k-argmax.
+    """
+
     class KMaxSemiring(_BaseLog):
         @staticmethod
         def size():
@@ -236,6 +238,14 @@ class _SampledLogSumExp(torch.autograd.Function):
 
 
 class SampledSemiring(_BaseLog):
+    """
+    Implements a sampling semiring (logsumexp, +, -inf, 0).
+
+    "Gradients" give sample.
+
+    This is an exact forward-filtering, backward-sampling approach.
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return _SampledLogSumExp.apply(xs, dim)
@@ -297,6 +307,12 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
 
 
 class MultiSampledSemiring(_BaseLog):
+    """
+    Implements a multi-sampling semiring (logsumexp, +, -inf, 0).
+
+    "Gradients" give up to 16 samples with replacement.
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return _MultiSampledLogSumExp.apply(xs, dim)
@@ -309,7 +325,74 @@ class MultiSampledSemiring(_BaseLog):
         return (((xs % mbits[i + 1]) - (xs % mbits[i]) + final) != 0).type_as(xs)
 
 
+class EntropySemiring(Semiring):
+    """
+    Implements an entropy expectation semiring.
+
+    Computes both the log-values and the running distributional entropy.
+
+    Based on descriptions in:
+
+    * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
+    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    """
+
+    @staticmethod
+    def size():
+        return 2
+
+    @staticmethod
+    def convert(xs):
+        values = torch.zeros((2,) + xs.shape).type_as(xs)
+        values[0] = xs
+        values[1] = 0
+        return values
+
+    @staticmethod
+    def unconvert(xs):
+        return xs[1]
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        assert dim != 0
+        d = dim - 1 if dim > 0 else dim
+        part = torch.logsumexp(xs[0], dim=d)
+        log_sm = xs[0] - part.unsqueeze(d)
+        sm = log_sm.exp()
+        return torch.stack((part, torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d)))
+
+    @staticmethod
+    def mul(a, b):
+        return torch.stack((a[0] + b[0], a[1] + b[1]))
+
+    @classmethod
+    def prod(cls, xs, dim=-1):
+        return xs.sum(dim)
+
+    @staticmethod
+    def zero_(xs):
+        xs[0].fill_(-1e5)
+        xs[1].fill_(0)
+        return xs
+
+    @staticmethod
+    def one_(xs):
+        xs[0].fill_(0)
+        xs[1].fill_(0)
+        return xs
+
+
 class SparseMaxSemiring(_BaseLog):
+    """
+
+    Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).
+
+    Sparse-max gradients give a more sparse set of marginal like terms.
+
+    * From softmax to sparsemax: A sparse model of attention and multi-label classification :cite:`martins2016softmax`
+    * Differentiable dynamic programming for structured prediction and attention :cite:`mensch2018differentiable`
+    """
+
     @staticmethod
     def sum(xs, dim=-1):
         return _SimplexProject.apply(xs, dim)
@@ -319,20 +402,19 @@ class _SimplexProject(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim, z=1):
         w_star = project_simplex(input, dim)
-        ctx.save_for_backward(w_star.clone(), torch.tensor(dim))
-        x = (w_star - input).norm(p=2, dim=dim)
+        ctx.save_for_backward(input, w_star.clone(), torch.tensor(dim))
+        x = input.mul(w_star).sum(dim) - w_star.norm(p=2, dim=dim)
         return x
 
     @staticmethod
     def backward(ctx, grad_output):
-        w_star, dim = ctx.saved_tensors
+        input, w_star, dim = ctx.saved_tensors
         w_star.requires_grad_(True)
 
         grad_input = None
         if ctx.needs_input_grad[0]:
-            grad_input = grad_output.unsqueeze(dim).mul(
-                _SparseMaxGrad.apply(w_star, dim)
-            )
+            wstar = _SparseMaxGrad.apply(w_star, dim)
+            grad_input = grad_output.unsqueeze(dim).mul(wstar)
         return grad_input, None, None
 
 
@@ -345,14 +427,13 @@ class _SparseMaxGrad(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         w_star, dim = ctx.saved_tensors
-        print(grad_output.shape, w_star.shape, dim)
         return sparsemax_grad(grad_output, w_star, dim.item()), None
 
 
 def project_simplex(v, dim, z=1):
     v_sorted, _ = torch.sort(v, dim=dim, descending=True)
     cssv = torch.cumsum(v_sorted, dim=dim) - z
-    ind = torch.arange(1, 1 + len(v)).to(dtype=v.dtype)
+    ind = torch.arange(1, 1 + v.shape[dim]).to(dtype=v.dtype)
     cond = v_sorted - cssv / ind >= 0
     k = cond.sum(dim=dim, keepdim=True)
     tau = cssv.gather(dim, k - 1) / k.to(dtype=v.dtype)

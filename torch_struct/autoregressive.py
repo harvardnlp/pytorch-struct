@@ -17,8 +17,9 @@ class AutoregressiveModel(torch.nn.Module):
             state (tuple of batch_size x ...): everything needed for conditioning.
 
         Retuns:
-            logits (batch_size x C): next set of logits.
-            state (tuple of batch_size x ...): next set of logits.
+            logits (*batch_size x C*): next set of logits.
+
+            state (*tuple of batch_size x ...*): next set of logits.
         """
         pass
 
@@ -94,16 +95,20 @@ class Autoregressive(Distribution):
         )
 
         logits, _ = self.model(value, state)
+        b2, n2, c2 = logits.shape
+        assert (
+            (b2 == sample * batch_shape)
+            and (n2 == n_length + 1)
+            and (c2 == self.n_classes)
+        ), "Model should return logits of shape `batch x N x C` "
+
         if self.normalize:
             log_probs = logits.log_softmax(-1)
         else:
             log_probs = logits
 
         scores = log_probs[:, :-1].gather(2, value[:, 1:].unsqueeze(-1)).sum(-1).sum(-1)
-        # print(log_probs[:, :-1].gather(2, value[:, 1:].unsqueeze(-1)).shape)
         return wrap(scores, sample)
-        # # batch_shape x event_shape (N x C)
-        # return log_probs[:, :-1].gather(2, value).sum(-1)
 
     def _beam_search(self, semiring, gumbel=False):
         beam = semiring.one_(torch.zeros((semiring.size(),) + self.batch_shape))
@@ -135,9 +140,19 @@ class Autoregressive(Distribution):
         all_beams = []
         for t in range(0, self.n_length):
             logits, state = self.model(unwrap(tokens).unsqueeze(1), state)
+            b2, n2, c2 = logits.shape
+            assert (
+                (b2 == ssize * self.batch_shape[0])
+                and (n2 == 1)
+                and (c2 == self.n_classes)
+            ), "Model should return logits of shape `batch x N x C` "
+            for s in state:
+                assert (
+                    s.shape[0] == ssize * self.batch_shape[0]
+                ), "Model should return state tuple with shapes `batch x ...` "
             logits = wrap(logits.squeeze(1), ssize)
             if gumbel:
-                logits = logits + torch.distributions.Gumbel(0.0, 0.0).sample(
+                logits = logits + torch.distributions.Gumbel(0.0, 1.0).sample(
                     logits.shape
                 )
             if self.normalize:
@@ -146,7 +161,6 @@ class Autoregressive(Distribution):
             ex_beam.requires_grad_(True)
             all_beams.append(ex_beam)
             beam, (positions, tokens) = semiring.sparse_sum(ex_beam)
-            print(positions.shape)
             state = take(state, positions)
 
         # Back pointers
@@ -163,7 +177,10 @@ class Autoregressive(Distribution):
 
     def greedy_argmax(self):
         """
-        Compute "argmax" using greedy search
+        Compute "argmax" using greedy search.
+
+        Returns:
+            greedy_path (*batch x N x C*)
         """
         return self._beam_search(MaxSemiring)[0].squeeze(0)
 
@@ -173,6 +190,10 @@ class Autoregressive(Distribution):
     def beam_topk(self, K):
         """
         Compute "top-k" using beam search
+
+        Returns:
+            paths (*K x batch x N x C*)
+
         """
         return self._beam_search(KMaxSemiring(K))[0]
 
@@ -182,6 +203,18 @@ class Autoregressive(Distribution):
     def sample_without_replacement(self, sample_shape=torch.Size()):
         """
         Compute sampling without replacement using Gumbel trick.
+
+        Based on:
+
+        * Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for
+               Sampling Sequences Without Replacement :cite:`DBLP:journals/corr/abs-1903-06059`
+
+        Parameters:
+            sample_shape (torch.Size): batch_size
+
+        Returns:
+            paths (*K x batch x N x C*)
+
         """
         K = sample_shape[0]
         return self._beam_search(KMaxSemiring(K), gumbel=True)[0]
@@ -191,7 +224,7 @@ class Autoregressive(Distribution):
         Compute structured samples from the distribution :math:`z \sim p(z)`.
 
         Parameters:
-            sample_shape (int): number of samples
+            sample_shape (torch.Size): number of samples
 
         Returns:
             samples (*sample_shape x batch_shape x event_shape*)
@@ -211,7 +244,8 @@ class Autoregressive(Distribution):
         )
         for t in range(0, self.n_length):
             logits, state = self.model(tokens.unsqueeze(-1), state)
-            tokens = torch.distributions.Categorical(logits).sample((1,))[0]
+            logits = logits.squeeze(1)
+            tokens = torch.distributions.Categorical(logits=logits).sample((1,))[0]
             all_tokens.append(tokens)
         v = wrap(torch.stack(all_tokens, dim=1), sample_shape)
         return torch.nn.functional.one_hot(v, self.n_classes)

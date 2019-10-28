@@ -53,6 +53,7 @@ def test_autoregressive(data, seed):
     n_classes = 2
     n_length = 5
     batch = 3
+    BATCH = 3
 
     values = torch.rand(batch, n_length, n_classes)
 
@@ -75,11 +76,14 @@ def test_autoregressive(data, seed):
                     .expand(in_batch // batch, batch, n_classes)
                 )
                 state = (state + 1,)
-                return x.contiguous().view(in_batch, n_classes), state
+                return x.contiguous().view(in_batch, 1, n_classes), state
             else:
-                return values, state
+                return (
+                    torch.cat((values, torch.zeros(BATCH, 1, n_classes)), dim=1),
+                    state,
+                )
 
-    auto = Autoregressive(Model(), init, n_classes, n_length)
+    auto = Autoregressive(Model(), init, n_classes, n_length, normalize=False)
     v = auto.greedy_argmax()
     batch, n, c = v.shape
     assert n == n_length
@@ -92,12 +96,11 @@ def test_autoregressive(data, seed):
     assert (v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all()
     assert (v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all()
 
-    print(auto.log_prob(v, normalize=False))
+    print(auto.log_prob(v.unsqueeze(0)))
     print(crf.struct().score(crf.argmax, values2))
     assert (
-        auto.log_prob(v, normalize=False) == crf.struct().score(crf.argmax, values2)
+        auto.log_prob(v.unsqueeze(0)) == crf.struct().score(crf.argmax, values2)
     ).all()
-
     assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
 
     assert auto.sample_without_replacement((7,)).shape == (
@@ -159,6 +162,9 @@ def test_ar2():
 
     print(v[ind[0], 0].shape, path[0, 0].shape)
     assert (torch.nn.functional.one_hot(v[ind, 0], C) == path[0, 0].long()).all()
+
+    dist = Autoregressive(AR(), init, C, N, normalize=True)
+    path = dist.sample((7,))
 
     init = (torch.zeros(batch, layer, H), torch.zeros(batch, layer, H))
 

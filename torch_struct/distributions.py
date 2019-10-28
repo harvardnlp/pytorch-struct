@@ -191,9 +191,37 @@ class LinearChainCRF(StructDistribution):
 
 
     Compact representation: N long tensor in [0, ..., C-1]
+
+    Implementation uses linear-scan, forward-pass only.
+
+    * Parallel Time: `O(\log(N))` parallel merges.
+    * Forward Memory: :math:`O(N \log(N) C^2)`
+
     """
 
     struct = LinearChain
+
+
+class AlignmentCRF(StructDistribution):
+    r"""
+    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.
+
+    Event shape is of the form:
+
+    Parameters:
+        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.
+                                    :math:`\phi(i, j, op)`
+                                  Ops are 0 -> j-1, 1->i-1,j-1, and 2->i-1
+        lengths (long tensor) : batch shape integers for length masking.
+
+
+    Implementation uses linear-scan.
+
+    * Parallel Time: `O(\log (M +N))` parallel merges.
+    * Forward Memory: :math:`O((M+N)^3)`
+
+    """
+    struct = Alignment
 
 
 class HMM(StructDistribution):
@@ -203,12 +231,14 @@ class HMM(StructDistribution):
     Event shape is of the form:
 
     Parameters:
-        transition: C X C
-        emission: V x C
-        init: C
-        observations: b x N between [0, V-1]
+        transition (tensor): log-probabilities *C X C* :math:`p(z_n| z_n-1)`
+        emission (tensor): log-probabilities *V x C*  :math:`p(x_n| z_n)`
+        init (tensor): log-probabilities *C* :math:`p(z_1)`
+        observations (long tensor): indices *batch x N* between [0, V-1]
 
     Compact representation: N long tensor in [0, ..., C-1]
+
+    Implemented as a special case of linear chain CRF.
     """
 
     def __init__(self, transition, emission, init, observations, lengths=None):
@@ -230,6 +260,12 @@ class SemiMarkovCRF(StructDistribution):
        lengths (long tensor) : batch shape integers for length masking.
 
     Compact representation: N long tensor in [-1, 0, ..., C-1]
+
+    Implementation uses linear-scan, forward-pass only.
+
+    * Parallel Time: `O(\log(N))` parallel merges.
+    * Forward Memory: :math:`O(N \log(N) C^2 K^2)`
+
     """
 
     struct = SemiMarkov
@@ -253,6 +289,12 @@ class DependencyCRF(StructDistribution):
 
 
     Compact representation: N long tensor in [0, .. N] (indexing is +1)
+
+    Implementation uses linear-scan, forward-pass only.
+
+    * Parallel Time: `O(N)` parallel merges.
+    * Forward Memory: :math:`O(N \log(N) C^2 K^2)`
+
     """
 
     struct = DepTree
@@ -260,8 +302,8 @@ class DependencyCRF(StructDistribution):
 
 class TreeCRF(StructDistribution):
     r"""
-    Represents a 0th-order span parser with NT nonterminals.
-
+    Represents a 0th-order span parser with NT nonterminals. Implemented using a
+    fast CKY algorithm.
 
     For example usage see:
 
@@ -274,25 +316,14 @@ class TreeCRF(StructDistribution):
                                     :math:`\phi(i, j, nt)`
         lengths (long tensor) : batch shape integers for length masking.
 
+    Implementation uses width-batched, forward-pass only
+
+    * Parallel Time: `O(N)` parallel merges.
+    * Forward Memory: :math:`O(N^2)`
+
     Compact representation:  *N x N x NT* long tensor (Same)
     """
     struct = CKY_CRF
-
-
-class AlignmentCRF(StructDistribution):
-    r"""
-    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.
-
-    Event shape is of the form:
-
-    Parameters:
-        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.
-                                    :math:`\phi(i, j, op)`
-                                  Ops are 0 -> j-1, 1->i-1,j-1, and 2->i-1
-        lengths (long tensor) : batch shape integers for length masking.
-
-    """
-    struct = Alignment
 
 
 class SentCFG(StructDistribution):
@@ -308,6 +339,11 @@ class SentCFG(StructDistribution):
                          rules (*NT x (NT+T) x (NT+T)*)
                          root  (*NT*)
         lengths (long tensor) : batch shape integers for length masking.
+
+    Implementation uses width-batched, forward-pass only
+
+    * Parallel Time: `O(N)` parallel merges.
+    * Forward Memory: :math:`O(N^2 (NT+T))`
 
     Compact representation:  *N x N x NT* long tensor
     """
@@ -341,6 +377,9 @@ class NonProjectiveDependencyCRF(StructDistribution):
                                  :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).
 
     Compact representation: N long tensor in [0, .. N] (indexing is +1)
+
+    Note: Does not currently implement argmax (Chiu-Liu) or sampling.
+
     """
 
     struct = DepTree
