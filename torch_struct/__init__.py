@@ -8,7 +8,7 @@ from .distributions import (
     TreeCRF,
     SentCFG,
     AlignmentCRF,
-    HMM
+    HMM,
 )
 from .autoregressive import Autoregressive, AutoregressiveModel
 from .cky_crf import CKY_CRF

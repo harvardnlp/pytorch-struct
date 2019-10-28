@@ -1,5 +1,6 @@
 from .distributions import LinearChainCRF
 from .autoregressive import Autoregressive
+from .semirings import KMaxSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -68,7 +69,11 @@ def test_autoregressive(data, seed):
                 in_batch, hidden = state.shape
                 t = state[0, 0]
                 batch = values.shape[0]
-                x = values[:, t, :].unsqueeze(0).expand(in_batch//batch, batch, n_classes)
+                x = (
+                    values[:, t, :]
+                    .unsqueeze(0)
+                    .expand(in_batch // batch, batch, n_classes)
+                )
                 state = (state + 1,)
                 return x.contiguous().view(in_batch, n_classes), state
             else:
@@ -77,8 +82,8 @@ def test_autoregressive(data, seed):
     auto = Autoregressive(Model(), init, n_classes, n_length)
     v = auto.greedy_argmax()
     batch, n, c = v.shape
-    assert(n == n_length)
-    assert(c == n_classes)
+    assert n == n_length
+    assert c == n_classes
 
     assert (v == LinearChainCRF(values2).argmax.sum(-1)).all()
     crf = LinearChainCRF(values2)
@@ -104,13 +109,14 @@ def test_autoregressive(data, seed):
 
 
 def test_ar2():
-    batch, N, C, H = 3, 10, 2, 5
+    batch, N, C, H = 3, 5, 2, 5
     layer = 1
 
     def t(a):
         return tuple((t.transpose(0, 1) for t in a))
 
     init = (torch.zeros(batch, layer, H),)
+
     class AR(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -120,21 +126,42 @@ def test_ar2():
 
         def forward(self, inputs, state):
             inputs = self.embed(inputs)
-            out, state = self.rnn(inputs,
-                                  t(state)[0])
+            out, state = self.rnn(inputs, t(state)[0])
             out = self.proj(out)
             return out, t((state,))
 
-    dist = Autoregressive(AR(), init, C, N)
-    dist.greedy_argmax()
-    dist.beam_topk(7)
+    dist = Autoregressive(AR(), init, C, N, normalize=False)
+    scores = dist._greedy_max()
+    path = dist.greedy_argmax()
+    assert torch.isclose(scores, dist.log_prob(path.unsqueeze(0))).all()
+    scores = dist._beam_max(7)
+    path = dist.beam_topk(7)
 
-    lstm = torch.nn.LSTM(H, H)
-    proj = torch.nn.Linear(H, C)
-    embed = torch.nn.Embedding(C, H)
+    a = torch.tensor([[1, 2, 5], [3, 4, 6]])
+    print(KMaxSemiring(2).sparse_sum(a))
 
-    init = (torch.zeros(batch, layer, H),
-            torch.zeros(batch, layer, H))
+    import itertools
+
+    for i in range(5):
+        print(dist.log_prob(path)[i])
+        print(scores[i])
+        print(path[i, 0])
+
+    print(path.shape, scores.shape)
+    assert torch.isclose(scores, dist.log_prob(path)).all()
+
+    v = torch.tensor(list(itertools.product([0, 1], repeat=N)))
+
+    v = v.unsqueeze(1).expand(v.shape[0], batch, N)
+    all_scores = dist.log_prob(v, sparse=True)
+    best, ind = torch.max(all_scores, dim=0)
+    assert (scores[0, 0] == best[0]).all()
+
+    print(v[ind[0], 0].shape, path[0, 0].shape)
+    assert (torch.nn.functional.one_hot(v[ind, 0], C) == path[0, 0].long()).all()
+
+    init = (torch.zeros(batch, layer, H), torch.zeros(batch, layer, H))
+
     class AR(torch.nn.Module):
         def __init__(self):
             super().__init__()

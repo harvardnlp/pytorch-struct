@@ -25,8 +25,11 @@ class AutoregressiveModel(torch.nn.Module):
 
 def wrap(state, ssize):
     return state.contiguous().view(ssize, -1, *state.shape[1:])
+
+
 def unwrap(state):
     return state.contiguous().view(-1, *state.shape[2:])
+
 
 class Autoregressive(Distribution):
     """
@@ -42,16 +45,27 @@ class Autoregressive(Distribution):
         n_length (int): max length of sequence
     """
 
-    def __init__(self, model, init, n_classes, n_length):
+    def __init__(
+        self,
+        model,
+        initial_state,
+        n_classes,
+        n_length,
+        normalize=True,
+        start_class=0,
+        end_class=None,
+    ):
         self.model = model
-        self.init = init
+        self.init = initial_state
         self.n_length = n_length
         self.n_classes = n_classes
+        self.start_class = start_class
+        self.normalize = normalize
         event_shape = (n_length, n_classes)
-        batch_shape = init[0].shape[:1]
+        batch_shape = initial_state[0].shape[:1]
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
-    def log_prob(self, value, normalize=True):
+    def log_prob(self, value, sparse=False):
         """
         Compute log probability over values :math:`p(z)`.
 
@@ -61,45 +75,78 @@ class Autoregressive(Distribution):
         Returns:
             log_probs (*sample_shape x batch_shape*)
         """
-        n_length, batch_shape, n_classes = value.shape
         value = value.long()
-        logits, _ = self.model(value, self.init)
-        if normalize:
+        if not sparse:
+            sample, batch_shape, n_length, n_classes = value.shape
+            value = (
+                (value * torch.arange(n_classes).view(1, 1, n_classes)).sum(-1).long()
+            )
+        else:
+            sample, batch_shape, n_length = value.shape
+
+        value = torch.cat(
+            [torch.zeros(sample, batch_shape, 1).fill_(self.start_class).long(), value],
+            dim=2,
+        )
+        value = unwrap(value)
+        state = tuple(
+            (unwrap(i.unsqueeze(0).expand((sample,) + i.shape)) for i in self.init)
+        )
+
+        logits, _ = self.model(value, state)
+        if self.normalize:
             log_probs = logits.log_softmax(-1)
         else:
             log_probs = logits
 
-        # batch_shape x event_shape (N x C)
-        return log_probs.masked_fill_(value == 0, 0).sum(-1).sum(-1)
+        scores = log_probs[:, :-1].gather(2, value[:, 1:].unsqueeze(-1)).sum(-1).sum(-1)
+        # print(log_probs[:, :-1].gather(2, value[:, 1:].unsqueeze(-1)).shape)
+        return wrap(scores, sample)
+        # # batch_shape x event_shape (N x C)
+        # return log_probs[:, :-1].gather(2, value).sum(-1)
 
     def _beam_search(self, semiring, gumbel=False):
         beam = semiring.one_(torch.zeros((semiring.size(),) + self.batch_shape))
         ssize = semiring.size()
 
         def take(state, indices):
-            return tuple((
-                s.contiguous()[(indices +
-                                torch.arange(self.batch_shape[0]).unsqueeze(0) * ssize).contiguous().view(-1)]
-                for s in state))
-        tokens = torch.zeros((ssize * self.batch_shape[0])).long()
-        state = tuple((
-            unwrap(i.unsqueeze(0).expand((ssize,) + i.shape))
-            for i in self.init))
+            return tuple(
+                (
+                    s.contiguous()[
+                        (
+                            indices * self.batch_shape[0]
+                            + torch.arange(self.batch_shape[0]).unsqueeze(0)
+                        )
+                        .contiguous()
+                        .view(-1)
+                    ]
+                    for s in state
+                )
+            )
+
+        tokens = (
+            torch.zeros((ssize * self.batch_shape[0])).long().fill_(self.start_class)
+        )
+        state = tuple(
+            (unwrap(i.unsqueeze(0).expand((ssize,) + i.shape)) for i in self.init)
+        )
 
         # Beam Search
         all_beams = []
         for t in range(0, self.n_length):
-            logits, state  = self.model(unwrap(tokens).unsqueeze(1),
-                                        state)
+            logits, state = self.model(unwrap(tokens).unsqueeze(1), state)
             logits = wrap(logits.squeeze(1), ssize)
             if gumbel:
                 logits = logits + torch.distributions.Gumbel(0.0, 0.0).sample(
                     logits.shape
                 )
+            if self.normalize:
+                logits = logits.log_softmax(-1)
             ex_beam = beam.unsqueeze(-1) + logits
             ex_beam.requires_grad_(True)
             all_beams.append(ex_beam)
             beam, (positions, tokens) = semiring.sparse_sum(ex_beam)
+            print(positions.shape)
             state = take(state, positions)
 
         # Back pointers
@@ -112,26 +159,32 @@ class Autoregressive(Distribution):
             )
             marg = torch.stack(marg, dim=2)
             all_m.append(marg.sum(0))
-        return torch.stack(all_m, dim=0)
+        return torch.stack(all_m, dim=0), v
 
     def greedy_argmax(self):
         """
         Compute "argmax" using greedy search
         """
-        return self._beam_search(MaxSemiring).squeeze(0)
+        return self._beam_search(MaxSemiring)[0].squeeze(0)
+
+    def _greedy_max(self):
+        return self._beam_search(MaxSemiring)[1].squeeze(0)
 
     def beam_topk(self, K):
         """
         Compute "top-k" using beam search
         """
-        return self._beam_search(KMaxSemiring(K))
+        return self._beam_search(KMaxSemiring(K))[0]
+
+    def _beam_max(self, K):
+        return self._beam_search(KMaxSemiring(K))[1]
 
     def sample_without_replacement(self, sample_shape=torch.Size()):
         """
         Compute sampling without replacement using Gumbel trick.
         """
         K = sample_shape[0]
-        return self._beam_search(KMaxSemiring(K), gumbel=True)
+        return self._beam_search(KMaxSemiring(K), gumbel=True)[0]
 
     def sample(self, sample_shape=torch.Size()):
         r"""
@@ -144,17 +197,21 @@ class Autoregressive(Distribution):
             samples (*sample_shape x batch_shape x event_shape*)
         """
         sample_shape = sample_shape[0]
-        state = tuple((
-            unwrap(i.unsqueeze(0).expand((sample_shape,) + i.shape))
-            for i in self.init))
+        state = tuple(
+            (
+                unwrap(i.unsqueeze(0).expand((sample_shape,) + i.shape))
+                for i in self.init
+            )
+        )
         all_tokens = []
-        tokens = torch.zeros((sample_shape * self.batch_shape[0])).long()
+        tokens = (
+            torch.zeros((sample_shape * self.batch_shape[0]))
+            .long()
+            .fill_(self.start_class)
+        )
         for t in range(0, self.n_length):
-            print(tokens.unsqueeze(-1).shape)
             logits, state = self.model(tokens.unsqueeze(-1), state)
-            print("l", logits.shape)
             tokens = torch.distributions.Categorical(logits).sample((1,))[0]
-            print("t", tokens.shape)
             all_tokens.append(tokens)
         v = wrap(torch.stack(all_tokens, dim=1), sample_shape)
         return torch.nn.functional.one_hot(v, self.n_classes)
