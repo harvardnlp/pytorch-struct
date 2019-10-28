@@ -92,6 +92,7 @@
 ./_modules/index.html
 ./_modules/torch_struct/autoregressive.html
 ./_modules/torch_struct/cky.html
+./_modules/torch_struct/data/trees.html
 ./_modules/torch_struct/deptree.html
 ./_modules/torch_struct/distributions.html
 ./_modules/torch_struct/linearchain.html
