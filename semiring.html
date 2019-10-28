@@ -89,7 +89,16 @@
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced: Semirings</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced: Semirings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Log">Log</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Max">Max</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#K-Max">K-Max</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Counting">Counting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Sampled">Sampled</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Entropy">Entropy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Sparsemax">Sparsemax</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
 </ul>
 
@@ -457,6 +466,8 @@ def run(sr):
 </pre></div>
 </div>
 </div>
+<div class="section" id="Log">
+<h2>Log<a class="headerlink" href="#Log" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.LogSemiring">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
@@ -477,30 +488,33 @@ def run(sr):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_5_0.png" src="_images/semiring_5_0.png" />
+<img alt="_images/semiring_6_0.png" src="_images/semiring_6_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_5_1.png" src="_images/semiring_5_1.png" />
+<img alt="_images/semiring_6_1.png" src="_images/semiring_6_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_5_2.png" src="_images/semiring_5_2.png" />
+<img alt="_images/semiring_6_2.png" src="_images/semiring_6_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_5_3.png" src="_images/semiring_5_3.png" />
+<img alt="_images/semiring_6_3.png" src="_images/semiring_6_3.png" />
 </div>
 </div>
+</div>
+<div class="section" id="Max">
+<h2>Max<a class="headerlink" href="#Max" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.MaxSemiring">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
@@ -521,30 +535,33 @@ def run(sr):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_7_0.png" src="_images/semiring_7_0.png" />
+<img alt="_images/semiring_9_0.png" src="_images/semiring_9_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_7_1.png" src="_images/semiring_7_1.png" />
+<img alt="_images/semiring_9_1.png" src="_images/semiring_9_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_7_2.png" src="_images/semiring_7_2.png" />
+<img alt="_images/semiring_9_2.png" src="_images/semiring_9_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_7_3.png" src="_images/semiring_7_3.png" />
+<img alt="_images/semiring_9_3.png" src="_images/semiring_9_3.png" />
 </div>
 </div>
+</div>
+<div class="section" id="K-Max">
+<h2>K-Max<a class="headerlink" href="#K-Max" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -558,30 +575,33 @@ def run(sr):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_8_0.png" src="_images/semiring_8_0.png" />
+<img alt="_images/semiring_11_0.png" src="_images/semiring_11_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_8_1.png" src="_images/semiring_8_1.png" />
+<img alt="_images/semiring_11_1.png" src="_images/semiring_11_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_8_2.png" src="_images/semiring_8_2.png" />
+<img alt="_images/semiring_11_2.png" src="_images/semiring_11_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_8_3.png" src="_images/semiring_8_3.png" />
+<img alt="_images/semiring_11_3.png" src="_images/semiring_11_3.png" />
 </div>
 </div>
+</div>
+<div class="section" id="Counting">
+<h2>Counting<a class="headerlink" href="#Counting" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.StdSemiring">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
@@ -594,95 +614,6 @@ def run(sr):
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span>run(torch_struct.StdSemiring)
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_10_0.png" src="_images/semiring_10_0.png" />
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_10_1.png" src="_images/semiring_10_1.png" />
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_10_2.png" src="_images/semiring_10_2.png" />
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_10_3.png" src="_images/semiring_10_3.png" />
-</div>
-</div>
-<dl class="class">
-<dt id="torch_struct.SampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
-<p>“Gradients” give sample.</p>
-<p>This is an exact forward-filtering, backward-sampling approach.</p>
-</dd></dl>
-
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>run(torch_struct.SampledSemiring)
-</pre></div>
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_12_0.png" src="_images/semiring_12_0.png" />
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_12_1.png" src="_images/semiring_12_1.png" />
-</div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_12_2.png" src="_images/semiring_12_2.png" />
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/semiring_12_3.png" src="_images/semiring_12_3.png" />
-</div>
-</div>
-<dl class="class">
-<dt id="torch_struct.MultiSampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
-<p>“Gradients” give up to 16 samples with replacement.</p>
-</dd></dl>
-
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>run(torch_struct.MultiSampledSemiring)
 </pre></div>
 </div>
 </div>
@@ -714,6 +645,101 @@ def run(sr):
 <img alt="_images/semiring_14_3.png" src="_images/semiring_14_3.png" />
 </div>
 </div>
+</div>
+<div class="section" id="Sampled">
+<h2>Sampled<a class="headerlink" href="#Sampled" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.SampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
+<p>“Gradients” give sample.</p>
+<p>This is an exact forward-filtering, backward-sampling approach.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.SampledSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_17_0.png" src="_images/semiring_17_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_17_1.png" src="_images/semiring_17_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_17_2.png" src="_images/semiring_17_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_17_3.png" src="_images/semiring_17_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.MultiSampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
+<p>“Gradients” give up to 16 samples with replacement.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.MultiSampledSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_19_0.png" src="_images/semiring_19_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_19_1.png" src="_images/semiring_19_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_19_2.png" src="_images/semiring_19_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_19_3.png" src="_images/semiring_19_3.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Entropy">
+<h2>Entropy<a class="headerlink" href="#Entropy" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.EntropySemiring">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
@@ -739,30 +765,33 @@ def run(sr):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_16_0.png" src="_images/semiring_16_0.png" />
+<img alt="_images/semiring_22_0.png" src="_images/semiring_22_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_16_1.png" src="_images/semiring_16_1.png" />
+<img alt="_images/semiring_22_1.png" src="_images/semiring_22_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_16_2.png" src="_images/semiring_16_2.png" />
+<img alt="_images/semiring_22_2.png" src="_images/semiring_22_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_16_3.png" src="_images/semiring_16_3.png" />
+<img alt="_images/semiring_22_3.png" src="_images/semiring_22_3.png" />
 </div>
 </div>
+</div>
+<div class="section" id="Sparsemax">
+<h2>Sparsemax<a class="headerlink" href="#Sparsemax" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.SparseMaxSemiring">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SparseMaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SparseMaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
@@ -787,28 +816,28 @@ def run(sr):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_18_0.png" src="_images/semiring_18_0.png" />
+<img alt="_images/semiring_25_0.png" src="_images/semiring_25_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_18_1.png" src="_images/semiring_18_1.png" />
+<img alt="_images/semiring_25_1.png" src="_images/semiring_25_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_18_2.png" src="_images/semiring_18_2.png" />
+<img alt="_images/semiring_25_2.png" src="_images/semiring_25_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_18_3.png" src="_images/semiring_18_3.png" />
+<img alt="_images/semiring_25_3.png" src="_images/semiring_25_3.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -816,7 +845,6 @@ def run(sr):
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-
 <span></span>all_sr = [(&quot;marginals&quot;, torch_struct.LogSemiring),
           (&quot;argmax&quot;, torch_struct.MaxSemiring),
           (&quot;sample&quot;, torch_struct.SampledSemiring),
@@ -878,7 +906,7 @@ plt.savefig(&quot;show.png&quot;,)
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/semiring_19_0.png" src="_images/semiring_19_0.png" />
+<img alt="_images/semiring_26_0.png" src="_images/semiring_26_0.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -888,6 +916,7 @@ plt.savefig(&quot;show.png&quot;,)
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>

@@ -441,7 +441,7 @@ import matplotlib
 <p>Compact representation: N long tensor in [0, …, C-1]</p>
 <p>Implementation uses linear-scan, forward-pass only.</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(log(N))</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(\log(N))\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2)\)</span></p></li>
 </ul>
 </dd></dl>
@@ -524,15 +524,6 @@ show_chain(event[0])
 <p>Implemented as a special case of linear chain CRF.</p>
 </dd></dl>
 
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -554,7 +545,7 @@ show_chain(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_12_0.png" src="_images/model_12_0.png" />
+<img alt="_images/model_11_0.png" src="_images/model_11_0.png" />
 </div>
 </div>
 </div>
@@ -577,7 +568,7 @@ show_chain(dist.argmax[0])
 <p>Compact representation: N long tensor in [-1, 0, …, C-1]</p>
 <p>Implementation uses linear-scan, forward-pass only.</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(log(N))</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(\log(N))\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2 K^2)\)</span></p></li>
 </ul>
 </dd></dl>
@@ -603,7 +594,7 @@ show_sm(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_15_0.png" src="_images/model_15_0.png" />
+<img alt="_images/model_14_0.png" src="_images/model_14_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -619,7 +610,7 @@ show_sm(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_16_0.png" src="_images/model_16_0.png" />
+<img alt="_images/model_15_0.png" src="_images/model_15_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -637,7 +628,7 @@ show_sm(event[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_17_0.png" src="_images/model_17_0.png" />
+<img alt="_images/model_16_0.png" src="_images/model_16_0.png" />
 </div>
 </div>
 </div>
@@ -663,7 +654,7 @@ show_sm(event[0])
 </dl>
 <p>Implementation uses linear-scan.</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(log (M +N))</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(\log (M +N))\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O((M+N)^3)\)</span></p></li>
 </ul>
 </dd></dl>
@@ -687,7 +678,7 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
+<img alt="_images/model_19_0.png" src="_images/model_19_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -703,7 +694,7 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_21_0.png" src="_images/model_21_0.png" />
+<img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
 </div>
 </div>
 </div>
@@ -731,7 +722,7 @@ arc scores with root scores on diagonal e.g.
 <p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
 <p>Implementation uses linear-scan, forward-pass only.</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(N)\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2 K^2)\)</span></p></li>
 </ul>
 </dd></dl>
@@ -755,7 +746,7 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
+<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -771,7 +762,7 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
+<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -789,7 +780,7 @@ show_deps(event[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_26_0.png" src="_images/model_26_0.png" />
+<img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
 </div>
 </div>
 </div>
@@ -835,7 +826,7 @@ show_deps(dist.marginals[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_29_0.png" src="_images/model_29_0.png" />
+<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
 </div>
 </div>
 </div>
@@ -863,7 +854,7 @@ fast CKY algorithm.</p>
 </dl>
 <p>Implementation uses width-batched, forward-pass only</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(N)\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N^2)\)</span></p></li>
 </ul>
 <p>Compact representation:  <em>N x N x NT</em> long tensor (Same)</p>
@@ -892,7 +883,7 @@ show_tree(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
+<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -908,7 +899,7 @@ show_tree(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_33_0.png" src="_images/model_33_0.png" />
+<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
 </div>
 </div>
 </div>
@@ -934,7 +925,7 @@ root  (<em>NT</em>)</p></li>
 </dl>
 <p>Implementation uses width-batched, forward-pass only</p>
 <ul class="simple">
-<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(N)\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N^2 (NT+T))\)</span></p></li>
 </ul>
 <p>Compact representation:  <em>N x N x NT</em> long tensor</p>
@@ -976,7 +967,7 @@ show_prob_tree(rules[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_37_0.png" src="_images/model_37_0.png" />
+<img alt="_images/model_36_0.png" src="_images/model_36_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1002,7 +993,7 @@ plt.imshow(term[:1])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_38_1.png" src="_images/model_38_1.png" />
+<img alt="_images/model_37_1.png" src="_images/model_37_1.png" />
 </div>
 </div>
 </div>
@@ -1020,13 +1011,66 @@ plt.imshow(term[:1])
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>AutoregressiveModel</em>) – A lazily computed autoregressive model.</p></li>
+<li><p><strong>model</strong> (<a class="reference internal" href="#torch_struct.AutoregressiveModel" title="torch_struct.AutoregressiveModel"><em>AutoregressiveModel</em></a>) – A lazily computed autoregressive model.</p></li>
 <li><p><strong>init</strong> (<em>tuple of tensors</em><em>, </em><em>batch_shape x …</em>) – initial state of autoregressive model.</p></li>
 <li><p><strong>n_classes</strong> (<em>int</em>) – number of classes in each time step</p></li>
 <li><p><strong>n_length</strong> (<em>int</em>) – max length of sequence</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="method">
+<dt id="torch_struct.Autoregressive.beam_topk">
+<code class="sig-name descname">beam_topk</code><span class="sig-paren">(</span><em class="sig-param">K</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.beam_topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.beam_topk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute “top-k” using beam search</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>paths (<em>K x batch x N x C</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.Autoregressive.sample">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sample_shape</strong> (<em>torch.Size</em>) – number of samples</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>samples (<em>sample_shape x batch_shape x event_shape</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.Autoregressive.sample_without_replacement">
+<code class="sig-name descname">sample_without_replacement</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample_without_replacement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample_without_replacement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute sampling without replacement using Gumbel trick.</p>
+<p>Based on:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</dt><dd><p>Sampling Sequences Without Replacement <a class="bibtex reference internal" href="refs.html#dblp-journals-corr-abs-1903-06059" id="id7">[KvHW19]</a></p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sample_shape</strong> (<em>torch.Size</em>) – batch_size</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>paths (<em>K x batch x N x C</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.AutoregressiveModel">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AutoregressiveModel</code><a class="reference internal" href="_modules/torch_struct/autoregressive.html#AutoregressiveModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AutoregressiveModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>User should implement as their favorite RNN / Transformer / etc.</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1074,7 +1118,7 @@ show_ar(path[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_42_0.png" src="_images/model_42_0.png" />
+<img alt="_images/model_41_0.png" src="_images/model_41_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1111,21 +1155,21 @@ for i in range(3):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_0.png" src="_images/model_44_0.png" />
+<img alt="_images/model_43_0.png" src="_images/model_43_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_1.png" src="_images/model_44_1.png" />
+<img alt="_images/model_43_1.png" src="_images/model_43_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_2.png" src="_images/model_44_2.png" />
+<img alt="_images/model_43_2.png" src="_images/model_43_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1153,21 +1197,21 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_1.png" src="_images/model_45_1.png" />
+<img alt="_images/model_44_1.png" src="_images/model_44_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_2.png" src="_images/model_45_2.png" />
+<img alt="_images/model_44_2.png" src="_images/model_44_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_3.png" src="_images/model_45_3.png" />
+<img alt="_images/model_44_3.png" src="_images/model_44_3.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1186,21 +1230,21 @@ for i in range(3):
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
+<img alt="_images/model_45_0.png" src="_images/model_45_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_1.png" src="_images/model_46_1.png" />
+<img alt="_images/model_45_1.png" src="_images/model_45_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_2.png" src="_images/model_46_2.png" />
+<img alt="_images/model_45_2.png" src="_images/model_45_2.png" />
 </div>
 </div>
 </div>
@@ -1213,9 +1257,9 @@ for i in range(3):
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
 <ul class="simple">
-<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="refs.html#eisner2016inside" id="id7">[Eis16]</a></p></li>
-<li><p>Semiring Parsing <a class="bibtex reference internal" href="refs.html#goodman1999semiring" id="id8">[Goo99]</a></p></li>
-<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id9">[LE09]</a></p></li>
+<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="refs.html#eisner2016inside" id="id8">[Eis16]</a></p></li>
+<li><p>Semiring Parsing <a class="bibtex reference internal" href="refs.html#goodman1999semiring" id="id9">[Goo99]</a></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id10">[LE09]</a></p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1348,14 +1392,14 @@ show_chain(dist.argmax[1])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_49_0.png" src="_images/model_49_0.png" />
+<img alt="_images/model_48_0.png" src="_images/model_48_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_49_1.png" src="_images/model_49_1.png" />
+<img alt="_images/model_48_1.png" src="_images/model_48_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1373,14 +1417,14 @@ show_chain(dist.marginals[1])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_50_0.png" src="_images/model_50_0.png" />
+<img alt="_images/model_49_0.png" src="_images/model_49_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_50_1.png" src="_images/model_50_1.png" />
+<img alt="_images/model_49_1.png" src="_images/model_49_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -1410,21 +1454,21 @@ show_chain(dist.marginals[1])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
+<img alt="_images/model_51_0.png" src="_images/model_51_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
+<img alt="_images/model_51_1.png" src="_images/model_51_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_2.png" src="_images/model_52_2.png" />
+<img alt="_images/model_51_2.png" src="_images/model_51_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1440,21 +1484,21 @@ show_chain(dist.marginals[1])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_0.png" src="_images/model_53_0.png" />
+<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_1.png" src="_images/model_53_1.png" />
+<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_2.png" src="_images/model_53_2.png" />
+<img alt="_images/model_52_2.png" src="_images/model_52_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1483,70 +1527,70 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
+<img alt="_images/model_53_1.png" src="_images/model_53_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_2.png" src="_images/model_54_2.png" />
+<img alt="_images/model_53_2.png" src="_images/model_53_2.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_3.png" src="_images/model_54_3.png" />
+<img alt="_images/model_53_3.png" src="_images/model_53_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_4.png" src="_images/model_54_4.png" />
+<img alt="_images/model_53_4.png" src="_images/model_53_4.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_5.png" src="_images/model_54_5.png" />
+<img alt="_images/model_53_5.png" src="_images/model_53_5.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_6.png" src="_images/model_54_6.png" />
+<img alt="_images/model_53_6.png" src="_images/model_53_6.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_7.png" src="_images/model_54_7.png" />
+<img alt="_images/model_53_7.png" src="_images/model_53_7.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_8.png" src="_images/model_54_8.png" />
+<img alt="_images/model_53_8.png" src="_images/model_53_8.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_9.png" src="_images/model_54_9.png" />
+<img alt="_images/model_53_9.png" src="_images/model_53_9.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_10.png" src="_images/model_54_10.png" />
+<img alt="_images/model_53_10.png" src="_images/model_53_10.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -1571,7 +1615,7 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
+<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
 </div>
 </div>
 </div>

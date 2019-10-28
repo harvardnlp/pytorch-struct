@@ -149,13 +149,6 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  },
-  {
-   "cell_type": "code",
    "execution_count": 6,
    "metadata": {},
    "outputs": [
@@ -651,7 +644,10 @@
     "raw_mimetype": "text/restructuredtext"
    },
    "source": [
-    "    .. autoclass:: torch_struct.Autoregressive"
+    "    .. autoclass:: torch_struct.Autoregressive\n",
+    "         :members: sample,sample_without_replacement,greedy_max,beam_topk\n",
+    "    .. autoclass:: torch_struct.AutoregressiveModel\n",
+    "    "
    ]
   },
   {
