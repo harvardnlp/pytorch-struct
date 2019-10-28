@@ -105,6 +105,10 @@ class StructDistribution(Distribution):
         """
         Compute marginals for distribution :math:`p(z_t)`.
 
+        Can be used in higher-order calculations, i.e.
+
+        *
+
         Returns:
             marginals (*batch_shape x event_shape*)
         """
@@ -159,7 +163,7 @@ class StructDistribution(Distribution):
         Compute the full exponential enumeration set.
 
         Returns:
-            (enum, enum_lengths) - *tuple cardinality x batch_shape x event_shape*
+            (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
         """
         _, _, edges, enum_lengths = self.struct().enumerate(
             self.log_potentials, self.lengths
@@ -231,10 +235,10 @@ class HMM(StructDistribution):
     Event shape is of the form:
 
     Parameters:
-        transition (tensor): log-probabilities *C X C* :math:`p(z_n| z_n-1)`
-        emission (tensor): log-probabilities *V x C*  :math:`p(x_n| z_n)`
-        init (tensor): log-probabilities *C* :math:`p(z_1)`
-        observations (long tensor): indices *batch x N* between [0, V-1]
+        transition (tensor): log-probabilities (*C X C*) :math:`p(z_n| z_n-1)`
+        emission (tensor): log-probabilities (*V x C*)  :math:`p(x_n| z_n)`
+        init (tensor): log-probabilities (*C*) :math:`p(z_1)`
+        observations (long tensor): indices (*batch x N*) between [0, V-1]
 
     Compact representation: N long tensor in [0, ..., C-1]
 
@@ -345,7 +349,7 @@ class SentCFG(StructDistribution):
     * Parallel Time: :math:`O(N)` parallel merges.
     * Forward Memory: :math:`O(N^2 (NT+T))`
 
-    Compact representation:  *N x N x NT* long tensor
+    Compact representation:  (*N x N x NT*) long tensor
     """
 
     struct = CKY
