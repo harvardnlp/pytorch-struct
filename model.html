@@ -512,10 +512,10 @@ div.rendered_html tbody tr:hover {
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>transition</strong> (<em>tensor</em>) – log-probabilities <em>C X C</em> <span class="math notranslate nohighlight">\(p(z_n| z_n-1)\)</span></p></li>
-<li><p><strong>emission</strong> (<em>tensor</em>) – log-probabilities <em>V x C</em>  <span class="math notranslate nohighlight">\(p(x_n| z_n)\)</span></p></li>
-<li><p><strong>init</strong> (<em>tensor</em>) – log-probabilities <em>C</em> <span class="math notranslate nohighlight">\(p(z_1)\)</span></p></li>
-<li><p><strong>observations</strong> (<em>long tensor</em>) – indices <em>batch x N</em> between [0, V-1]</p></li>
+<li><p><strong>transition</strong> (<em>tensor</em>) – log-probabilities (<em>C X C</em>) <span class="math notranslate nohighlight">\(p(z_n| z_n-1)\)</span></p></li>
+<li><p><strong>emission</strong> (<em>tensor</em>) – log-probabilities (<em>V x C</em>)  <span class="math notranslate nohighlight">\(p(x_n| z_n)\)</span></p></li>
+<li><p><strong>init</strong> (<em>tensor</em>) – log-probabilities (<em>C</em>) <span class="math notranslate nohighlight">\(p(z_1)\)</span></p></li>
+<li><p><strong>observations</strong> (<em>long tensor</em>) – indices (<em>batch x N</em>) between [0, V-1]</p></li>
 </ul>
 </dd>
 </dl>
@@ -927,7 +927,7 @@ root  (<em>NT</em>)</p></li>
 <li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(N)\)</span> parallel merges.</p></li>
 <li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N^2 (NT+T))\)</span></p></li>
 </ul>
-<p>Compact representation:  <em>N x N x NT</em> long tensor</p>
+<p>Compact representation:  (<em>N x N x NT</em>) long tensor</p>
 </dd></dl>
 
 </div></blockquote>
@@ -1296,7 +1296,7 @@ torch.Size([5, 10, 4])
 <dd><p>Compute the full exponential enumeration set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(enum, enum_lengths) - <em>tuple cardinality x batch_shape x event_shape</em></p>
+<dd class="field-odd"><p>(enum, enum_lengths) - (<em>tuple cardinality x batch_shape x event_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1325,6 +1325,10 @@ torch.Size([5, 10, 4])
 <dt id="torch_struct.StructDistribution.marginals">
 <code class="sig-name descname">marginals</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.marginals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute marginals for distribution <span class="math notranslate nohighlight">\(p(z_t)\)</span>.</p>
+<p>Can be used in higher-order calculations, i.e.</p>
+<ul class="simple">
+<li></li>
+</ul>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>marginals (<em>batch_shape x event_shape</em>)</p>
