@@ -330,3 +330,9 @@ def test_sparse_max(data):
     sparsemax = model(semiring).marginals(vals)
     print(vals.requires_grad)
     sparsemax.sum().backward()
+
+
+def test_sparse_max2():
+    print(Alignment(SparseMaxSemiring).sum(torch.rand(1, 8, 8, 3)))
+    print(Alignment(SparseMaxSemiring).marginals(torch.rand(1, 8, 8, 3)))
+    # assert(False)

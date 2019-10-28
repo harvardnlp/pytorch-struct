@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="torch_struct",
-    version="0.2",
+    version="0.3",
     author="Alexander Rush",
     author_email="arush@cornell.edu",
     packages=["torch_struct", "torch_struct.data", "torch_struct.networks"],

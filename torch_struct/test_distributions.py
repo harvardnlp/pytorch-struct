@@ -1,5 +1,6 @@
 from .distributions import LinearChainCRF
 from .autoregressive import Autoregressive
+from .semirings import KMaxSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -52,6 +53,7 @@ def test_autoregressive(data, seed):
     n_classes = 2
     n_length = 5
     batch = 3
+    BATCH = 3
 
     values = torch.rand(batch, n_length, n_classes)
 
@@ -59,41 +61,46 @@ def test_autoregressive(data, seed):
     values2[:, 0, :, :] = -1e9
     values2[:, 0, torch.arange(n_classes), torch.arange(n_classes)] = values[:, 0]
 
-    init = torch.zeros(batch, 5).long()
+    init = (torch.zeros(batch, 5).long(),)
 
-    class Model:
-        def update_state(self, prev_state, inputs):
-            K, batch, hidden = prev_state.shape
-            return prev_state + 1
+    class Model(torch.nn.Module):
+        def forward(self, inputs, state):
+            if inputs.shape[1] == 1:
+                state, = state
+                in_batch, hidden = state.shape
+                t = state[0, 0]
+                batch = values.shape[0]
+                x = (
+                    values[:, t, :]
+                    .unsqueeze(0)
+                    .expand(in_batch // batch, batch, n_classes)
+                )
+                state = (state + 1,)
+                return x.contiguous().view(in_batch, 1, n_classes), state
+            else:
+                return (
+                    torch.cat((values, torch.zeros(BATCH, 1, n_classes)), dim=1),
+                    state,
+                )
 
-        def sequence_logits(self, init, seq_inputs):
-            return values
-
-        def local_logits(self, state):
-            K, batch, hidden = state.shape
-            t = state[0, 0, 0]
-            x = values[:, t, :].unsqueeze(0).expand(K, batch, n_classes)
-            return x
-
-    auto = Autoregressive(Model(), init, n_classes, n_length)
+    auto = Autoregressive(Model(), init, n_classes, n_length, normalize=False)
     v = auto.greedy_argmax()
+    batch, n, c = v.shape
+    assert n == n_length
+    assert c == n_classes
+
     assert (v == LinearChainCRF(values2).argmax.sum(-1)).all()
     crf = LinearChainCRF(values2)
     v2 = auto.beam_topk(K=5)
 
-    # print(crf.struct().score(crf.topk(5), values2, batch_dims=[0,1]))
-    # print(crf.topk(5)[0].nonzero())
-    # print(crf.topk(5)[1].nonzero())
-
     assert (v2.nonzero() == crf.topk(5).sum(-1).nonzero()).all()
     assert (v2[0] == LinearChainCRF(values2).argmax.sum(-1)).all()
 
-    print(auto.log_prob(v, normalize=False))
+    print(auto.log_prob(v.unsqueeze(0)))
     print(crf.struct().score(crf.argmax, values2))
     assert (
-        auto.log_prob(v, normalize=False) == crf.struct().score(crf.argmax, values2)
+        auto.log_prob(v.unsqueeze(0)) == crf.struct().score(crf.argmax, values2)
     ).all()
-
     assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
 
     assert auto.sample_without_replacement((7,)).shape == (
@@ -102,3 +109,78 @@ def test_autoregressive(data, seed):
         n_length,
         n_classes,
     )
+
+
+def test_ar2():
+    batch, N, C, H = 3, 5, 2, 5
+    layer = 1
+
+    def t(a):
+        return tuple((t.transpose(0, 1) for t in a))
+
+    init = (torch.zeros(batch, layer, H),)
+
+    class AR(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.rnn = torch.nn.RNN(H, H, batch_first=True)
+            self.proj = torch.nn.Linear(H, C)
+            self.embed = torch.nn.Embedding(C, H)
+
+        def forward(self, inputs, state):
+            inputs = self.embed(inputs)
+            out, state = self.rnn(inputs, t(state)[0])
+            out = self.proj(out)
+            return out, t((state,))
+
+    dist = Autoregressive(AR(), init, C, N, normalize=False)
+    scores = dist._greedy_max()
+    path = dist.greedy_argmax()
+    assert torch.isclose(scores, dist.log_prob(path.unsqueeze(0))).all()
+    scores = dist._beam_max(7)
+    path = dist.beam_topk(7)
+
+    a = torch.tensor([[1, 2, 5], [3, 4, 6]])
+    print(KMaxSemiring(2).sparse_sum(a))
+
+    import itertools
+
+    for i in range(5):
+        print(dist.log_prob(path)[i])
+        print(scores[i])
+        print(path[i, 0])
+
+    print(path.shape, scores.shape)
+    assert torch.isclose(scores, dist.log_prob(path)).all()
+
+    v = torch.tensor(list(itertools.product([0, 1], repeat=N)))
+
+    v = v.unsqueeze(1).expand(v.shape[0], batch, N)
+    all_scores = dist.log_prob(v, sparse=True)
+    best, ind = torch.max(all_scores, dim=0)
+    assert (scores[0, 0] == best[0]).all()
+
+    print(v[ind[0], 0].shape, path[0, 0].shape)
+    assert (torch.nn.functional.one_hot(v[ind, 0], C) == path[0, 0].long()).all()
+
+    dist = Autoregressive(AR(), init, C, N, normalize=True)
+    path = dist.sample((7,))
+
+    init = (torch.zeros(batch, layer, H), torch.zeros(batch, layer, H))
+
+    class AR(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.rnn = torch.nn.LSTM(H, H, batch_first=True)
+            self.proj = torch.nn.Linear(H, C)
+            self.embed = torch.nn.Embedding(C, H)
+
+        def forward(self, inputs, state):
+            inputs = self.embed(inputs)
+            out, state = self.rnn(inputs, t(state))
+            out = self.proj(out)
+            return out, t(state)
+
+    dist = Autoregressive(AR(), init, C, N)
+    dist.greedy_argmax()
+    dist.beam_topk(5)
