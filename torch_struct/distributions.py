@@ -194,7 +194,7 @@ class LinearChainCRF(StructDistribution):
 
     Implementation uses linear-scan, forward-pass only.
 
-    * Parallel Time: `O(\log(N))` parallel merges.
+    * Parallel Time: :math:`O(\log(N))` parallel merges.
     * Forward Memory: :math:`O(N \log(N) C^2)`
 
     """
@@ -217,7 +217,7 @@ class AlignmentCRF(StructDistribution):
 
     Implementation uses linear-scan.
 
-    * Parallel Time: `O(\log (M +N))` parallel merges.
+    * Parallel Time: :math:`O(\log (M +N))` parallel merges.
     * Forward Memory: :math:`O((M+N)^3)`
 
     """
@@ -263,7 +263,7 @@ class SemiMarkovCRF(StructDistribution):
 
     Implementation uses linear-scan, forward-pass only.
 
-    * Parallel Time: `O(\log(N))` parallel merges.
+    * Parallel Time: :math:`O(\log(N))` parallel merges.
     * Forward Memory: :math:`O(N \log(N) C^2 K^2)`
 
     """
@@ -292,7 +292,7 @@ class DependencyCRF(StructDistribution):
 
     Implementation uses linear-scan, forward-pass only.
 
-    * Parallel Time: `O(N)` parallel merges.
+    * Parallel Time: :math:`O(N)` parallel merges.
     * Forward Memory: :math:`O(N \log(N) C^2 K^2)`
 
     """
@@ -318,7 +318,7 @@ class TreeCRF(StructDistribution):
 
     Implementation uses width-batched, forward-pass only
 
-    * Parallel Time: `O(N)` parallel merges.
+    * Parallel Time: :math:`O(N)` parallel merges.
     * Forward Memory: :math:`O(N^2)`
 
     Compact representation:  *N x N x NT* long tensor (Same)
@@ -342,7 +342,7 @@ class SentCFG(StructDistribution):
 
     Implementation uses width-batched, forward-pass only
 
-    * Parallel Time: `O(N)` parallel merges.
+    * Parallel Time: :math:`O(N)` parallel merges.
     * Forward Memory: :math:`O(N^2 (NT+T))`
 
     Compact representation:  *N x N x NT* long tensor
