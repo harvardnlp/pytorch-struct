@@ -1,0 +1,944 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Advanced: Semirings &mdash; pytorch-struct 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="References" href="refs.html" />
+    <link rel="prev" title="Networks" href="networks.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pytorch-struct
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pytorch-struct</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Advanced: Semirings</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/semiring.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Advanced:-Semirings">
+<h1>Advanced: Semirings<a class="headerlink" href="#Advanced:-Semirings" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>import torch
+import torch_struct
+import matplotlib.pyplot as plt
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Create two random tensors to experiment with.
+v1 = torch.rand(5, 10)
+v2 = torch.rand(5, 10)
+plt.imshow(v1)
+plt.show()
+plt.imshow(v2)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_2_0.png" src="_images/semiring_2_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f5b6df54080&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_2_2.png" src="_images/semiring_2_2.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>def show(x, title):
+    plt.title(title)
+    plt.imshow(x.detach())
+    plt.show()
+def run(sr):
+    # Convert semiring form.
+    s1, s2 = sr.convert(v1), sr.convert(v2)
+    s1.requires_grad_(True)
+    s2.requires_grad_(True)
+
+    # Times and sum out last dim.
+    s = sr.sum(sr.times(s1, s2))
+
+    # Compute grad.
+    s.sum().backward()
+
+    show(s, &quot;Sum&quot;)
+    # Show the grads
+    show(sr.unconvert(s1.grad), &quot;v1 grad&quot;)
+    show(sr.unconvert(s2.grad), &quot;v2 grad&quot;)
+    m = torch_struct.Alignment(sr).marginals(torch.rand(1, 10, 10, 3), _raw=True)
+    show(m.sum(-1).sum(0).sum(0).transpose(0,1), &quot;Alignment example&quot;)
+</pre></div>
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.LogSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the log-space semiring (logsumexp, +, -inf, 0).</p>
+<p>Gradients give marginals.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.LogSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_5_0.png" src="_images/semiring_5_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_5_1.png" src="_images/semiring_5_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_5_2.png" src="_images/semiring_5_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_5_3.png" src="_images/semiring_5_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.MaxSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the max semiring (max, +, -inf, 0).</p>
+<p>Gradients give argmax.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.MaxSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_7_0.png" src="_images/semiring_7_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_7_1.png" src="_images/semiring_7_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_7_2.png" src="_images/semiring_7_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_7_3.png" src="_images/semiring_7_3.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.KMaxSemiring(3))
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_8_0.png" src="_images/semiring_8_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_8_1.png" src="_images/semiring_8_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_8_2.png" src="_images/semiring_8_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_8_3.png" src="_images/semiring_8_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.StdSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements the counting semiring (+, <a href="#id1"><span class="problematic" id="id2">*</span></a>, 0, 1).</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.StdSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_10_0.png" src="_images/semiring_10_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_10_1.png" src="_images/semiring_10_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_10_2.png" src="_images/semiring_10_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_10_3.png" src="_images/semiring_10_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.SampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
+<p>“Gradients” give sample.</p>
+<p>This is an exact forward-filtering, backward-sampling approach.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.SampledSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_12_0.png" src="_images/semiring_12_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_12_1.png" src="_images/semiring_12_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_12_2.png" src="_images/semiring_12_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_12_3.png" src="_images/semiring_12_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.MultiSampledSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
+<p>“Gradients” give up to 16 samples with replacement.</p>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.MultiSampledSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_14_0.png" src="_images/semiring_14_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_14_1.png" src="_images/semiring_14_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_14_2.png" src="_images/semiring_14_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_14_3.png" src="_images/semiring_14_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.EntropySemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements an entropy expectation semiring.</p>
+<p>Computes both the log-values and the running distributional entropy.</p>
+<p>Based on descriptions in:</p>
+<ul class="simple">
+<li><p>Parameter estimation for probabilistic finite-state transducers <a class="bibtex reference internal" href="refs.html#eisner2002parameter" id="id3">[Eis02]</a></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id4">[LE09]</a></p></li>
+</ul>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.EntropySemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_16_0.png" src="_images/semiring_16_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_16_1.png" src="_images/semiring_16_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_16_2.png" src="_images/semiring_16_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_16_3.png" src="_images/semiring_16_3.png" />
+</div>
+</div>
+<dl class="class">
+<dt id="torch_struct.SparseMaxSemiring">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SparseMaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SparseMaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).</p>
+<p>Sparse-max gradients give a more sparse set of marginal like terms.</p>
+<ul class="simple">
+<li><p>From softmax to sparsemax: A sparse model of attention and multi-label classification <span class="bibtex" id="id5">[martins2016softmax]</span></p></li>
+<li><p>Differentiable dynamic programming for structured prediction and attention <span class="bibtex" id="id6">[mensch2018differentiable]</span></p></li>
+</ul>
+</dd></dl>
+
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>run(torch_struct.SparseMaxSemiring)
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_18_0.png" src="_images/semiring_18_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_18_1.png" src="_images/semiring_18_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_18_2.png" src="_images/semiring_18_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_18_3.png" src="_images/semiring_18_3.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[122]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+
+<span></span>all_sr = [(&quot;marginals&quot;, torch_struct.LogSemiring),
+          (&quot;argmax&quot;, torch_struct.MaxSemiring),
+          (&quot;sample&quot;, torch_struct.SampledSemiring),
+          (&quot;multi-sample&quot;, torch_struct.MultiSampledSemiring),
+          (&quot;multi-sample&quot;, torch_struct.MultiSampledSemiring),
+          (&quot;kmax&quot;, torch_struct.KMaxSemiring(4)),
+          (&quot;sparsemax&quot;, torch_struct.SparseMaxSemiring),
+         ]
+
+fig=plt.figure(figsize=(10, 9))
+columns = 4
+rows = 3
+
+for i in range(2,5):
+    fig.add_subplot(rows, columns, i)
+    x = torch.arange(15).float()
+    y1 = torch.sin(x)
+    plt.plot(x, y1, &quot;-x&quot;)
+    plt.xlim(0,15)
+    plt.ylim(-1, 4)
+
+    plt.axis(&quot;off&quot;)
+
+for i in [5, 9]:
+    fig.add_subplot(rows, columns, i)
+    x = torch.arange(10).float()
+    y2 = torch.sin(1.4 * x)
+    plt.plot(y2, x, &quot;-x&quot;)
+    plt.ylim(-4, 14)
+    plt.xlim(-3, 1)
+    plt.axis(&quot;off&quot;)
+
+
+
+v = torch.zeros(1, 15, 10, 3)
+v[0, :, :, 1] = (y1.unsqueeze(1) - y2.unsqueeze(0)).abs()
+v[0, :, :, 0] = 0
+v[0, :, :, 2] = 0
+
+for i, (title, sr) in enumerate(all_sr, 2+columns):
+    if i == 9:
+        continue
+    m = torch_struct.Alignment(sr).marginals(v, _raw=True)
+    fig.add_subplot(rows, columns, i)
+    plt.title(title)
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.axis(&quot;off&quot;)
+    plt.ylim(-0.5,10.5)
+    plt.xlim(-0.5,14.5)
+
+    plt.imshow(m.sum(-1).sum(0).sum(0).transpose(0,1).detach())
+plt.savefig(&quot;show.png&quot;,)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/semiring_19_0.png" src="_images/semiring_19_0.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="refs.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="networks.html" class="btn btn-neutral float-left" title="Networks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sasha Rush
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

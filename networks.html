@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Networks &mdash; pytorch-struct 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Advanced: Semirings" href="semiring.html" />
+    <link rel="prev" title="Model" href="model.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> pytorch-struct
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model.html">Model</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="semiring.html">Advanced: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pytorch-struct</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Networks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/networks.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="networks">
+<h1>Networks<a class="headerlink" href="#networks" title="Permalink to this headline">¶</a></h1>
+<p>Common structured networks.</p>
+<dl class="class">
+<dt id="torch_struct.networks.TreeLSTM">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">TreeLSTM</code><span class="sig-paren">(</span><em class="sig-param">hidden</em>, <em class="sig-param">in_size</em>, <em class="sig-param">out_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/TreeLSTM.html#TreeLSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.TreeLSTM" title="Permalink to this definition">¶</a></dt>
+<dd><p>TreeLSTM from DGL.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.networks.NeuralCFG">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">NeuralCFG</code><span class="sig-paren">(</span><em class="sig-param">V</em>, <em class="sig-param">T</em>, <em class="sig-param">NT</em>, <em class="sig-param">H</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/NeuralCFG.html#NeuralCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.NeuralCFG" title="Permalink to this definition">¶</a></dt>
+<dd><p>NeuralCFG From Kim et al</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="torch_struct.networks.SpanLSTM">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.networks.</code><code class="sig-name descname">SpanLSTM</code><span class="sig-paren">(</span><em class="sig-param">NT</em>, <em class="sig-param">V</em>, <em class="sig-param">H</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/networks/SpanLSTM.html#SpanLSTM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.networks.SpanLSTM" title="Permalink to this definition">¶</a></dt>
+<dd><p>SpanLSTM model.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="datasets">
+<h1>Datasets<a class="headerlink" href="#datasets" title="Permalink to this headline">¶</a></h1>
+<p>Datasets for common structured prediction tasks.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="semiring.html" class="btn btn-neutral float-right" title="Advanced: Semirings" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="model.html" class="btn btn-neutral float-left" title="Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sasha Rush
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

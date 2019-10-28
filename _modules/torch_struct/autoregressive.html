@@ -1,0 +1,447 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>torch_struct.autoregressive &mdash; pytorch-struct 0.2 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> pytorch-struct
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Pytorch-Struct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../model.html">Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html">Networks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../networks.html#datasets">Datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../semiring.html">Advanced: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../refs.html">References</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pytorch-struct</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>torch_struct.autoregressive</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for torch_struct.autoregressive</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="n">MaxSemiring</span><span class="p">,</span> <span class="n">KMaxSemiring</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.distribution</span> <span class="k">import</span> <span class="n">Distribution</span>
+
+
+<span class="k">class</span> <span class="nc">AutoregressiveModel</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    User should implement as their favorite RNN / Transformer / etc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the logits for all tokens in a batched sequence :math:`p(y_{t+1}, ... y_{T}| y_1 \ldots t)`</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            inputs (batch_size x N x C): next tokens to update representation</span>
+<span class="sd">            state (tuple of batch_size x ...): everything needed for conditioning.</span>
+
+<span class="sd">        Retuns:</span>
+<span class="sd">            logits (*batch_size x C*): next set of logits.</span>
+
+<span class="sd">            state (*tuple of batch_size x ...*): next set of logits.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">ssize</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">ssize</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">state</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+
+<span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">state</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:])</span>
+
+
+<div class="viewcode-block" id="Autoregressive"><a class="viewcode-back" href="../../model.html#torch_struct.Autoregressive">[docs]</a><span class="k">class</span> <span class="nc">Autoregressive</span><span class="p">(</span><span class="n">Distribution</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Autoregressive sequence model utilizing beam search.</span>
+
+<span class="sd">    * batch_shape -&gt; Given by initializer</span>
+<span class="sd">    * event_shape -&gt; N x T sequence of choices</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        model (AutoregressiveModel): A lazily computed autoregressive model.</span>
+<span class="sd">        init (tuple of tensors, batch_shape x ...): initial state of autoregressive model.</span>
+<span class="sd">        n_classes (int): number of classes in each time step</span>
+<span class="sd">        n_length (int): max length of sequence</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">initial_state</span><span class="p">,</span>
+        <span class="n">n_classes</span><span class="p">,</span>
+        <span class="n">n_length</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">start_class</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">end_class</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init</span> <span class="o">=</span> <span class="n">initial_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_length</span> <span class="o">=</span> <span class="n">n_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_classes</span> <span class="o">=</span> <span class="n">n_classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_class</span> <span class="o">=</span> <span class="n">start_class</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span>
+        <span class="n">event_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_length</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">)</span>
+        <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">initial_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_shape</span><span class="o">=</span><span class="n">batch_shape</span><span class="p">,</span> <span class="n">event_shape</span><span class="o">=</span><span class="n">event_shape</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute log probability over values :math:`p(z)`.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            value (tensor): One-hot events (*sample_shape x batch_shape x N*)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            log_probs (*sample_shape x batch_shape*)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sparse</span><span class="p">:</span>
+            <span class="n">sample</span><span class="p">,</span> <span class="n">batch_shape</span><span class="p">,</span> <span class="n">n_length</span><span class="p">,</span> <span class="n">n_classes</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">value</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_classes</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_classes</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sample</span><span class="p">,</span> <span class="n">batch_shape</span><span class="p">,</span> <span class="n">n_length</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">batch_shape</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_class</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">(),</span> <span class="n">value</span><span class="p">],</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">unwrap</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">unwrap</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">((</span><span class="n">sample</span><span class="p">,)</span> <span class="o">+</span> <span class="n">i</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">logits</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+        <span class="n">b2</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">b2</span> <span class="o">==</span> <span class="n">sample</span> <span class="o">*</span> <span class="n">batch_shape</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">n2</span> <span class="o">==</span> <span class="n">n_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="p">(</span><span class="n">c2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_classes</span><span class="p">)</span>
+        <span class="p">),</span> <span class="s2">&quot;Model should return logits of shape `batch x N x C` &quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="n">log_probs</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_probs</span> <span class="o">=</span> <span class="n">logits</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">log_probs</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">value</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrap</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">sample</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_beam_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">semiring</span><span class="p">,</span> <span class="n">gumbel</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">beam</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">semiring</span><span class="o">.</span><span class="n">size</span><span class="p">(),)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">))</span>
+        <span class="n">ssize</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+
+        <span class="k">def</span> <span class="nf">take</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">indices</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()[</span>
+                        <span class="p">(</span>
+                            <span class="n">indices</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="p">)</span>
+                        <span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="p">]</span>
+                    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">state</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">tokens</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">ssize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_class</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">unwrap</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">((</span><span class="n">ssize</span><span class="p">,)</span> <span class="o">+</span> <span class="n">i</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Beam Search</span>
+        <span class="n">all_beams</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_length</span><span class="p">):</span>
+            <span class="n">logits</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">unwrap</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">state</span><span class="p">)</span>
+            <span class="n">b2</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">b2</span> <span class="o">==</span> <span class="n">ssize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="n">n2</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="p">(</span><span class="n">c2</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_classes</span><span class="p">)</span>
+            <span class="p">),</span> <span class="s2">&quot;Model should return logits of shape `batch x N x C` &quot;</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">state</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">ssize</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">),</span> <span class="s2">&quot;Model should return state tuple with shapes `batch x ...` &quot;</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">ssize</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">gumbel</span><span class="p">:</span>
+                <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Gumbel</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span>
+                    <span class="n">logits</span><span class="o">.</span><span class="n">shape</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">ex_beam</span> <span class="o">=</span> <span class="n">beam</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">logits</span>
+            <span class="n">ex_beam</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">all_beams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ex_beam</span><span class="p">)</span>
+            <span class="n">beam</span><span class="p">,</span> <span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">tokens</span><span class="p">)</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sparse_sum</span><span class="p">(</span><span class="n">ex_beam</span><span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">take</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">positions</span><span class="p">)</span>
+
+        <span class="c1"># Back pointers</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">beam</span>
+        <span class="n">all_m</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">marg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span>
+                <span class="n">obj</span><span class="p">,</span> <span class="n">all_beams</span><span class="p">,</span> <span class="n">create_graph</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">only_inputs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">allow_unused</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+            <span class="n">marg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">marg</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">all_m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">marg</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_m</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">greedy_argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute &quot;argmax&quot; using greedy search.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            greedy_path (*batch x N x C*)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_greedy_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">beam_topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute &quot;top-k&quot; using beam search</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            paths (*K x batch x N x C*)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="n">K</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_beam_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="n">K</span><span class="p">))[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sample_without_replacement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute sampling without replacement using Gumbel trick.</span>
+
+<span class="sd">        Based on:</span>
+
+<span class="sd">        * Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</span>
+<span class="sd">               Sampling Sequences Without Replacement :cite:`DBLP:journals/corr/abs-1903-06059`</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            sample_shape (torch.Size): batch_size</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            paths (*K x batch x N x C*)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="n">K</span><span class="p">),</span> <span class="n">gumbel</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute structured samples from the distribution :math:`z \sim p(z)`.</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            sample_shape (torch.Size): number of samples</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            samples (*sample_shape x batch_shape x event_shape*)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sample_shape</span> <span class="o">=</span> <span class="n">sample_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">unwrap</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">((</span><span class="n">sample_shape</span><span class="p">,)</span> <span class="o">+</span> <span class="n">i</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">all_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">sample_shape</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">long</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_class</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_length</span><span class="p">):</span>
+            <span class="n">logits</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">tokens</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">state</span><span class="p">)</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">1</span><span class="p">,))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">all_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">wrap</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_tokens</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">sample_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_classes</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Sasha Rush
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
