@@ -1,9 +1,9 @@
-=================
+===================
 Networks and Data
-================
+===================
 
 Networks
-==================
+----------
 
 Common structured networks.
 
@@ -16,9 +16,10 @@ Common structured networks.
 
 
 Datasets
-========
+----------
 
 Datasets for common structured prediction tasks.
 
 .. autoclass:: torch_struct.data.ConllXDataset
+
 .. autoclass:: torch_struct.data.ListOpsDataset
