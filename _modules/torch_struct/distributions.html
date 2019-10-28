@@ -87,7 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../model.html">Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../networks.html#datasets">Datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../semiring.html">Advanced: Semirings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../refs.html">References</a></li>
 </ul>
 
@@ -345,31 +345,61 @@
 
 
 <span class="sd">    Compact representation: N long tensor in [0, ..., C-1]</span>
+
+<span class="sd">    Implementation uses linear-scan, forward-pass only.</span>
+
+<span class="sd">    * Parallel Time: `O(\log(N))` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O(N \log(N) C^2)`</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">LinearChain</span></div>
 
 
-<span class="k">class</span> <span class="nc">HMM</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+<div class="viewcode-block" id="AlignmentCRF"><a class="viewcode-back" href="../../model.html#torch_struct.AlignmentCRF">[docs]</a><span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</span>
+
+<span class="sd">    Event shape is of the form:</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.</span>
+<span class="sd">                                    :math:`\phi(i, j, op)`</span>
+<span class="sd">                                  Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</span>
+<span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
+
+
+<span class="sd">    Implementation uses linear-scan.</span>
+
+<span class="sd">    * Parallel Time: `O(\log (M +N))` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O((M+N)^3)`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span></div>
+
+
+<div class="viewcode-block" id="HMM"><a class="viewcode-back" href="../../model.html#torch_struct.HMM">[docs]</a><span class="k">class</span> <span class="nc">HMM</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents hidden-markov smoothing with C hidden states.</span>
 
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">        transition: C X C</span>
-<span class="sd">        emission: V x C</span>
-<span class="sd">        init: C</span>
-<span class="sd">        observations: b x N between [0, V-1]</span>
+<span class="sd">        transition (tensor): log-probabilities *C X C* :math:`p(z_n| z_n-1)`</span>
+<span class="sd">        emission (tensor): log-probabilities *V x C*  :math:`p(x_n| z_n)`</span>
+<span class="sd">        init (tensor): log-probabilities *C* :math:`p(z_1)`</span>
+<span class="sd">        observations (long tensor): indices *batch x N* between [0, V-1]</span>
 
 <span class="sd">    Compact representation: N long tensor in [0, ..., C-1]</span>
+
+<span class="sd">    Implemented as a special case of linear chain CRF.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log_potentials</span> <span class="o">=</span> <span class="n">HMM</span><span class="o">.</span><span class="n">struct</span><span class="o">.</span><span class="n">hmm</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
 
-    <span class="n">struct</span> <span class="o">=</span> <span class="n">LinearChain</span>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">LinearChain</span></div>
 
 
 <div class="viewcode-block" id="SemiMarkovCRF"><a class="viewcode-back" href="../../model.html#torch_struct.SemiMarkovCRF">[docs]</a><span class="k">class</span> <span class="nc">SemiMarkovCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
@@ -384,6 +414,12 @@
 <span class="sd">       lengths (long tensor) : batch shape integers for length masking.</span>
 
 <span class="sd">    Compact representation: N long tensor in [-1, 0, ..., C-1]</span>
+
+<span class="sd">    Implementation uses linear-scan, forward-pass only.</span>
+
+<span class="sd">    * Parallel Time: `O(\log(N))` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O(N \log(N) C^2 K^2)`</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">SemiMarkov</span></div>
@@ -407,6 +443,12 @@
 
 
 <span class="sd">    Compact representation: N long tensor in [0, .. N] (indexing is +1)</span>
+
+<span class="sd">    Implementation uses linear-scan, forward-pass only.</span>
+
+<span class="sd">    * Parallel Time: `O(N)` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O(N \log(N) C^2 K^2)`</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">DepTree</span></div>
@@ -414,8 +456,8 @@
 
 <div class="viewcode-block" id="TreeCRF"><a class="viewcode-back" href="../../model.html#torch_struct.TreeCRF">[docs]</a><span class="k">class</span> <span class="nc">TreeCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Represents a 0th-order span parser with NT nonterminals.</span>
-
+<span class="sd">    Represents a 0th-order span parser with NT nonterminals. Implemented using a</span>
+<span class="sd">    fast CKY algorithm.</span>
 
 <span class="sd">    For example usage see:</span>
 
@@ -428,25 +470,14 @@
 <span class="sd">                                    :math:`\phi(i, j, nt)`</span>
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
 
+<span class="sd">    Implementation uses width-batched, forward-pass only</span>
+
+<span class="sd">    * Parallel Time: `O(N)` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O(N^2)`</span>
+
 <span class="sd">    Compact representation:  *N x N x NT* long tensor (Same)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY_CRF</span></div>
-
-
-<div class="viewcode-block" id="AlignmentCRF"><a class="viewcode-back" href="../../model.html#torch_struct.AlignmentCRF">[docs]</a><span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</span>
-
-<span class="sd">    Event shape is of the form:</span>
-
-<span class="sd">    Parameters:</span>
-<span class="sd">        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.</span>
-<span class="sd">                                    :math:`\phi(i, j, op)`</span>
-<span class="sd">                                  Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</span>
-<span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span></div>
 
 
 <div class="viewcode-block" id="SentCFG"><a class="viewcode-back" href="../../model.html#torch_struct.SentCFG">[docs]</a><span class="k">class</span> <span class="nc">SentCFG</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
@@ -462,6 +493,11 @@
 <span class="sd">                         rules (*NT x (NT+T) x (NT+T)*)</span>
 <span class="sd">                         root  (*NT*)</span>
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
+
+<span class="sd">    Implementation uses width-batched, forward-pass only</span>
+
+<span class="sd">    * Parallel Time: `O(N)` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O(N^2 (NT+T))`</span>
 
 <span class="sd">    Compact representation:  *N x N x NT* long tensor</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -495,6 +531,9 @@
 <span class="sd">                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).</span>
 
 <span class="sd">    Compact representation: N long tensor in [0, .. N] (indexing is +1)</span>
+
+<span class="sd">    Note: Does not currently implement argmax (Chiu-Liu) or sampling.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">DepTree</span>

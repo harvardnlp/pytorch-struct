@@ -9,7 +9,7 @@ PyTorch-Struct
    README
    model
    networks
-   advanced
+   semiring
    refs
 
 

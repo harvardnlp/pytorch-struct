@@ -87,21 +87,21 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="README.html">Pytorch-Struct</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Model</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#Linear-Chain">Linear Chain</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#HMM">HMM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Chain">Chain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Hidden-Markov-Model">Hidden Markov Model</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Semi-Markov">Semi-Markov</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Alignment">Alignment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Dependency-Trees">Dependency Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Non-Projective-Dependency-Trees">Non-Projective Dependency Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Binary-Labeled-Trees">Binary Labeled Trees</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Probabilistic-Context-Free-Grammars">Probabilistic Context-Free Grammars</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Autoregressive">Autoregressive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Dependency-Tree">Dependency Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Non-Projective-Dependency-Tree">Non-Projective Dependency Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Binary-Labeled-Tree">Binary Labeled Tree</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Probabilistic-Context-Free-Grammar">Probabilistic Context-Free Grammar</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Autoregressive-/-Beam-Search">Autoregressive / Beam Search</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Base-Class">Base Class</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html">Networks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="networks.html#datasets">Datasets</a></li>
-<li class="toctree-l1"><a class="reference internal" href="advanced.html">Advanced Usage: Semirings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="semiring.html">Advanced: Semirings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="refs.html">References</a></li>
 </ul>
 
@@ -402,7 +402,6 @@ div.rendered_html tbody tr:hover {
 import torch
 import matplotlib.pyplot as plt
 import matplotlib
-
 </pre></div>
 </div>
 </div>
@@ -415,8 +414,8 @@ import matplotlib
 </pre></div>
 </div>
 </div>
-<div class="section" id="Linear-Chain">
-<h2>Linear Chain<a class="headerlink" href="#Linear-Chain" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Chain">
+<h2>Chain<a class="headerlink" href="#Chain" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.LinearChainCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
@@ -440,6 +439,11 @@ import matplotlib
 </dd>
 </dl>
 <p>Compact representation: N long tensor in [0, …, C-1]</p>
+<p>Implementation uses linear-scan, forward-pass only.</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(log(N))</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2)\)</span></p></li>
+</ul>
 </dd></dl>
 
 <div class="nbinput docutils container">
@@ -447,7 +451,7 @@ import matplotlib
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C = 3, 10, 2
+<span></span>batch, N, C = 3, 7, 2
 def show_chain(chain):
     plt.imshow(chain.detach().sum(-1).transpose(0, 1))
 
@@ -486,7 +490,7 @@ show_chain(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>event = dist.to_event(torch.tensor([[0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1]]), 2)
+<span></span>event = dist.to_event(torch.tensor([[0, 1, 0, 1, 1, 1, 0, 1]]), 2)
 show_chain(event[0])
 </pre></div>
 </div>
@@ -499,8 +503,60 @@ show_chain(event[0])
 </div>
 </div>
 </div>
-<div class="section" id="HMM">
-<h2>HMM<a class="headerlink" href="#HMM" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Hidden-Markov-Model">
+<h2>Hidden Markov Model<a class="headerlink" href="#Hidden-Markov-Model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="torch_struct.HMM">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">HMM</code><span class="sig-paren">(</span><em class="sig-param">transition</em>, <em class="sig-param">emission</em>, <em class="sig-param">init</em>, <em class="sig-param">observations</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#HMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.HMM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents hidden-markov smoothing with C hidden states.</p>
+<p>Event shape is of the form:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transition</strong> (<em>tensor</em>) – log-probabilities <em>C X C</em> <span class="math notranslate nohighlight">\(p(z_n| z_n-1)\)</span></p></li>
+<li><p><strong>emission</strong> (<em>tensor</em>) – log-probabilities <em>V x C</em>  <span class="math notranslate nohighlight">\(p(x_n| z_n)\)</span></p></li>
+<li><p><strong>init</strong> (<em>tensor</em>) – log-probabilities <em>C</em> <span class="math notranslate nohighlight">\(p(z_1)\)</span></p></li>
+<li><p><strong>observations</strong> (<em>long tensor</em>) – indices <em>batch x N</em> between [0, V-1]</p></li>
+</ul>
+</dd>
+</dl>
+<p>Compact representation: N long tensor in [0, …, C-1]</p>
+<p>Implemented as a special case of linear chain CRF.</p>
+</dd></dl>
+
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, V, N, C = 10, 3, 7, 2
+
+transition = torch.rand(C, C).log_softmax(0)
+emission = torch.rand(V, C).log_softmax(0)
+init = torch.rand(C).log_softmax(0)
+observations = torch.randint(0, V, size=(batch, N))
+
+dist = torch_struct.HMM(transition, emission, init, observations)
+show_chain(dist.argmax[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_12_0.png" src="_images/model_12_0.png" />
+</div>
+</div>
 </div>
 <div class="section" id="Semi-Markov">
 <h2>Semi-Markov<a class="headerlink" href="#Semi-Markov" title="Permalink to this headline">¶</a></h2>
@@ -519,14 +575,19 @@ show_chain(event[0])
 </dd>
 </dl>
 <p>Compact representation: N long tensor in [-1, 0, …, C-1]</p>
+<p>Implementation uses linear-scan, forward-pass only.</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(log(N))</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2 K^2)\)</span></p></li>
+</ul>
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C, K = 3, 20, 2, 6
+<span></span>batch, N, C, K = 3, 10, 2, 6
 def show_sm(chain):
     plt.imshow(chain.detach().sum(1).sum(-1).transpose(0, 1))
 
@@ -542,11 +603,11 @@ show_sm(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_13_0.png" src="_images/model_13_0.png" />
+<img alt="_images/model_15_0.png" src="_images/model_15_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -558,16 +619,16 @@ show_sm(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_14_0.png" src="_images/model_14_0.png" />
+<img alt="_images/model_16_0.png" src="_images/model_16_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span># Use -1 for segments.
-event = dist.to_event(torch.tensor([[0, 1, -1, 1, -1, -1, 0, 1, 0, 1, 1]]), (2, 6))
+event = dist.to_event(torch.tensor([[0, 1, -1, 1, -1, -1, 0, 1,  1, -1, -1]]), (2, 6))
 show_sm(event[0])
 </pre></div>
 </div>
@@ -576,7 +637,7 @@ show_sm(event[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_15_0.png" src="_images/model_15_0.png" />
+<img alt="_images/model_17_0.png" src="_images/model_17_0.png" />
 </div>
 </div>
 </div>
@@ -600,10 +661,15 @@ show_sm(event[0])
 </ul>
 </dd>
 </dl>
+<p>Implementation uses linear-scan.</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(log (M +N))</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O((M+N)^3)\)</span></p></li>
+</ul>
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -611,7 +677,6 @@ show_sm(event[0])
 def show_deps(tree):
     plt.imshow(tree.detach())
 
-# batch, N, z_n, z_n_1
 log_potentials = torch.rand(batch, N, M, 3)
 dist = torch_struct.AlignmentCRF(log_potentials)
 show_deps(dist.argmax[0])
@@ -622,11 +687,11 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_18_0.png" src="_images/model_18_0.png" />
+<img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -634,24 +699,16 @@ show_deps(dist.argmax[0])
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_19_1.png" src="_images/model_19_1.png" />
+<img alt="_images/model_21_0.png" src="_images/model_21_0.png" />
 </div>
 </div>
 </div>
-<div class="section" id="Dependency-Trees">
-<h2>Dependency Trees<a class="headerlink" href="#Dependency-Trees" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Dependency-Tree">
+<h2>Dependency Tree<a class="headerlink" href="#Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.DependencyCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
@@ -672,10 +729,15 @@ arc scores with root scores on diagonal e.g.
 </dd>
 </dl>
 <p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
+<p>Implementation uses linear-scan, forward-pass only.</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N \log(N) C^2 K^2)\)</span></p></li>
+</ul>
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -683,7 +745,6 @@ arc scores with root scores on diagonal e.g.
 def show_deps(tree):
     plt.imshow(tree.detach())
 
-# batch, N, z_n, z_n_1
 log_potentials = torch.rand(batch, N, N)
 dist = torch_struct.DependencyCRF(log_potentials)
 show_deps(dist.argmax[0])
@@ -694,11 +755,11 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_22_0.png" src="_images/model_22_0.png" />
+<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -710,11 +771,11 @@ show_deps(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
+<img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -728,12 +789,12 @@ show_deps(event[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
+<img alt="_images/model_26_0.png" src="_images/model_26_0.png" />
 </div>
 </div>
 </div>
-<div class="section" id="Non-Projective-Dependency-Trees">
-<h2>Non-Projective Dependency Trees<a class="headerlink" href="#Non-Projective-Dependency-Trees" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Non-Projective-Dependency-Tree">
+<h2>Non-Projective Dependency Tree<a class="headerlink" href="#Non-Projective-Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.NonProjectiveDependencyCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
@@ -752,19 +813,11 @@ arc scores with root scores on diagonal e.g.
 </dd>
 </dl>
 <p>Compact representation: N long tensor in [0, .. N] (indexing is +1)</p>
+<p>Note: Does not currently implement argmax (Chiu-Liu) or sampling.</p>
 </dd></dl>
 
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -772,7 +825,6 @@ arc scores with root scores on diagonal e.g.
 def show_deps(tree):
     plt.imshow(tree.detach())
 
-# batch, N, z_n, z_n_1
 log_potentials = torch.rand(batch, N, N)
 dist = torch_struct.NonProjectiveDependencyCRF(log_potentials)
 show_deps(dist.marginals[0])
@@ -783,17 +835,18 @@ show_deps(dist.marginals[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
+<img alt="_images/model_29_0.png" src="_images/model_29_0.png" />
 </div>
 </div>
 </div>
-<div class="section" id="Binary-Labeled-Trees">
-<h2>Binary Labeled Trees<a class="headerlink" href="#Binary-Labeled-Trees" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Binary-Labeled-Tree">
+<h2>Binary Labeled Tree<a class="headerlink" href="#Binary-Labeled-Tree" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="class">
 <dt id="torch_struct.TreeCRF">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents a 0th-order span parser with NT nonterminals.</p>
+<dd><p>Represents a 0th-order span parser with NT nonterminals. Implemented using a
+fast CKY algorithm.</p>
 <p>For example usage see:</p>
 <ul class="simple">
 <li><p>A Minimal Span-Based Neural Constituency Parser <a class="bibtex reference internal" href="refs.html#stern2017minimal" id="id6">[SAK17]</a></p></li>
@@ -808,12 +861,17 @@ show_deps(dist.marginals[0])
 </ul>
 </dd>
 </dl>
+<p>Implementation uses width-batched, forward-pass only</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N^2)\)</span></p></li>
+</ul>
 <p>Compact representation:  <em>N x N x NT</em> long tensor (Same)</p>
 </dd></dl>
 
 </div></blockquote>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -824,7 +882,6 @@ def show_tree(tree):
                2 * t[ :,:, 1] +
                3 * t[ :,:, 2])
 
-# batch, N, z_n, z_n_1
 log_potentials = torch.rand(batch, N, N, NT)
 dist = torch_struct.TreeCRF(log_potentials)
 show_tree(dist.argmax[0])
@@ -835,11 +892,11 @@ show_tree(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
+<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -851,12 +908,12 @@ show_tree(dist.argmax[0])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
+<img alt="_images/model_33_0.png" src="_images/model_33_0.png" />
 </div>
 </div>
 </div>
-<div class="section" id="Probabilistic-Context-Free-Grammars">
-<h2>Probabilistic Context-Free Grammars<a class="headerlink" href="#Probabilistic-Context-Free-Grammars" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Probabilistic-Context-Free-Grammar">
+<h2>Probabilistic Context-Free Grammar<a class="headerlink" href="#Probabilistic-Context-Free-Grammar" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="class">
 <dt id="torch_struct.SentCFG">
@@ -875,20 +932,275 @@ root  (<em>NT</em>)</p></li>
 </ul>
 </dd>
 </dl>
+<p>Implementation uses width-batched, forward-pass only</p>
+<ul class="simple">
+<li><p>Parallel Time: <cite>O(N)</cite> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O(N^2 (NT+T))\)</span></p></li>
+</ul>
 <p>Compact representation:  <em>N x N x NT</em> long tensor</p>
 </dd></dl>
 
 </div></blockquote>
-</div>
-<div class="section" id="Autoregressive">
-<h2>Autoregressive<a class="headerlink" href="#Autoregressive" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>    .. autoclass:: torch_struct.Autoregressive
+<span></span>batch, N, NT, T = 3, 20, 3, 3
+def show_prob_tree(tree):
+    t = tree.detach().sum(-1).sum(-1)
+    plt.imshow(t[ :, : , 0] +
+               2 * t[ :,:, 1] +
+               3 * t[ :,:, 2])
+
+terminals = torch.rand(batch, N, T)
+rules = torch.rand(batch, NT, NT+T,  NT+T)
+init = torch.rand(batch, NT).log_softmax(-1)
+
+dist = torch_struct.SentCFG((terminals, rules, init))
+term, rules, init = dist.argmax
 </pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Rules
+show_prob_tree(rules[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_37_0.png" src="_images/model_37_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Terminals
+plt.imshow(term[:1])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f6e90f0db38&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_38_1.png" src="_images/model_38_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Autoregressive-/-Beam-Search">
+<h2>Autoregressive / Beam Search<a class="headerlink" href="#Autoregressive-/-Beam-Search" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><dl class="class">
+<dt id="torch_struct.Autoregressive">
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">Autoregressive</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">initial_state</em>, <em class="sig-param">n_classes</em>, <em class="sig-param">n_length</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">start_class=0</em>, <em class="sig-param">end_class=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Autoregressive sequence model utilizing beam search.</p>
+<ul class="simple">
+<li><p>batch_shape -&gt; Given by initializer</p></li>
+<li><p>event_shape -&gt; N x T sequence of choices</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>AutoregressiveModel</em>) – A lazily computed autoregressive model.</p></li>
+<li><p><strong>init</strong> (<em>tuple of tensors</em><em>, </em><em>batch_shape x …</em>) – initial state of autoregressive model.</p></li>
+<li><p><strong>n_classes</strong> (<em>int</em>) – number of classes in each time step</p></li>
+<li><p><strong>n_length</strong> (<em>int</em>) – max length of sequence</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, C, H, layer = 3, 10, 4, 5, 1
+init = (torch.rand(batch, layer, H),
+        torch.rand(batch, layer, H))
+def t(a):
+    return [t.transpose(0, 1) for t in a]
+
+def show_ar(chain):
+     plt.imshow(chain.detach().transpose(0, 1))
+
+class RNN_AR(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.rnn = torch.nn.LSTM(H, H, batch_first=True)
+        self.proj = torch.nn.Linear(H, C)
+        self.embed = torch.nn.Embedding(C, H)
+
+    def forward(self, inputs, state):
+        inputs = self.embed(inputs)
+        out, state = self.rnn(inputs, t(state))
+        return self.proj(out), t(state)
+
+dist = torch_struct.Autoregressive(RNN_AR(), init, C, N)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>path = dist.greedy_argmax()
+show_ar(path[0])
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_42_0.png" src="_images/model_42_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>dist.log_prob(path.unsqueeze(0))
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>tensor([[-11.9900, -11.9229, -11.8859]], grad_fn=&lt;ViewBackward&gt;)
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>out = dist.beam_topk(5)[:, 0]
+for i in range(3):
+    show_ar(out[i])
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_44_0.png" src="_images/model_44_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_44_1.png" src="_images/model_44_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_44_2.png" src="_images/model_44_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>out = dist.sample((5,))[:, 0 ]
+print(out.shape)
+for i in range(3):
+    show_ar(out[i])
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+torch.Size([5, 10, 4])
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_45_1.png" src="_images/model_45_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_45_2.png" src="_images/model_45_2.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_45_3.png" src="_images/model_45_3.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>out = dist.sample_without_replacement((5,))[:, 0]
+for i in range(3):
+    show_ar(out[i])
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_46_1.png" src="_images/model_46_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_46_2.png" src="_images/model_46_2.png" />
 </div>
 </div>
 </div>
@@ -1016,6 +1328,252 @@ root  (<em>NT</em>)</p></li>
 
 </dd></dl>
 
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>batch, N, C = 3, 7, 2
+
+# batch, N, z_n, z_n_1
+log_potentials = torch.rand(batch, N, C, C)
+dist = torch_struct.LinearChainCRF(log_potentials, lengths=torch.tensor([N-1, N, N+1]))
+show_chain(dist.argmax[0])
+plt.show()
+show_chain(dist.argmax[1])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_49_0.png" src="_images/model_49_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_49_1.png" src="_images/model_49_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_chain(dist.marginals[0])
+plt.show()
+show_chain(dist.marginals[1])
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_50_0.png" src="_images/model_50_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_50_1.png" src="_images/model_50_1.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>def show_samples(samples):
+    show_chain(samples[0, 0])
+    plt.show()
+    show_chain(samples[1, 0])
+    plt.show()
+    show_chain(samples[0, 1])
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_samples(dist.sample((10,)))
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_52_2.png" src="_images/model_52_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>show_samples(dist.topk(10))
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_53_0.png" src="_images/model_53_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_53_1.png" src="_images/model_53_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_53_2.png" src="_images/model_53_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span># Enumerate
+x,_ = dist.enumerate_support()
+print(x.shape)
+for i in range(10):
+    show_chain(x[i][0])
+    plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+torch.Size([256, 3, 7, 2, 2])
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_2.png" src="_images/model_54_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_3.png" src="_images/model_54_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_4.png" src="_images/model_54_4.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_5.png" src="_images/model_54_5.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_6.png" src="_images/model_54_6.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_7.png" src="_images/model_54_7.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_8.png" src="_images/model_54_8.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_9.png" src="_images/model_54_9.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_54_10.png" src="_images/model_54_10.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span>plt.imshow(dist.entropy.detach().unsqueeze(0))
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f6e910e2fd0&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
+</div>
+</div>
 </div>
 </div>
 
