@@ -398,10 +398,10 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>import torch_struct
-import torch
-import matplotlib.pyplot as plt
-import matplotlib
+<span></span><span class="kn">import</span> <span class="nn">torch_struct</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
 </pre></div>
 </div>
 </div>
@@ -410,7 +410,7 @@ import matplotlib
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>matplotlib.rcParams[&#39;figure.figsize&#39;] = (7.0, 7.0)
+<span></span><span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -451,14 +451,14 @@ import matplotlib
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C = 3, 7, 2
-def show_chain(chain):
-    plt.imshow(chain.detach().sum(-1).transpose(0, 1))
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
+<span class="k">def</span> <span class="nf">show_chain</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-# batch, N, z_n, z_n_1
-log_potentials = torch.rand(batch, N, C, C)
-dist = torch_struct.LinearChainCRF(log_potentials)
-show_chain(dist.argmax[0])
+<span class="c1"># batch, N, z_n, z_n_1</span>
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">LinearChainCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -474,7 +474,7 @@ show_chain(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_chain(dist.marginals[0])
+<span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -490,8 +490,8 @@ show_chain(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>event = dist.to_event(torch.tensor([[0, 1, 0, 1, 1, 1, 0, 1]]), 2)
-show_chain(event[0])
+<span></span><span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -529,15 +529,15 @@ show_chain(event[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, V, N, C = 10, 3, 7, 2
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
 
-transition = torch.rand(C, C).log_softmax(0)
-emission = torch.rand(V, C).log_softmax(0)
-init = torch.rand(C).log_softmax(0)
-observations = torch.randint(0, V, size=(batch, N))
+<span class="n">transition</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">emission</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">init</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">observations</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
 
-dist = torch_struct.HMM(transition, emission, init, observations)
-show_chain(dist.argmax[0])
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">HMM</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">)</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -578,15 +578,15 @@ show_chain(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C, K = 3, 10, 2, 6
-def show_sm(chain):
-    plt.imshow(chain.detach().sum(1).sum(-1).transpose(0, 1))
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span>
+<span class="k">def</span> <span class="nf">show_sm</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-# batch, N, K, z_n, z_n_1
-log_potentials = torch.rand(batch, N, K, C, C)
-log_potentials[:, :, :3] = -1e9
-dist = torch_struct.SemiMarkovCRF(log_potentials)
-show_sm(dist.argmax[0])
+<span class="c1"># batch, N, K, z_n, z_n_1</span>
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">log_potentials</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e9</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">SemiMarkovCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_sm</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -602,7 +602,7 @@ show_sm(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_sm(dist.marginals[0])
+<span></span><span class="n">show_sm</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -618,9 +618,9 @@ show_sm(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># Use -1 for segments.
-event = dist.to_event(torch.tensor([[0, 1, -1, 1, -1, -1, 0, 1,  1, -1, -1]]), (2, 6))
-show_sm(event[0])
+<span></span><span class="c1"># Use -1 for segments.</span>
+<span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">show_sm</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -664,13 +664,13 @@ show_sm(event[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, M = 3, 15, 20
-def show_deps(tree):
-    plt.imshow(tree.detach())
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span>
+<span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
-log_potentials = torch.rand(batch, N, M, 3)
-dist = torch_struct.AlignmentCRF(log_potentials)
-show_deps(dist.argmax[0])
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">AlignmentCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -686,7 +686,7 @@ show_deps(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_deps(dist.marginals[0])
+<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -732,13 +732,13 @@ arc scores with root scores on diagonal e.g.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, N = 3, 10, 10
-def show_deps(tree):
-    plt.imshow(tree.detach())
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
-log_potentials = torch.rand(batch, N, N)
-dist = torch_struct.DependencyCRF(log_potentials)
-show_deps(dist.argmax[0])
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">DependencyCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -754,7 +754,7 @@ show_deps(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_deps(dist.marginals[0])
+<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -770,9 +770,9 @@ show_deps(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># Convert from 1-index standard format. (Head is 0)
-event = dist.to_event(torch.tensor([[2, 3, 4, 1, 0, 4]]), None)
-show_deps(event[0])
+<span></span><span class="c1"># Convert from 1-index standard format. (Head is 0)</span>
+<span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -812,13 +812,13 @@ arc scores with root scores on diagonal e.g.
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, N = 3, 10, 10
-def show_deps(tree):
-    plt.imshow(tree.detach())
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
-log_potentials = torch.rand(batch, N, N)
-dist = torch_struct.NonProjectiveDependencyCRF(log_potentials)
-show_deps(dist.marginals[0])
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">NonProjectiveDependencyCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -866,16 +866,16 @@ fast CKY algorithm.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, NT = 3, 20, 3
-def show_tree(tree):
-    t = tree.detach()
-    plt.imshow(t[ :, : , 0] +
-               2 * t[ :,:, 1] +
-               3 * t[ :,:, 2])
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span>
+<span class="k">def</span> <span class="nf">show_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span> <span class="p">:,</span> <span class="p">:</span> <span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+               <span class="mi">2</span> <span class="o">*</span> <span class="n">t</span><span class="p">[</span> <span class="p">:,:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+               <span class="mi">3</span> <span class="o">*</span> <span class="n">t</span><span class="p">[</span> <span class="p">:,:,</span> <span class="mi">2</span><span class="p">])</span>
 
-log_potentials = torch.rand(batch, N, N, NT)
-dist = torch_struct.TreeCRF(log_potentials)
-show_tree(dist.argmax[0])
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">TreeCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">)</span>
+<span class="n">show_tree</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -891,7 +891,7 @@ show_tree(dist.argmax[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_tree(dist.marginals[0])
+<span></span><span class="n">show_tree</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -937,19 +937,19 @@ root  (<em>NT</em>)</p></li>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, NT, T = 3, 20, 3, 3
-def show_prob_tree(tree):
-    t = tree.detach().sum(-1).sum(-1)
-    plt.imshow(t[ :, : , 0] +
-               2 * t[ :,:, 1] +
-               3 * t[ :,:, 2])
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<span class="k">def</span> <span class="nf">show_prob_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span> <span class="p">:,</span> <span class="p">:</span> <span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+               <span class="mi">2</span> <span class="o">*</span> <span class="n">t</span><span class="p">[</span> <span class="p">:,:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+               <span class="mi">3</span> <span class="o">*</span> <span class="n">t</span><span class="p">[</span> <span class="p">:,:,</span> <span class="mi">2</span><span class="p">])</span>
 
-terminals = torch.rand(batch, N, T)
-rules = torch.rand(batch, NT, NT+T,  NT+T)
-init = torch.rand(batch, NT).log_softmax(-1)
+<span class="n">terminals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+<span class="n">rules</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">NT</span><span class="p">,</span> <span class="n">NT</span><span class="o">+</span><span class="n">T</span><span class="p">,</span>  <span class="n">NT</span><span class="o">+</span><span class="n">T</span><span class="p">)</span>
+<span class="n">init</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">NT</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
-dist = torch_struct.SentCFG((terminals, rules, init))
-term, rules, init = dist.argmax
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">SentCFG</span><span class="p">((</span><span class="n">terminals</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">init</span><span class="p">))</span>
+<span class="n">term</span><span class="p">,</span> <span class="n">rules</span><span class="p">,</span> <span class="n">init</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">argmax</span>
 </pre></div>
 </div>
 </div>
@@ -958,8 +958,8 @@ term, rules, init = dist.argmax
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># Rules
-show_prob_tree(rules[0])
+<span></span><span class="c1"># Rules</span>
+<span class="n">show_prob_tree</span><span class="p">(</span><span class="n">rules</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -975,8 +975,8 @@ show_prob_tree(rules[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># Terminals
-plt.imshow(term[:1])
+<span></span><span class="c1"># Terminals</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">term</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1079,28 +1079,28 @@ plt.imshow(term[:1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C, H, layer = 3, 10, 4, 5, 1
-init = (torch.rand(batch, layer, H),
-        torch.rand(batch, layer, H))
-def t(a):
-    return [t.transpose(0, 1) for t in a]
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">layer</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span>
+<span class="n">init</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">H</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
 
-def show_ar(chain):
-     plt.imshow(chain.detach().transpose(0, 1))
+<span class="k">def</span> <span class="nf">show_ar</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
+     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-class RNN_AR(torch.nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.rnn = torch.nn.LSTM(H, H, batch_first=True)
-        self.proj = torch.nn.Linear(H, C)
-        self.embed = torch.nn.Embedding(C, H)
+<span class="k">class</span> <span class="nc">RNN_AR</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embed</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
 
-    def forward(self, inputs, state):
-        inputs = self.embed(inputs)
-        out, state = self.rnn(inputs, t(state))
-        return self.proj(out), t(state)
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
 
-dist = torch_struct.Autoregressive(RNN_AR(), init, C, N)
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">Autoregressive</span><span class="p">(</span><span class="n">RNN_AR</span><span class="p">(),</span> <span class="n">init</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1109,8 +1109,8 @@ dist = torch_struct.Autoregressive(RNN_AR(), init, C, N)
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>path = dist.greedy_argmax()
-show_ar(path[0])
+<span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_argmax</span><span class="p">()</span>
+<span class="n">show_ar</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1126,7 +1126,7 @@ show_ar(path[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>dist.log_prob(path.unsqueeze(0))
+<span></span><span class="n">dist</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1144,10 +1144,10 @@ show_ar(path[0])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>out = dist.beam_topk(5)[:, 0]
-for i in range(3):
-    show_ar(out[i])
-    plt.show()
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">beam_topk</span><span class="p">(</span><span class="mi">5</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1177,11 +1177,11 @@ for i in range(3):
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>out = dist.sample((5,))[:, 0 ]
-print(out.shape)
-for i in range(3):
-    show_ar(out[i])
-    plt.show()
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span> <span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1219,10 +1219,10 @@ torch.Size([5, 10, 4])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>out = dist.sample_without_replacement((5,))[:, 0]
-for i in range(3):
-    show_ar(out[i])
-    plt.show()
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample_without_replacement</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1377,14 +1377,14 @@ for i in range(3):
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>batch, N, C = 3, 7, 2
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
 
-# batch, N, z_n, z_n_1
-log_potentials = torch.rand(batch, N, C, C)
-dist = torch_struct.LinearChainCRF(log_potentials, lengths=torch.tensor([N-1, N, N+1]))
-show_chain(dist.argmax[0])
-plt.show()
-show_chain(dist.argmax[1])
+<span class="c1"># batch, N, z_n, z_n_1</span>
+<span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">LinearChainCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1407,9 +1407,9 @@ show_chain(dist.argmax[1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_chain(dist.marginals[0])
-plt.show()
-show_chain(dist.marginals[1])
+<span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1432,12 +1432,12 @@ show_chain(dist.marginals[1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>def show_samples(samples):
-    show_chain(samples[0, 0])
-    plt.show()
-    show_chain(samples[1, 0])
-    plt.show()
-    show_chain(samples[0, 1])
+<span></span><span class="k">def</span> <span class="nf">show_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+    <span class="n">show_chain</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">show_chain</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">show_chain</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1446,7 +1446,7 @@ show_chain(dist.marginals[1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_samples(dist.sample((10,)))
+<span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,)))</span>
 </pre></div>
 </div>
 </div>
@@ -1476,7 +1476,7 @@ show_chain(dist.marginals[1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>show_samples(dist.topk(10))
+<span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1506,12 +1506,12 @@ show_chain(dist.marginals[1])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span># Enumerate
-x,_ = dist.enumerate_support()
-print(x.shape)
-for i in range(10):
-    show_chain(x[i][0])
-    plt.show()
+<span></span><span class="c1"># Enumerate</span>
+<span class="n">x</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">enumerate_support</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">show_chain</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1598,7 +1598,7 @@ torch.Size([256, 3, 7, 2, 2])
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>plt.imshow(dist.entropy.detach().unsqueeze(0))
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">entropy</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
