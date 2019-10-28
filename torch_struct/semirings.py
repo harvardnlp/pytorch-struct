@@ -389,7 +389,7 @@ class SparseMaxSemiring(_BaseLog):
 
     Sparse-max gradients give a more sparse set of marginal like terms.
 
-    * From softmax to sparsemax: A sparse model of attention and multi-label classification :cite:`martins2016softmax`
+    * From softmax to sparsemax- A sparse model of attention and multi-label classification :cite:`martins2016softmax`
     * Differentiable dynamic programming for structured prediction and attention :cite:`mensch2018differentiable`
     """
 
