@@ -4,6 +4,11 @@ from .semirings import LogSemiring
 import math
 
 
+def demote(x, index):
+    total = x.dim()
+    order = tuple(range(index)) + tuple(range(index + 1, total)) + (index, )
+    return x.permute(order)
+
 class Alignment(_Struct):
     def __init__(self, semiring=LogSemiring, local=False):
         self.semiring = semiring
@@ -44,6 +49,20 @@ class Alignment(_Struct):
 
         Down, Mid, Up = 0, 1, 2
         Open, Close = 0, 1
+
+
+        # Grid
+        grid_x = torch.arange(N).view(N, 1).expand(N, M)
+        grid_y = torch.arange(M).view(1, M).expand(N, M)
+        rot_x = grid_x + grid_y
+        rot_y = grid_y - grid_x + N
+
+        # Helpers
+        ind = torch.arange(bin_MN)
+        ind_M = ind
+        ind_U = torch.arange(1, bin_MN)
+        ind_D = torch.arange(bin_MN - 1)
+
         # Create a chart N, N, back
         chart = [self._make_chart(
             1,
@@ -51,98 +70,73 @@ class Alignment(_Struct):
             log_potentials,
             force_grad,
         )[0] for i in range(log_MN + 1)]
+        # chartb = [self._make_chart(
+        #     1,
+        #     (batch, bin_MN // pow(2, i), bin_MN, bin_MN // pow(2, log_MN - i), 2, 2, 3),
+        #     log_potentials,
+        #     force_grad,
+        # )[0] for i in range(log_MN + 1)]
+
 
         # Init
         # This part is complicated. Rotate the scores by 45% and
         # then compress one.
-        grid_x = torch.arange(N).view(N, 1).expand(N, M)
-        grid_y = torch.arange(M).view(1, M).expand(N, M)
-        rot_x = grid_x + grid_y
-        rot_y = grid_y - grid_x + N
-        ind = torch.arange(bin_MN)
-        ind_M = ind
-        ind_U = torch.arange(1, bin_MN)
-        ind_D = torch.arange(bin_MN - 1)
+
         for b in range(lengths.shape[0]):
             end = lengths[b]
-            # Add path to end.
-            point = (end + M) // 2
             point = (end + M) // 2
             lim = point * 2
-            chart[1][:, b, point : bin_MN // 2, ind, ind, :, :, Mid] = semiring.one_(
-                chart[1][:, b, point : bin_MN // 2, ind, ind, :, :, Mid]
+            chart[1][:, b, point:, ind, ind, :, :, Mid] = semiring.one_(
+                chart[1][:, b, point:, ind, ind, :, :, Mid]
             )
-
             chart[0][:, b, rot_x[:lim], rot_y[:lim], rot_y[:lim], :, :, :] = (
                 log_potentials[:, b, :lim].unsqueeze(-2).unsqueeze(-2)
             )
 
-            # if self.local:
-            #     chart[0][
-            #         :, b, rot_x[: end + M], rot_y[:lim], rot_y[:lim], 3
-            #     ] = log_potentials[:, b, : end + M, :, 1]
-
         for b in range(lengths.shape[0]):
             end = lengths[b]
             point = (end + M) // 2
             lim = point * 2
-            mid = semiring.sum(
-                torch.stack(
-                    [
-                        chart[0][:, b, :lim:2, ind_M, ind_M, :, :, Mid],
-                        chart[0][:, b, 1:lim:2, ind_M, ind_M, :, :, Mid],
-                    ],
-                    dim=-1,
-                )
-            )
+            left_ = chart[0][:, b, 0:lim:2]
+            right = chart[0][:, b, 1:lim:2]
 
             chart[1][:, b, :point, ind_M, ind_M, :, :, :] = torch.stack(
                 [
-                    chart[0][:, b, :lim:2, ind_M, ind_M, :, :, Down],
-                    mid,
-                    chart[0][:, b, :lim:2, ind_M, ind_M, :, :, Up],
+                    left_[:, :, ind_M, ind_M, :, :, Down],
+                    semiring.plus(
+                        left_[:, :, ind_M, ind_M, :, :, Mid],
+                        right[:, :, ind_M, ind_M, :, :, Mid]),
+                    left_[:, :, ind_M, ind_M, :, :, Up],
                 ],
                 dim=-1,
             )
 
             x = torch.stack([ind_U, ind_D], dim=0)
             y = torch.stack([ind_D, ind_U], dim=0)
-            q = torch.stack(
+
+            tmp = torch.stack(
                 [
                     semiring.times(
-                        chart[0][:, b, :lim:2, ind_D, ind_D, Open : Open + 1, :, :],
-                        chart[0][
-                            :,
-                            b,
-                            1:lim:2,
-                            ind_U,
-                            ind_U,
-                            :,
-                            Open : Open + 1,
-                            Down : Down + 1,
-                        ],
+                        left_[:, :, ind_D, ind_D, Open : Open+1 :, :],
+                        right[:, :, ind_U, ind_U, :, Open : Open + 1, Down : Down + 1]
                     ),
                     semiring.times(
-                        chart[0][:, b, :lim:2, ind_U, ind_U, Open : Open + 1, :, :],
-                        chart[0][
-                            :, b, 1:lim:2, ind_D, ind_D, :, Open : Open + 1, Up : Up + 1
-                        ],
+                        left_[:, :, ind_U, ind_U, Open : Open + 1, :, :],
+                        right[:, :, ind_D, ind_D, :, Open : Open + 1, Up : Up + 1],
                     ),
                 ],
                 dim=2,
             )
-            chart[1][:, b, :point, x, y, :, :, :] = q
+            chart[1][:, b, :point, x, y, :, :, :] = tmp
 
         # Scan
         def merge(x, size):
             left = (
-                x[:, :, 0 : size * 2 : 2]
-                .permute(0, 1, 2, 4, 5, 6, 7, 3)
+                demote(x[:, :, 0 : size * 2 : 2], 3)
                 .view(ssize, batch, size, 1, bin_MN, 1, 2, 2, 3, bin_MN)
             )
             right = (
-                x[:, :, 1 : size * 2 : 2]
-                .permute(0, 1, 2, 3, 5, 6, 7, 4)
+                demote(x[:, :, 1 : size * 2 : 2], 4)
                 .view(ssize, batch, size, bin_MN, 1, 2, 1, 2, 1, 3, bin_MN)
             )
 
@@ -158,10 +152,10 @@ class Alignment(_Struct):
                 )
                 st.append(combine)
 
-            left = x[:, :, 0 :: 2, :, :, Close, :, :]
+            left_ = x[:, :, 0 :: 2, :, :, Close, :, :]
             right = x[:, :, 1 :: 2, :, :, :, Close, :]
             if self.local:
-                st.append(torch.stack([semiring.zero_(left.clone()), left], dim=-3))
+                st.append(torch.stack([semiring.zero_(left_.clone()), left_], dim=-3))
                 st.append(torch.stack([semiring.zero_(right.clone()), right], dim=-2))
 
             st = torch.stack(st, dim=-1)
