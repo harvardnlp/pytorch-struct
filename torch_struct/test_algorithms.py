@@ -319,6 +319,8 @@ def test_alignment(data):
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
     mx = struct.marginals(vals)
+    print(alpha, count)
+    print(mx[0].nonzero())
     assert torch.isclose(count, alpha).all()
 
 

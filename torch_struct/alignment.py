@@ -131,7 +131,7 @@ class Alignment(_Struct):
                 .permute(0, 1, 2, 3, 5, 4)
                 .view(ssize, batch, size, bin_MN, 1, 1, 4, bin_MN)
             )
-            exp = (ssize, batch, size, bin_MN, bin_MN, 4, bin_MN)
+            exp = (ssize, batch, size, bin_MN, bin_MN, bin_MN)
             st = []
             for op in (Up, Down, Mid):
                 a, b, c, d = 0, bin_MN, 0, bin_MN
@@ -143,10 +143,12 @@ class Alignment(_Struct):
                 #       semiring.dot(left[..., a:b], right[..., op, c:d]).shape)
                 st.append(semiring.dot(left[..., a:b], right[..., op, c:d]))
             if self.local:
-                plus = torch.stack([left.expand(exp),
-                                    right[..., New, :].expand(exp)],
+                plus = torch.stack([left[..., New, :].expand(exp),
+                                    right[..., 0, New, :].expand(exp)],
                                    dim=-1)
-                st.append(semiring.sum(semiring.sum(plus)))
+                p = semiring.sum(semiring.sum(plus))
+                p2 = semiring.zero_(p.clone())
+                st.append(torch.stack([p2, p2, p2, p], dim=-1))
             st = torch.stack(st, dim=-1)
             return semiring.sum(st)
 
