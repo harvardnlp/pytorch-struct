@@ -141,12 +141,9 @@ class Alignment(_Struct):
                 st.append(semiring.dot(left[..., Open, :, a:b], right[..., Open, op, c:d]))
                 
             if self.local:
-                plus = torch.stack([left[..., Close, Close, New, :].expand(exp),
-                                    right[..., Close, Close, New, :].expand(exp)],
-                                   dim=-1)
-                p = semiring.sum(semiring.sum(plus))
-                p2 = semiring.zero_(p.clone())
-                st.append(torch.stack([p2, p2, p2, p], dim=-1))
+                st.append(left[..., :, Close, New, :].expand(exp))
+                st.append(right[..., Close, :, New, :].expand(exp)])
+
             st = torch.stack(st, dim=-1)
             return semiring.sum(st)
 
@@ -155,9 +152,9 @@ class Alignment(_Struct):
             size = int(size / 2)
             chart[n][:, :, :size] = merge(chart[n - 1], size)
         if self.local:
-            v = semiring.sum(semiring.sum(chart[-1][:, :, 0, :, :, Mid]))
+            v = semiring.sum(semiring.sum(chart[-1][:, :, 0, :, Close, :, Close, Mid]))
         else:
-            v = chart[-1][:, :, 0, M, N, Mid]
+            v = chart[-1][:, :, 0, M, Open, N, Open, Mid]
         return v, [log_potentials], None
 
     @staticmethod
