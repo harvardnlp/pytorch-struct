@@ -310,6 +310,18 @@ def test_alignment(data):
     assert torch.isclose(count, alpha).all()
 
 
+    semiring = data.draw(sampled_from([MaxSemiring]))
+    struct = model(semiring, local=True)
+    vals, (batch, N) = model._rand()
+    vals[..., 0] = -vals[..., 0].abs()
+    vals[..., 1] = vals[..., 1].abs()
+    vals[..., 2] = -vals[..., 2].abs()
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+    mx = struct.marginals(vals)
+    assert torch.isclose(count, alpha).all()
+
+
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
     transition = torch.rand(C, C)
