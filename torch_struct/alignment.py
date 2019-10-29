@@ -45,12 +45,12 @@ class Alignment(_Struct):
         Down, Mid, Up = 0, 1, 2
         Open, Close = 0, 1
         # Create a chart N, N, back
-        chart = self._make_chart(
-            log_MN + 1,
-            (batch, bin_MN, bin_MN, bin_MN, 2, 2, 3),
+        chart = [self._make_chart(
+            1,
+            (batch, bin_MN // pow(2, i), bin_MN, bin_MN, 2, 2, 3),
             log_potentials,
             force_grad,
-        )
+        )[0] for i in range(log_MN + 1)]
 
         # Init
         # This part is complicated. Rotate the scores by 45% and
@@ -158,8 +158,8 @@ class Alignment(_Struct):
                 )
                 st.append(combine)
 
-            left = x[:, :, 0 : size * 2 : 2, :, :, Close, :, :]
-            right = x[:, :, 1 : size * 2 : 2, :, :, :, Close, :]
+            left = x[:, :, 0 :: 2, :, :, Close, :, :]
+            right = x[:, :, 1 :: 2, :, :, :, Close, :]
             if self.local:
                 st.append(torch.stack([semiring.zero_(left.clone()), left], dim=-3))
                 st.append(torch.stack([semiring.zero_(right.clone()), right], dim=-2))
@@ -170,7 +170,7 @@ class Alignment(_Struct):
         size = bin_MN // 2
         for n in range(2, log_MN + 1):
             size = int(size / 2)
-            chart[n][:, :, :size] = merge(chart[n - 1], size)
+            chart[n][:] = merge(chart[n - 1], size)
         if self.local:
             v = semiring.sum(semiring.sum(chart[-1][:, :, 0, :, :, Close, Close, Mid]))
         else:

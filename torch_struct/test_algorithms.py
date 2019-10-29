@@ -314,7 +314,6 @@ def test_alignment(data):
     vals, (batch, N) = model._rand()
     vals[..., 0] = -2 * vals[..., 0].abs()
     vals[..., 1] = vals[..., 1].abs()
-    # vals[:, 1, 2,1] = 0
     vals[..., 2] = -2 * vals[..., 2].abs()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
