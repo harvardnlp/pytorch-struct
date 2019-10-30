@@ -234,6 +234,8 @@ class Alignment(_Struct):
         charta[1] = charta[1][:, :, :, :3]
         chartb[1] = reflect(charta[1], bin_MN // 2)
 
+        print("pre")
+
         # charta[1].sum().backward()
         # chartb[1].sum().backward()
 
