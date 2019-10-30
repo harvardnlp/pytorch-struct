@@ -21,9 +21,10 @@ def demote(x, index):
     return x.permute(order)
 
 class Alignment(_Struct):
-    def __init__(self, semiring=LogSemiring, local=False):
+    def __init__(self, semiring=LogSemiring, local=False, max_gap=None):
         self.semiring = semiring
         self.local = local
+        self.max_gap = max_gap
 
     def _check_potentials(self, edge, lengths=None):
         batch, N_1, M_1, x = edge.shape
@@ -54,6 +55,8 @@ class Alignment(_Struct):
         log_potentials, batch, N, M, lengths = self._check_potentials(
             log_potentials, lengths
         )
+        assert self.max_gap is None or self.max_gap > abs(N - M)
+
         steps = N + M
         log_MN = int(math.ceil(math.log(steps, 2)))
         bin_MN = int(math.pow(2, log_MN))
@@ -184,23 +187,6 @@ class Alignment(_Struct):
             z2[0, :] = 0
             z2[1, :] = 2
 
-            # # OLD
-            # tmp = torch.stack(
-            #     [
-            #         semiring.times(
-            #             left_[:, :, ind_D, ind_D, Open : Open+1 :, :],
-            #             right[:, :, ind_U, ind_U, :, Open : Open + 1, Down : Down + 1]
-            #         ),
-            #         semiring.times(
-            #             left_[:, :, ind_U, ind_U, Open : Open + 1, :, :],
-            #             right[:, :, ind_D, ind_D, :, Open : Open + 1, Up : Up + 1],
-            #         ),
-            #     ],
-            #     dim=2,
-            # )
-            # chart[1][:, b, :point, x, y, :, :, :] = tmp
-            # OLD
-
             tmp = torch.stack(
                 [
                     semiring.times(
@@ -216,63 +202,17 @@ class Alignment(_Struct):
             )
             charta[1][:, b, :point, z, y, :, :, :] = tmp
 
-            # chartb[1][:, b, point:, ind, 1, :, :, Mid] = semiring.one_(
-            #     chartb[1][:, b, point:, ind, 1, :, :, Mid]
-            # )
-
-            # chartb[1][:, b, :point, ind_M, 1, :, :, :] = \
-            #     charta[1][:, b, :point, 1, ind_M, :, :, :]
-
-            # chartb[1][:, b, :point, x, z2, :, :, :] = tmp
-
-        #
-
-
-        # chartb[1][:, :, :, :, :3] = reflect(charta[1][:, :, :, :3], bin_MN // 2)
 
 
         charta[1] = charta[1][:, :, :, :3]
         chartb[1] = reflect(charta[1], bin_MN // 2)
 
-        print("pre")
-
-        # charta[1].sum().backward()
-        # chartb[1].sum().backward()
-
-        # assert (charta[0][:, 0, :, 0, ind_M] == chart[0][:, 0, :, ind_M, ind_M]).all()
-        # assert (chartb[0][:, 0, :, ind_M, 0] == chart[0][:, 0, :, ind_M, ind_M]).all()
-
-
-        # assert (torch.isclose(charta[1][:, 0, :, 1, ind_M, :, :, Mid],
-        #                       chart[1][:, 0, :, ind_M, ind_M, :, :, Mid]).all())
-
-        # assert (torch.isclose(charta[1][:, 0, :, 1, ind_M, :, :, Down],
-        #                       chart[1][:, 0, :, ind_M, ind_M, :, :, Down]).all())
-        # assert (charta[1][:, 0, :, 2, ind_D, :, :, Down] == chart[1][:, 0, :, ind_U, ind_D, :, :, Down]).all()
-        # assert (charta[1][:, 0, :, 0, ind_U, :, :, Up] == chart[1][:, 0, :, ind_D, ind_U, :, :, Up]).all()
-        # assert(charta[1][:, 0, :, 1, ind_M] == chart[1][:, 0, :, ind_M, ind_M]).all()
-        # assert(charta[1][:, 0, :, 2, ind_D] == chart[1][:, 0, :, ind_U, ind_D]).all()
-        # assert(charta[1][:, 0, :, 0, ind_U] == chart[1][:, 0, :, ind_D, ind_U]).all()
-        # assert(chartb[1][:, 0, :, ind_M, 1] == chart[1][:, 0, :, ind_M, ind_M]).all()
-        # assert(chartb[1][:, 0, :, ind_U, 0] == chart[1][:, 0, :, ind_U, ind_D]).all()
-        # assert(chartb[1][:, 0, :, ind_D, 2] == chart[1][:, 0, :, ind_D, ind_U]).all()
-
-        # assert(False)
-
         # Scan
-        def merge2(xa, xb, size, rsize, track):
-            # print(rsize)
-            # print(pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize, 3).shape)
-            # print((ssize, batch, size, bin_MN, 1, 2, 2, 3, rsize, rsize))
-            # print("RSIZE", rsize)
+        def merge2(xa, xb, size, rsize):
             nrsize = (rsize-1)*2+3
             rsize += 2
-            # print("sizes", nrsize, rsize, track)
-
+            print(nrsize, rsize)
             st = []
-            # v = rsize + 1
-            # rsize = rsize + 1
-            # print(                pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2).transpose(-1, -2).shape)
             left = (
                 pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2)
                 .transpose(-1, -2)
@@ -309,48 +249,22 @@ class Alignment(_Struct):
             return semiring.sum(st)
 
 
-        # def merge(x, size):
-        #     left = (
-        #         demote(x[:, :, 0 : size * 2 : 2], 3)
-        #         .view(ssize, batch, size, 1, bin_MN, 1, 2, 2, 3, bin_MN)
-        #     )
-        #     right = (
-        #         demote(x[:, :, 1 : size * 2 : 2], 4)
-        #         .view(ssize, batch, size, bin_MN, 1, 2, 1, 2, 1, 3, bin_MN)
-        #     )
-
-        #     st = []
-        #     for op in (Up, Down, Mid):
-        #         a, b, c, d = 0, bin_MN, 0, bin_MN
-        #         if op == Up:
-        #             a, b, c, d = 1, bin_MN, 0, bin_MN - 1
-        #         if op == Down:
-        #             a, b, c, d = 0, bin_MN - 1, 1, bin_MN
-        #         combine = semiring.dot(
-        #             left[..., Open, :, :, a:b], right[..., Open, :, op, c:d]
-        #         )
-        #         st.append(combine)
-
-        #     if self.local:
-        #         left_ = x[:, :, 0 :: 2, :, :, Close, :, :]
-        #         right = x[:, :, 1 :: 2, :, :, :, Close, :]
-        #         st.append(torch.stack([semiring.zero_(left_.clone()), left_], dim=-3))
-        #         st.append(torch.stack([semiring.zero_(right.clone()), right], dim=-2))
-
-        #     st = torch.stack(st, dim=-1)
-        #     return semiring.sum(st)
-
-
         size = bin_MN // 2
         rsize = 2
-        track = 3
         for n in range(2, log_MN + 1):
             print(n)
             size = int(size / 2)
             rsize *= 2
-            q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3], rsize)
-            charta[n][:] = q
-            chartb[n][:] = reflect(q, size)
+            q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3])
+            charta[n] = q
+            gap = charta[n].shape[3]
+            if self.max_gap is not None and (gap - 1) // 2 > self.max_gap:
+
+                reduced = (gap - 1) // 2 - self.max_gap
+                charta[n] = charta[n][:, :, :, reduced:-reduced]
+                chartb[n] = reflect(charta[n], size)
+            else:
+                chartb[n] = reflect(q, size)
 
 
             # Old
