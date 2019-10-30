@@ -302,11 +302,42 @@ def test_params(data, seed):
 @settings(max_examples=50, deadline=None)
 def test_alignment(data):
     model = data.draw(sampled_from([Alignment]))
+    semiring = data.draw(sampled_from([StdSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    struct = model(semiring, max_gap=max(3, abs(vals.shape[1] - vals.shape[2]) + 1))
+    vals.fill_(1)
+    alpha = struct.sum(vals)
+
+    model = data.draw(sampled_from([Alignment]))
+    semiring = data.draw(sampled_from([StdSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    vals.fill_(1)
+
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+    assert torch.isclose(count, alpha).all()
+    model = data.draw(sampled_from([Alignment]))
     semiring = data.draw(sampled_from([LogSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
+    assert torch.isclose(count, alpha).all()
+
+    semiring = data.draw(sampled_from([MaxSemiring]))
+    struct = model(semiring, local=True)
+    vals, (batch, N) = model._rand()
+    vals[..., 0] = -2 * vals[..., 0].abs()
+    vals[..., 1] = vals[..., 1].abs()
+    vals[..., 2] = -2 * vals[..., 2].abs()
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+    mx = struct.marginals(vals)
+    print(alpha, count)
+    print(mx[0].nonzero())
+
     assert torch.isclose(count, alpha).all()
 
 
