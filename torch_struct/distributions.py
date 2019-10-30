@@ -221,6 +221,7 @@ class AlignmentCRF(StructDistribution):
                                     :math:`\phi(i, j, op)`
                                   Ops are 0 -> j-1, 1->i-1,j-1, and 2->i-1
         local (bool): if true computes local alignment (Smith-Waterman), else Needleman-Wunsch
+        max_gap (int or None): the maximum gap to allow in the dynamic program
         lengths (long tensor) : batch shape integers for length masking.
 
 
@@ -232,12 +233,14 @@ class AlignmentCRF(StructDistribution):
     """
     struct = Alignment
 
-    def __init__(self, log_potentials, local=False, lengths=None):
+    def __init__(self, log_potentials, local=False, lengths=None, max_gap=None):
         self.local = local
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(sr if sr is not None else LogSemiring, self.local)
+        return self.struct(
+            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
+        )
 
 
 class HMM(StructDistribution):

@@ -305,7 +305,7 @@ def test_alignment(data):
     semiring = data.draw(sampled_from([StdSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
-    struct = model(semiring, max_gap=max(3, abs(vals.shape[1]- vals.shape[2])+1))
+    struct = model(semiring, max_gap=max(3, abs(vals.shape[1] - vals.shape[2]) + 1))
     vals.fill_(1)
     alpha = struct.sum(vals)
 
@@ -314,7 +314,6 @@ def test_alignment(data):
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     vals.fill_(1)
-
 
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]

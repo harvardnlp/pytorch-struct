@@ -59,6 +59,7 @@ class Semiring:
     def plus(cls, a, b):
         return cls.sum(torch.stack([a, b], dim=-1))
 
+
 class _Base(Semiring):
     @staticmethod
     def mul(a, b):
