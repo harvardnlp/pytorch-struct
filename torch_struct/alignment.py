@@ -345,6 +345,7 @@ class Alignment(_Struct):
         rsize = 2
         track = 3
         for n in range(2, log_MN + 1):
+            print(n)
             size = int(size / 2)
             rsize *= 2
             q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3], rsize)
