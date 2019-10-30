@@ -225,10 +225,10 @@ class AlignmentCRF(StructDistribution):
         lengths (long tensor) : batch shape integers for length masking.
 
 
-    Implementation uses linear-scan.
+    Implementation uses convolution and linear-scan. Use max_gap for long sequences.
 
-    * Parallel Time: :math:`O(\log (M +N))` parallel merges.
-    * Forward Memory: :math:`O((M+N)^3)`
+    * Parallel Time: :math:`O(\log (M + N))` parallel merges.
+    * Forward Memory: :math:`O((M+N)^2)`
 
     """
     struct = Alignment
