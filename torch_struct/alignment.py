@@ -211,7 +211,6 @@ class Alignment(_Struct):
         def merge2(xa, xb, size, rsize):
             nrsize = (rsize - 1) * 2 + 3
             rsize += 2
-            print(nrsize, rsize)
             st = []
             left = (
                 pad_conv(
@@ -274,7 +273,6 @@ class Alignment(_Struct):
         size = bin_MN // 2
         rsize = 2
         for n in range(2, log_MN + 1):
-            print(n)
             size = int(size / 2)
             rsize *= 2
             q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3])
