@@ -102,9 +102,9 @@ class Alignment(_Struct):
             ex = x.shape[3]
             f, r = torch.arange(ex), torch.arange(ex-1, -1, -1)
             sp = pad_conv(x, ex, 4, semiring)
-            print(sp.shape)
-            print(bin_MN)
-            print((ssize, batch, size, ex, bin_MN,  2, 2, 3, ex))
+            # print(sp.shape)
+            # print(bin_MN)
+            # print((ssize, batch, size, ex, bin_MN,  2, 2, 3, ex))
             sp.view(ssize, batch, size, ex, bin_MN,  2, 2, 3, ex)
             sp = sp[:, :, :, r, :, :, :, :, f].permute(1,2,3,4,0,5,6,7) \
                                               .view(ssize, batch, size, bin_MN, ex, 2, 2, 3)
@@ -265,7 +265,7 @@ class Alignment(_Struct):
             # print("RSIZE", rsize)
             nrsize = (rsize-1)*2+3
             rsize += 2
-            print("sizes", nrsize, rsize, track)
+            # print("sizes", nrsize, rsize, track)
 
             st = []
             # v = rsize + 1
