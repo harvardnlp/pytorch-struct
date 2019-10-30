@@ -91,14 +91,15 @@ class Alignment(_Struct):
             (batch, bin_MN // pow(2, i), 2 * bin_MN // pow(2, log_MN - i)-1, bin_MN, 2, 2, 3),
             log_potentials,
             force_grad,
-        )[0] for i in range(log_MN + 1)]
+        )[0] if i <= 1 else None for i in range(log_MN + 1)]
 
         chartb = [self._make_chart(
             1,
             (batch, bin_MN // pow(2, i), bin_MN, 2* bin_MN // pow(2, log_MN- i) -1, 2, 2, 3),
             log_potentials,
             force_grad,
-        )[0] for i in range(log_MN + 1)]
+        )[0] if i <= 1 else None
+                  for i in range(log_MN + 1)]
 
 
         def reflect(x, size):
@@ -259,17 +260,12 @@ class Alignment(_Struct):
             charta[n] = q
             gap = charta[n].shape[3]
             if self.max_gap is not None and (gap - 1) // 2 > self.max_gap:
-
                 reduced = (gap - 1) // 2 - self.max_gap
                 charta[n] = charta[n][:, :, :, reduced:-reduced]
                 chartb[n] = reflect(charta[n], size)
             else:
                 chartb[n] = reflect(q, size)
 
-
-            # Old
-            # chart[n][:] = merge(chart[n - 1], size)
-            # Old
 
         if self.local:
             v = semiring.sum(semiring.sum(charta[-1][:, :, 0, :, :, Close, Close, Mid]))
