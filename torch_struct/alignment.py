@@ -225,16 +225,16 @@ class Alignment(_Struct):
 
         # Scan
         def merge2(xa, xb, size, rsize):
-            print(rsize)
-            print(pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize, 3).shape)
-            print((ssize, batch, size, 1, bin_MN, 1, 2, 2, 3, rsize, rsize))
+            # print(rsize)
+            # print(pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize, 3).shape)
+            # print((ssize, batch, size, bin_MN, 1, 2, 2, 3, rsize, rsize))
             left = (
                 pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize+1, 3)
-                .view(ssize, batch, size, 1, bin_MN, 1, 2, 2, 3, rsize, rsize+1)
+                .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, rsize, rsize+1)
             )
             right = (
-                pad_conv(demote(xb[:, :, 1 : size * 2 : 2], 4), rsize+1, 3)
-                .view(ssize, batch, size, bin_MN, 1, 2, 1, 2, 1, 3, rsize, rsize+1)
+                demote(xb[:, :, 1 : size * 2 : 2], 4)
+                .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 1, 3, rsize)
             )
 
             st = []
@@ -245,8 +245,11 @@ class Alignment(_Struct):
                     a, b, c, d = 1, v, 0, v -1
                 if op == Down:
                     a, b, c, d = 0, v - 1, 1, v
+                print(left[..., Open, :, :, a:b, a:b].shape,
+                      right[..., Open, :, :, op, c:d].shape)
                 combine = semiring.sum(semiring.dot(
-                    left[..., Open, :, :, a:b, a:b], right[..., Open, :, op, c:d, c:d]
+                    left[..., Open, :, :, a:b, a:b],
+                    right[..., Open, :, :, op, c:d]
                 ))
                 st.append(combine)
 
@@ -277,7 +280,7 @@ class Alignment(_Struct):
                     a, b, c, d = 1, bin_MN, 0, bin_MN - 1
                 if op == Down:
                     a, b, c, d = 0, bin_MN - 1, 1, bin_MN
-                combine = semiring.dot(
+                combine = semiring.times(
                     left[..., Open, :, :, a:b], right[..., Open, :, op, c:d]
                 )
                 st.append(combine)
@@ -298,6 +301,7 @@ class Alignment(_Struct):
             rsize *= 2
             chart[n][:] = merge(chart[n - 1], size)
             q = merge2(charta[n - 1], chartb[n - 1], size, rsize)
+            print(q.shape)
             # charta[n][:] =
             assert (chart[n][0, 0, :, ind_M, ind_M] == q[0, 0, :, ind_M, ind_M]).all()
 
