@@ -10,9 +10,11 @@ def pad(x, n_bot, n_top, dim, sr):
     shape = list(x.shape)
     shape[dim] = n_bot
     padb = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
-    shape[dim] = n_top
-    padt = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
-
+    if n_top == n_bot:
+        padt = padb
+    else:
+        shape[dim] = n_top
+        padt = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
     return torch.cat([padb, x, padt], dim=dim)
 
 def demote(x, index):
@@ -63,7 +65,7 @@ class Alignment(_Struct):
 
         Down, Mid, Up = 0, 1, 2
         Open, Close = 0, 1
-
+        LOC = 2 if self.local else 1
 
         # Grid
         grid_x = torch.arange(N).view(N, 1).expand(N, M)
@@ -88,14 +90,14 @@ class Alignment(_Struct):
 
         charta = [self._make_chart(
             1,
-            (batch, bin_MN // pow(2, i), 2 * bin_MN // pow(2, log_MN - i)-1, bin_MN, 2, 2, 3),
+            (batch, bin_MN // pow(2, i), 2 * bin_MN // pow(2, log_MN - i)-1, bin_MN, LOC, LOC, 3),
             log_potentials,
             force_grad,
         )[0] if i <= 1 else None for i in range(log_MN + 1)]
 
         chartb = [self._make_chart(
             1,
-            (batch, bin_MN // pow(2, i), bin_MN, 2* bin_MN // pow(2, log_MN- i) -1, 2, 2, 3),
+            (batch, bin_MN // pow(2, i), bin_MN, 2* bin_MN // pow(2, log_MN- i) -1, LOC, LOC, 3),
             log_potentials,
             force_grad,
         )[0] if i <= 1 else None
@@ -106,12 +108,9 @@ class Alignment(_Struct):
             ex = x.shape[3]
             f, r = torch.arange(ex), torch.arange(ex-1, -1, -1)
             sp = pad_conv(x, ex, 4, semiring)
-            # print(sp.shape)
-            # print(bin_MN)
-            # print((ssize, batch, size, ex, bin_MN,  2, 2, 3, ex))
-            sp.view(ssize, batch, size, ex, bin_MN,  2, 2, 3, ex)
+            sp.view(ssize, batch, size, ex, bin_MN,  LOC, LOC, 3, ex)
             sp = sp[:, :, :, r, :, :, :, :, f].permute(1,2,3,4,0,5,6,7) \
-                                              .view(ssize, batch, size, bin_MN, ex, 2, 2, 3)
+                                              .view(ssize, batch, size, bin_MN, ex, LOC, LOC, 3)
             return sp
 
         # Init
@@ -217,13 +216,13 @@ class Alignment(_Struct):
             left = (
                 pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2)
                 .transpose(-1, -2)
-                .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, nrsize, rsize+2)
+                .view(ssize, batch, size, bin_MN, 1, LOC, LOC, 3, nrsize, rsize+2)
             )
 
             right = (
                 pad(pad_conv(demote(xb[:, :, 1 : size * 2 : 2, :, :], 4), nrsize, 3, semiring), 1, 1, -2, semiring)
                 .transpose(-1, -2)
-                .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 3, nrsize, rsize)
+                .view(ssize, batch, size, bin_MN, LOC, 1, LOC, 1, 3, nrsize, rsize)
             )
 
             for op in (Up, Down, Mid):
@@ -237,7 +236,7 @@ class Alignment(_Struct):
                     left[:, :, :, :, :, Open, :, :, :, bot:top],
                     right[:, :, :, :, :, Open, :, :, op, :, :]
                 )
-                combine = combine.view(ssize, batch, size, bin_MN, 2, 2, 3, nrsize) \
+                combine = combine.view(ssize, batch, size, bin_MN, LOC, LOC, 3, nrsize) \
                                  .permute(0, 1, 2, 7, 3, 4, 5, 6)
                 st.append(combine)
 
@@ -265,7 +264,6 @@ class Alignment(_Struct):
                 chartb[n] = reflect(charta[n], size)
             else:
                 chartb[n] = reflect(q, size)
-
 
         if self.local:
             v = semiring.sum(semiring.sum(charta[-1][:, :, 0, :, :, Close, Close, Mid]))
