@@ -272,28 +272,28 @@ class Alignment(_Struct):
             st = []
             # v = rsize + 1
             # rsize = rsize + 1
+            # print(                pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2).transpose(-1, -2).shape)
+            left = (
+                pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2)
+                .transpose(-1, -2)
+                .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, nrsize, rsize+2)
+            )
+
+            right = (
+                pad(pad_conv(demote(xb[:, :, 1 : size * 2 : 2, :, :], 4), nrsize, 3, semiring), 1, 1, -2, semiring)
+                .transpose(-1, -2)
+                .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 3, nrsize, rsize)
+            )
+
             for op in (Up, Down, Mid):
-                top, bot = 1, 1
+                top, bot = rsize + 1, 1
                 if op == Up:
-                    top, bot = 2, 0
+                    top, bot = rsize +2 , 2
                 if op == Down:
-                    top, bot = 0, 2
-
-                left = (
-                    pad_conv(demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, bot, top)
-                    .transpose(-1, -2)
-                    .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, nrsize, rsize)
-                )
-
-                right = (
-                    pad(pad_conv(demote(xb[:, :, 1 : size * 2 : 2, :, :], 4), nrsize, 3, semiring), 1, 1, -2, semiring)
-                    .transpose(-1, -2)
-                    .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 3, nrsize, rsize)
-                )
-
+                    top, bot = rsize, 0
 
                 combine = semiring.dot(
-                    left[:, :, :, :, :, Open, :, :, :, :],
+                    left[:, :, :, :, :, Open, :, :, :, bot:top],
                     right[:, :, :, :, :, Open, :, :, op, :, :]
                 )
                 combine = combine.view(ssize, batch, size, bin_MN, 2, 2, 3, nrsize) \
@@ -347,7 +347,6 @@ class Alignment(_Struct):
         for n in range(2, log_MN + 1):
             size = int(size / 2)
             rsize *= 2
-
             q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3], rsize)
             charta[n][:] = q
             chartb[n][:] = reflect(q, size)
