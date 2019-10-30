@@ -8,13 +8,16 @@ def pad_conv(x, k, dim, sr, extra_b=0, extra_t=0):
 
 def pad(x, n_bot, n_top, dim, sr):
     shape = list(x.shape)
+    base = sr.zero_(torch.zeros([1] * len(shape), dtype=x.dtype, device=x.device))
+
     shape[dim] = n_bot
-    padb = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
+    padb = base.expand(shape)
     if n_top == n_bot:
         padt = padb
     else:
         shape[dim] = n_top
-        padt = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
+        padt = base.expand(shape)
+
     return torch.cat([padb, x, padt], dim=dim)
 
 def demote(x, index):
