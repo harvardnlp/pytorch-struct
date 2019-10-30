@@ -188,11 +188,12 @@
 
     <span class="n">has_enumerate_support</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">event_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span> <span class="o">=</span> <span class="n">log_potentials</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span> <span class="o">=</span> <span class="n">lengths</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">batch_shape</span><span class="o">=</span><span class="n">batch_shape</span><span class="p">,</span> <span class="n">event_shape</span><span class="o">=</span><span class="n">event_shape</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -211,7 +212,7 @@
 
         <span class="n">d</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span>
         <span class="n">batch_dims</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_shape</span><span class="p">))</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">()</span><span class="o">.</span><span class="n">score</span><span class="p">(</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">()</span><span class="o">.</span><span class="n">score</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span>
             <span class="n">value</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">),</span>
             <span class="n">batch_dims</span><span class="o">=</span><span class="n">batch_dims</span><span class="p">,</span>
@@ -226,7 +227,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            entropy (*batch_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StructDistribution.argmax"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.argmax">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -236,7 +237,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            argmax (*batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StructDistribution.topk"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.topk">[docs]</a>    <span class="k">def</span> <span class="nf">topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -245,7 +246,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            kmax (*k x batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="n">k</span><span class="p">))</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="n">k</span><span class="p">))</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">,</span> <span class="n">_raw</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span></div>
 
@@ -265,7 +266,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            marginals (*batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
     <span class="c1"># @constraints.dependent_property</span>
     <span class="c1"># def support(self):</span>
@@ -278,7 +279,7 @@
 <div class="viewcode-block" id="StructDistribution.partition"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.partition">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">partition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the partition function.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StructDistribution.sample"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -295,7 +296,7 @@
         <span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nsamples</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">k</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">MultiSampledSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span>
+                <span class="n">sample</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MultiSampledSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
                 <span class="p">)</span>
                 <span class="n">sample</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
@@ -318,12 +319,15 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">()</span><span class="o">.</span><span class="n">enumerate</span><span class="p">(</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">()</span><span class="o">.</span><span class="n">enumerate</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
         <span class="p">)</span>
         <span class="c1"># if expand:</span>
         <span class="c1">#     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])</span>
-        <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span></div></div>
+        <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">enum_lengths</span></div>
+
+    <span class="k">def</span> <span class="nf">_struct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span><span class="n">sr</span> <span class="k">if</span> <span class="n">sr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">LogSemiring</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LinearChainCRF"><a class="viewcode-back" href="../../model.html#torch_struct.LinearChainCRF">[docs]</a><span class="k">class</span> <span class="nc">LinearChainCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
@@ -361,7 +365,7 @@
 
 <div class="viewcode-block" id="AlignmentCRF"><a class="viewcode-back" href="../../model.html#torch_struct.AlignmentCRF">[docs]</a><span class="k">class</span> <span class="nc">AlignmentCRF</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</span>
+<span class="sd">    Represents basic alignment algorithm, i.e. dynamic-time warping, Needleman-Wunsch, and Smith-Waterman.</span>
 
 <span class="sd">    Event shape is of the form:</span>
 
@@ -369,16 +373,27 @@
 <span class="sd">        log_potentials (tensor) : event_shape (*N x M x 3*), e.g.</span>
 <span class="sd">                                    :math:`\phi(i, j, op)`</span>
 <span class="sd">                                  Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</span>
+<span class="sd">        local (bool): if true computes local alignment (Smith-Waterman), else Needleman-Wunsch</span>
+<span class="sd">        max_gap (int or None): the maximum gap to allow in the dynamic program</span>
 <span class="sd">        lengths (long tensor) : batch shape integers for length masking.</span>
 
 
-<span class="sd">    Implementation uses linear-scan.</span>
+<span class="sd">    Implementation uses convolution and linear-scan. Use max_gap for long sequences.</span>
 
-<span class="sd">    * Parallel Time: :math:`O(\log (M +N))` parallel merges.</span>
-<span class="sd">    * Forward Memory: :math:`O((M+N)^3)`</span>
+<span class="sd">    * Parallel Time: :math:`O(\log (M + N))` parallel merges.</span>
+<span class="sd">    * Forward Memory: :math:`O((M+N)^2)`</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span></div>
+    <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">local</span> <span class="o">=</span> <span class="n">local</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_struct</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">struct</span><span class="p">(</span>
+            <span class="n">sr</span> <span class="k">if</span> <span class="n">sr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">LogSemiring</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_gap</span>
+        <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="HMM"><a class="viewcode-back" href="../../model.html#torch_struct.HMM">[docs]</a><span class="k">class</span> <span class="nc">HMM</span><span class="p">(</span><span class="n">StructDistribution</span><span class="p">):</span>

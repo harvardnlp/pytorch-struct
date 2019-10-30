@@ -417,7 +417,7 @@ div.rendered_html tbody tr:hover {
 <h2>Chain<a class="headerlink" href="#Chain" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.LinearChainCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents structured linear-chain CRFs with C classes.</p>
 <p>For reference see:</p>
 <ul class="simple">
@@ -552,7 +552,7 @@ div.rendered_html tbody tr:hover {
 <h2>Semi-Markov<a class="headerlink" href="#Semi-Markov" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.SemiMarkovCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a semi-markov or segmental CRF with C classes of max width K</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -635,8 +635,8 @@ div.rendered_html tbody tr:hover {
 <h2>Alignment<a class="headerlink" href="#Alignment" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.AlignmentCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AlignmentCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
-<dd><p>Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.</p>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AlignmentCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">local=False</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">max_gap=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents basic alignment algorithm, i.e. dynamic-time warping, Needleman-Wunsch, and Smith-Waterman.</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -647,14 +647,16 @@ div.rendered_html tbody tr:hover {
 </dl>
 <p>Ops are 0 -&gt; j-1, 1-&gt;i-1,j-1, and 2-&gt;i-1</p>
 </p></li>
+<li><p><strong>local</strong> (<em>bool</em>) – if true computes local alignment (Smith-Waterman), else Needleman-Wunsch</p></li>
+<li><p><strong>max_gap</strong> (<em>int</em><em> or </em><em>None</em>) – the maximum gap to allow in the dynamic program</p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
 </dd>
 </dl>
-<p>Implementation uses linear-scan.</p>
+<p>Implementation uses convolution and linear-scan. Use max_gap for long sequences.</p>
 <ul class="simple">
-<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(\log (M +N))\)</span> parallel merges.</p></li>
-<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O((M+N)^3)\)</span></p></li>
+<li><p>Parallel Time: <span class="math notranslate nohighlight">\(O(\log (M + N))\)</span> parallel merges.</p></li>
+<li><p>Forward Memory: <span class="math notranslate nohighlight">\(O((M+N)^2)\)</span></p></li>
 </ul>
 </dd></dl>
 
@@ -663,7 +665,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span>
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
 <span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
@@ -689,11 +691,83 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
+</pre></div></div>
+</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
+<img alt="_images/model_20_1.png" src="_images/model_20_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Local values must be postive for match and negative for skip.</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
+
+<span class="c1"># Block off top rows and columns</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">AlignmentCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_21_0.png" src="_images/model_21_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">AlignmentCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_22_0.png" src="_images/model_22_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
 </div>
 </div>
 </div>
@@ -701,7 +775,7 @@ div.rendered_html tbody tr:hover {
 <h2>Dependency Tree<a class="headerlink" href="#Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.DependencyCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a projective dependency CRF.</p>
 <p>Reference:</p>
 <ul class="simple">
@@ -727,7 +801,7 @@ arc scores with root scores on diagonal e.g.
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -745,11 +819,11 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
+<img alt="_images/model_26_0.png" src="_images/model_26_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -761,11 +835,11 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
+<img alt="_images/model_27_0.png" src="_images/model_27_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -779,7 +853,7 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
+<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
 </div>
 </div>
 </div>
@@ -787,7 +861,7 @@ arc scores with root scores on diagonal e.g.
 <h2>Non-Projective Dependency Tree<a class="headerlink" href="#Non-Projective-Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.NonProjectiveDependencyCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a non-projective dependency CRF.</p>
 <p>For references see:</p>
 <ul class="simple">
@@ -807,7 +881,7 @@ arc scores with root scores on diagonal e.g.
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -825,7 +899,7 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
+<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
 </div>
 </div>
 </div>
@@ -834,7 +908,7 @@ arc scores with root scores on diagonal e.g.
 <blockquote>
 <div><dl class="class">
 <dt id="torch_struct.TreeCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a 0th-order span parser with NT nonterminals. Implemented using a
 fast CKY algorithm.</p>
 <p>For example usage see:</p>
@@ -861,7 +935,7 @@ fast CKY algorithm.</p>
 
 </div></blockquote>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -882,11 +956,11 @@ fast CKY algorithm.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
+<img alt="_images/model_34_0.png" src="_images/model_34_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -898,7 +972,7 @@ fast CKY algorithm.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
+<img alt="_images/model_35_0.png" src="_images/model_35_0.png" />
 </div>
 </div>
 </div>
@@ -932,7 +1006,7 @@ root  (<em>NT</em>)</p></li>
 
 </div></blockquote>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -953,7 +1027,7 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -966,11 +1040,11 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_36_0.png" src="_images/model_36_0.png" />
+<img alt="_images/model_39_0.png" src="_images/model_39_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -980,11 +1054,11 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.image.AxesImage at 0x7f6e90f0db38&gt;
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f1814d70da0&gt;
 </pre></div>
 </div>
 </div>
@@ -992,7 +1066,7 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_37_1.png" src="_images/model_37_1.png" />
+<img alt="_images/model_40_1.png" src="_images/model_40_1.png" />
 </div>
 </div>
 </div>
@@ -1074,7 +1148,7 @@ root  (<em>NT</em>)</p></li>
 
 </div></blockquote>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1104,7 +1178,7 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1117,11 +1191,11 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_41_0.png" src="_images/model_41_0.png" />
+<img alt="_images/model_44_0.png" src="_images/model_44_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1130,16 +1204,16 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>tensor([[-11.9900, -11.9229, -11.8859]], grad_fn=&lt;ViewBackward&gt;)
+<span></span>tensor([[-12.3654, -12.3715, -12.1309]], grad_fn=&lt;ViewBackward&gt;)
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1154,25 +1228,25 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_43_0.png" src="_images/model_43_0.png" />
+<img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_43_1.png" src="_images/model_43_1.png" />
+<img alt="_images/model_46_1.png" src="_images/model_46_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_43_2.png" src="_images/model_43_2.png" />
+<img alt="_images/model_46_2.png" src="_images/model_46_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1196,25 +1270,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_1.png" src="_images/model_44_1.png" />
+<img alt="_images/model_47_1.png" src="_images/model_47_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_2.png" src="_images/model_44_2.png" />
+<img alt="_images/model_47_2.png" src="_images/model_47_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_3.png" src="_images/model_44_3.png" />
+<img alt="_images/model_47_3.png" src="_images/model_47_3.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1229,21 +1303,21 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_0.png" src="_images/model_45_0.png" />
+<img alt="_images/model_48_0.png" src="_images/model_48_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_1.png" src="_images/model_45_1.png" />
+<img alt="_images/model_48_1.png" src="_images/model_48_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_45_2.png" src="_images/model_45_2.png" />
+<img alt="_images/model_48_2.png" src="_images/model_48_2.png" />
 </div>
 </div>
 </div>
@@ -1251,7 +1325,7 @@ torch.Size([5, 10, 4])
 <h2>Base Class<a class="headerlink" href="#Base-Class" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.StructDistribution">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base structured distribution class.</p>
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
@@ -1376,7 +1450,7 @@ torch.Size([5, 10, 4])
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1395,18 +1469,18 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_48_0.png" src="_images/model_48_0.png" />
+<img alt="_images/model_51_0.png" src="_images/model_51_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_48_1.png" src="_images/model_48_1.png" />
+<img alt="_images/model_51_1.png" src="_images/model_51_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1420,18 +1494,18 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_49_0.png" src="_images/model_49_0.png" />
+<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_49_1.png" src="_images/model_49_1.png" />
+<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1445,7 +1519,7 @@ torch.Size([5, 10, 4])
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1457,25 +1531,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_51_0.png" src="_images/model_51_0.png" />
+<img alt="_images/model_54_0.png" src="_images/model_54_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_51_1.png" src="_images/model_51_1.png" />
+<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_51_2.png" src="_images/model_51_2.png" />
+<img alt="_images/model_54_2.png" src="_images/model_54_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1487,25 +1561,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
+<img alt="_images/model_55_0.png" src="_images/model_55_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
+<img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_2.png" src="_images/model_52_2.png" />
+<img alt="_images/model_55_2.png" src="_images/model_55_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1530,74 +1604,74 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_1.png" src="_images/model_53_1.png" />
+<img alt="_images/model_56_1.png" src="_images/model_56_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_2.png" src="_images/model_53_2.png" />
+<img alt="_images/model_56_2.png" src="_images/model_56_2.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_3.png" src="_images/model_53_3.png" />
+<img alt="_images/model_56_3.png" src="_images/model_56_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_4.png" src="_images/model_53_4.png" />
+<img alt="_images/model_56_4.png" src="_images/model_56_4.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_5.png" src="_images/model_53_5.png" />
+<img alt="_images/model_56_5.png" src="_images/model_56_5.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_6.png" src="_images/model_53_6.png" />
+<img alt="_images/model_56_6.png" src="_images/model_56_6.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_7.png" src="_images/model_53_7.png" />
+<img alt="_images/model_56_7.png" src="_images/model_56_7.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_8.png" src="_images/model_53_8.png" />
+<img alt="_images/model_56_8.png" src="_images/model_56_8.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_9.png" src="_images/model_53_9.png" />
+<img alt="_images/model_56_9.png" src="_images/model_56_9.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_53_10.png" src="_images/model_53_10.png" />
+<img alt="_images/model_56_10.png" src="_images/model_56_10.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1606,11 +1680,11 @@ torch.Size([256, 3, 7, 2, 2])
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.image.AxesImage at 0x7f6e910e2fd0&gt;
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f1814a02a90&gt;
 </pre></div>
 </div>
 </div>
@@ -1618,7 +1692,7 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
+<img alt="_images/model_57_1.png" src="_images/model_57_1.png" />
 </div>
 </div>
 </div>
