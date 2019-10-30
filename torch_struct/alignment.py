@@ -9,9 +9,9 @@ def pad_conv(x, k, dim, sr, extra_b=0, extra_t=0):
 def pad(x, n_bot, n_top, dim, sr):
     shape = list(x.shape)
     shape[dim] = n_bot
-    padb = sr.zero_(torch.zeros(shape))
+    padb = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
     shape[dim] = n_top
-    padt = sr.zero_(torch.zeros(shape))
+    padt = sr.zero_(torch.zeros(shape, dtype=x.dtype, device=x.device))
 
     return torch.cat([padb, x, padt], dim=dim)
 
@@ -356,7 +356,7 @@ class Alignment(_Struct):
             # Old
 
         if self.local:
-            v = semiring.sum(semiring.sum(chart[-1][:, :, 0, :, :, Close, Close, Mid]))
+            v = semiring.sum(semiring.sum(charta[-1][:, :, 0, :, :, Close, Close, Mid]))
         else:
             # v = chart[-1][:, :, 0, M, N, Open, Open, Mid]
             v = charta[-1][:, :, 0,  M-N + (charta[-1].shape[3] //2),
