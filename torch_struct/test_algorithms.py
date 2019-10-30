@@ -302,6 +302,16 @@ def test_params(data, seed):
 @settings(max_examples=50, deadline=None)
 def test_alignment(data):
     model = data.draw(sampled_from([Alignment]))
+    semiring = data.draw(sampled_from([StdSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    vals.fill_(1)
+    
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+    assert torch.isclose(count, alpha).all()
+    return 
+    model = data.draw(sampled_from([Alignment]))
     semiring = data.draw(sampled_from([LogSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()

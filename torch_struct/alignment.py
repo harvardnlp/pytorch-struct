@@ -3,13 +3,13 @@ from .helpers import _Struct
 from .semirings import LogSemiring
 import math
 
-def pad_conv(x, k, dim):
-    return sym_pad(x, k - 1, dim).unfold(dim, k, 1)
+def pad_conv(x, k, dim, sr):
+    return sym_pad(x, k - 1, dim, sr).unfold(dim, k, 1)
 
-def sym_pad(x, n, dim):
+def sym_pad(x, n, dim, sr):
     shape = list(x.shape)
     shape[dim] = n // 2
-    pad = torch.zeros(shape)
+    pad = sr.zero_(torch.zeros(shape))
     return torch.cat([pad, x, pad], dim=dim)
 
 def demote(x, index):
@@ -228,13 +228,17 @@ class Alignment(_Struct):
             # print(rsize)
             # print(pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize, 3).shape)
             # print((ssize, batch, size, bin_MN, 1, 2, 2, 3, rsize, rsize))
+        
+            nrsize = (rsize-1)*2+1
             left = (
-                pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), rsize+1, 3)
-                .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, rsize, rsize+1)
+                pad_conv(demote(xa[:, :, 0 : size * 2 : 2], 3), nrsize, 7, semiring)
+                .transpose(-1, -2)
+                .view(ssize, batch, size, bin_MN, 1, 2, 2, 3, nrsize, rsize)
             )
             right = (
-                demote(xb[:, :, 1 : size * 2 : 2], 4)
-                .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 1, 3, rsize)
+                pad_conv(demote(xb[:, :, 1 : size * 2 : 2], 4), nrsize, 3, semiring)
+                .transpose(-1, -2)
+                .view(ssize, batch, size, bin_MN, 2, 1, 2, 1, 3, nrsize, rsize)
             )
 
             st = []
@@ -245,12 +249,12 @@ class Alignment(_Struct):
                     a, b, c, d = 1, v, 0, v -1
                 if op == Down:
                     a, b, c, d = 0, v - 1, 1, v
-                print(left[..., Open, :, :, a:b, a:b].shape,
-                      right[..., Open, :, :, op, c:d].shape)
-                combine = semiring.sum(semiring.dot(
-                    left[..., Open, :, :, a:b, a:b],
-                    right[..., Open, :, :, op, c:d]
-                ))
+                combine = semiring.dot(
+                    left[..., Open, :, :, :, a:b],
+                    right[..., Open, :, :, op, :, c:d]
+                )
+                combine = combine.view(ssize, batch, size, bin_MN, 2, 2, 3, nrsize) \
+                                 .permute(0, 1, 2, 7, 3, 4, 5, 6)
                 st.append(combine)
 
             if self.local:
@@ -280,14 +284,15 @@ class Alignment(_Struct):
                     a, b, c, d = 1, bin_MN, 0, bin_MN - 1
                 if op == Down:
                     a, b, c, d = 0, bin_MN - 1, 1, bin_MN
-                combine = semiring.times(
+                combine = semiring.dot(
                     left[..., Open, :, :, a:b], right[..., Open, :, op, c:d]
                 )
                 st.append(combine)
 
-            left_ = x[:, :, 0 :: 2, :, :, Close, :, :]
-            right = x[:, :, 1 :: 2, :, :, :, Close, :]
             if self.local:
+                left_ = x[:, :, 0 :: 2, :, :, Close, :, :]
+                right = x[:, :, 1 :: 2, :, :, :, Close, :]
+
                 st.append(torch.stack([semiring.zero_(left_.clone()), left_], dim=-3))
                 st.append(torch.stack([semiring.zero_(right.clone()), right], dim=-2))
 
@@ -297,18 +302,69 @@ class Alignment(_Struct):
         size = bin_MN // 2
         rsize = 2
         for n in range(2, log_MN + 1):
+            print("round", n)
             size = int(size / 2)
             rsize *= 2
             chart[n][:] = merge(chart[n - 1], size)
-            q = merge2(charta[n - 1], chartb[n - 1], size, rsize)
+            q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3])
+            ex = q.shape[3]
+            q.view(ssize, batch, size, ex, bin_MN, 2, 2, 3)
+            print(q.shape, charta[n].shape)
+            charta[n] = q
+
+            
+            f, r = torch.arange(ex), torch.arange(ex-1, -1, -1)
+            sp = pad_conv(q, ex, 4, semiring)
+            sp.view(ssize, batch, size, ex, bin_MN,  2, 2, 3, ex)
+            sp = sp[:, :, :, r, :, :, :, :, f].permute(1,2,3,4,0,5,6,7) \
+                                              .view(ssize, batch, size, bin_MN, ex, 2, 2, 3)
+              
+            print(sp[0,0, :, 3, ex//2], q[0,0, :, ex//2, 3])
+            assert((sp[0,0, :, 3, ex//2] == q[0,0, :, ex//2, 3]).all())
+            print(sp[0,0, :, 3, ex//2 - 1], q[0,0, :, ex//2 +1, 2])
+            assert((sp[0,0, :, 3, ex//2 + 1] == q[0,0, :, ex//2-1, 4]).all())
+            
+            chartb[n] = sp
+            
             print(q.shape)
             # charta[n][:] =
-            assert (chart[n][0, 0, :, ind_M, ind_M] == q[0, 0, :, ind_M, ind_M]).all()
+            print(q.shape)
+            print(n)
+            print(q[0, 0, :, 3, ind_M, Open, Open, Mid])
+            print(chart[n][0, 0, :, ind_M, ind_M, Open, Open, Mid])
+            assert (chart[n][0, 0, :, ind_M, ind_M, :, :, :] ==
+                    q[0, 0, :, q.shape[3] // 2, ind_M, :, :, :]).all(), "%s %s"%(n, q.shape[3])
+            assert (chart[n][0, 0, :, ind_M, ind_M, :, :, :] ==
+                    sp[0, 0, :, ind_M, q.shape[3] // 2,  :, :, :]).all(), "%s %s"%(n, q.shape[3]) 
 
+            print("pchart",  chart[n-1][0, 0, 0, :, N, Open, Open, Mid])
+            print("pconv",  charta[n-1][0, 0, 0, :, N, Open, Open, Mid])
+            print("pchart",  chart[n-1][0, 0, 1, :, :, Open, Open, Mid])
+            print("pconv",  chartb[n-1][0, 0, 1, :, :, Open, Open, Mid])
+
+            
+            print("chart",  chart[n][0, 0, 0, :, N, Open, Open, Mid])
+            print("conv",  charta[n][0, 0, 0, :, N, Open, Open, Mid])
+            print("chart",  chart[n][0, 0, 0, M, :, Open, Open, Mid])
+            print("conv",  chartb[n][0, 0, 0, M, :, Open, Open, Mid])
+            
+
+            
+            assert (chart[n][0, 0, :, ind_D, ind_U, :, :, :] ==
+                    q[0, 0, :, q.shape[3] // 2-1, ind_U, :, :, :]).all(), "%s %s"%(n, q.shape[3])
+                      
+            assert (chart[n][:, :, :, ind_M, ind_M, Open, Open, Mid] ==
+                    q[:, :, :, q.shape[3] // 2, ind_M, Open, Open, Mid]).all(), "%s %s"%(n, q.shape[3])
+            
         if self.local:
             v = semiring.sum(semiring.sum(chart[-1][:, :, 0, :, :, Close, Close, Mid]))
         else:
             v = chart[-1][:, :, 0, M, N, Open, Open, Mid]
+            print("correct", chart[-1][:, :, 0, M, N, Open, Open, Mid])
+            print("options",charta[-1][:, :, 0, :, N, Open, Open, Mid])
+            print("options",chartb[-1][:, :, 0, M, :, Open, Open, Mid])
+            v = charta[-1][:, :, 0, N - M + charta[-1].shape[3] //2, N, Open, Open, Mid]
+            print(v)
         return v, [log_potentials], None
 
     @staticmethod
