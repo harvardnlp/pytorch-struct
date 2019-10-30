@@ -306,11 +306,10 @@ def test_alignment(data):
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     vals.fill_(1)
-    
+
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
     assert torch.isclose(count, alpha).all()
-    return 
     model = data.draw(sampled_from([Alignment]))
     semiring = data.draw(sampled_from([LogSemiring]))
     struct = model(semiring)
@@ -330,7 +329,7 @@ def test_alignment(data):
     mx = struct.marginals(vals)
     print(alpha, count)
     print(mx[0].nonzero())
-    # assert(False)
+
     assert torch.isclose(count, alpha).all()
 
 
