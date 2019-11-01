@@ -1,5 +1,5 @@
 import torch
-from .semirings import MaxSemiring, KMaxSemiring
+from .semirings import MaxSemiring, KMaxSemiring, TempMax
 from torch.distributions.distribution import Distribution
 
 
@@ -13,7 +13,7 @@ class AutoregressiveModel(torch.nn.Module):
         Compute the logits for all tokens in a batched sequence :math:`p(y_{t+1}, ... y_{T}| y_1 \ldots t)`
 
         Parameters:
-            inputs (batch_size x N x C): next tokens to update representation
+            inputs (batch_size x N x C ): next tokens to update representation
             state (tuple of batch_size x ...): everything needed for conditioning.
 
         Retuns:
@@ -186,6 +186,20 @@ class Autoregressive(Distribution):
 
     def _greedy_max(self):
         return self._beam_search(MaxSemiring)[1].squeeze(0)
+
+    def greedy_tempmax(self, alpha):
+        """
+        Compute differentiable scheduled sampling using greedy search.
+
+        Based on:
+
+        * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`
+
+        Returns:
+            greedy_path (*batch x N x C*)
+        """
+        return self._beam_search(TempMax(alpha), alpha)[0].squeeze(0)
+
 
     def beam_topk(self, K):
         """

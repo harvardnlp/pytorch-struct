@@ -1,6 +1,6 @@
 from .distributions import LinearChainCRF
 from .autoregressive import Autoregressive
-from .semirings import KMaxSemiring
+from .semirings import KMaxSemiring, TempMax
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -121,21 +121,30 @@ def test_ar2():
     init = (torch.zeros(batch, layer, H),)
 
     class AR(torch.nn.Module):
-        def __init__(self):
+        def __init__(self, sparse=True):
             super().__init__()
+            self.sparse = sparse
             self.rnn = torch.nn.RNN(H, H, batch_first=True)
             self.proj = torch.nn.Linear(H, C)
-            self.embed = torch.nn.Embedding(C, H)
-
+            if sparse:
+                self.embed = torch.nn.Embedding(C, H)
+            else:
+                self.embed = torch.nn.Linear(C, H)
         def forward(self, inputs, state):
+            if not self.sparse and inputs.dim() == 2:
+                inputs = torch.nn.functional.one_hot(inputs, C).float()
             inputs = self.embed(inputs)
             out, state = self.rnn(inputs, t(state)[0])
             out = self.proj(out)
             return out, t((state,))
 
+    dist2 = Autoregressive(AR(sparse=False), init, C, N, normalize=False)
+    path = dist2.greedy_tempmax(1)
+
     dist = Autoregressive(AR(), init, C, N, normalize=False)
     scores = dist._greedy_max()
     path = dist.greedy_argmax()
+
     assert torch.isclose(scores, dist.log_prob(path.unsqueeze(0))).all()
     scores = dist._beam_max(7)
     path = dist.beam_topk(7)
