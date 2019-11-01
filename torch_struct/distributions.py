@@ -235,6 +235,7 @@ class AlignmentCRF(StructDistribution):
 
     def __init__(self, log_potentials, local=False, lengths=None, max_gap=None):
         self.local = local
+        self.max_gap = max_gap
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
