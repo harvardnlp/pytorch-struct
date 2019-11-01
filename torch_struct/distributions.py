@@ -35,11 +35,12 @@ class StructDistribution(Distribution):
 
     has_enumerate_support = True
 
-    def __init__(self, log_potentials, lengths=None):
+    def __init__(self, log_potentials, lengths=None, args={}):
         batch_shape = log_potentials.shape[:1]
         event_shape = log_potentials.shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
+        self.args = args
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
     def _new(self, *args, **kwargs):
@@ -58,7 +59,7 @@ class StructDistribution(Distribution):
 
         d = value.dim()
         batch_dims = range(d - len(self.event_shape))
-        v = self.struct().score(
+        v = self._struct().score(
             self.log_potentials,
             value.type_as(self.log_potentials),
             batch_dims=batch_dims,
@@ -73,7 +74,7 @@ class StructDistribution(Distribution):
         Returns:
             entropy (*batch_shape*)
         """
-        return self.struct(EntropySemiring).sum(self.log_potentials, self.lengths)
+        return self._struct(EntropySemiring).sum(self.log_potentials, self.lengths)
 
     @lazy_property
     def argmax(self):
@@ -83,7 +84,7 @@ class StructDistribution(Distribution):
         Returns:
             argmax (*batch_shape x event_shape*)
         """
-        return self.struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
+        return self._struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
     def topk(self, k):
         r"""
@@ -92,7 +93,7 @@ class StructDistribution(Distribution):
         Returns:
             kmax (*k x batch_shape x event_shape*)
         """
-        return self.struct(KMaxSemiring(k)).marginals(
+        return self._struct(KMaxSemiring(k)).marginals(
             self.log_potentials, self.lengths, _raw=True
         )
 
@@ -112,7 +113,7 @@ class StructDistribution(Distribution):
         Returns:
             marginals (*batch_shape x event_shape*)
         """
-        return self.struct(LogSemiring).marginals(self.log_potentials, self.lengths)
+        return self._struct(LogSemiring).marginals(self.log_potentials, self.lengths)
 
     # @constraints.dependent_property
     # def support(self):
@@ -125,7 +126,7 @@ class StructDistribution(Distribution):
     @lazy_property
     def partition(self):
         "Compute the partition function."
-        return self.struct(LogSemiring).sum(self.log_potentials, self.lengths)
+        return self._struct(LogSemiring).sum(self.log_potentials, self.lengths)
 
     def sample(self, sample_shape=torch.Size()):
         r"""
@@ -142,7 +143,7 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % 10 == 0:
-                sample = self.struct(MultiSampledSemiring).marginals(
+                sample = self._struct(MultiSampledSemiring).marginals(
                     self.log_potentials, lengths=self.lengths
                 )
                 sample = sample.detach()
@@ -165,12 +166,15 @@ class StructDistribution(Distribution):
         Returns:
             (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
         """
-        _, _, edges, enum_lengths = self.struct().enumerate(
+        _, _, edges, enum_lengths = self._struct().enumerate(
             self.log_potentials, self.lengths
         )
         # if expand:
         #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
         return edges, enum_lengths
+
+    def _struct(self, sr=None):
+        return self.struct(sr if sr is not None else LogSemiring)
 
 
 class LinearChainCRF(StructDistribution):
@@ -208,7 +212,7 @@ class LinearChainCRF(StructDistribution):
 
 class AlignmentCRF(StructDistribution):
     r"""
-    Represents basic alignment algorithm, i.e. dynamic-time warping or Needleman-Wunsch.
+    Represents basic alignment algorithm, i.e. dynamic-time warping, Needleman-Wunsch, and Smith-Waterman.
 
     Event shape is of the form:
 
@@ -216,16 +220,28 @@ class AlignmentCRF(StructDistribution):
         log_potentials (tensor) : event_shape (*N x M x 3*), e.g.
                                     :math:`\phi(i, j, op)`
                                   Ops are 0 -> j-1, 1->i-1,j-1, and 2->i-1
+        local (bool): if true computes local alignment (Smith-Waterman), else Needleman-Wunsch
+        max_gap (int or None): the maximum gap to allow in the dynamic program
         lengths (long tensor) : batch shape integers for length masking.
 
 
-    Implementation uses linear-scan.
+    Implementation uses convolution and linear-scan. Use max_gap for long sequences.
 
-    * Parallel Time: :math:`O(\log (M +N))` parallel merges.
-    * Forward Memory: :math:`O((M+N)^3)`
+    * Parallel Time: :math:`O(\log (M + N))` parallel merges.
+    * Forward Memory: :math:`O((M+N)^2)`
 
     """
     struct = Alignment
+
+    def __init__(self, log_potentials, local=False, lengths=None, max_gap=None):
+        self.local = local
+        self.max_gap = max_gap
+        super().__init__(log_potentials, lengths)
+
+    def _struct(self, sr=None):
+        return self.struct(
+            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
+        )
 
 
 class HMM(StructDistribution):

@@ -55,6 +55,10 @@ class Semiring:
         "Sum over *dim* of tensor."
         raise NotImplementedError()
 
+    @classmethod
+    def plus(cls, a, b):
+        return cls.sum(torch.stack([a, b], dim=-1))
+
 
 class _Base(Semiring):
     @staticmethod

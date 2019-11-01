@@ -205,6 +205,19 @@ class Autoregressive(Distribution):
         a, b, c = self._beam_search(TempMax(alpha), alpha)
         return a.squeeze(0), b.squeeze(0), c.squeeze(0)
 
+    def greedy_tempmax(self, alpha):
+        """
+        Compute differentiable scheduled sampling using greedy search.
+
+        Based on:
+
+        * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`
+
+        Returns:
+            greedy_path (*batch x N x C*)
+        """
+        return self._beam_search(TempMax(alpha), alpha)[0].squeeze(0)
+
     def beam_topk(self, K):
         """
         Compute "top-k" using beam search
