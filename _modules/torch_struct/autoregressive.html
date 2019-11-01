@@ -291,6 +291,7 @@
 
         <span class="c1"># Beam Search</span>
         <span class="n">all_beams</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_logits</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_length</span><span class="p">):</span>
             <span class="n">logits</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">unwrap</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">state</span><span class="p">)</span>
             <span class="n">b2</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">c2</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span>
@@ -310,6 +311,7 @@
                 <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
                 <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">all_logits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
             <span class="n">ex_beam</span> <span class="o">=</span> <span class="n">beam</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">logits</span>
             <span class="n">ex_beam</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">all_beams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ex_beam</span><span class="p">)</span>
@@ -326,19 +328,19 @@
             <span class="p">)</span>
             <span class="n">marg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">marg</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">all_m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">marg</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_m</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">v</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_m</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">v</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">all_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">greedy_argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Autoregressive.greedy_max"><a class="viewcode-back" href="../../model.html#torch_struct.Autoregressive.greedy_max">[docs]</a>    <span class="k">def</span> <span class="nf">greedy_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute &quot;argmax&quot; using greedy search.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            greedy_path (*batch x N x C*)</span>
+<span class="sd">            greedy_max (*batch*)</span>
+<span class="sd">            logits (*batch x N x C*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_greedy_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">b</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">c</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">greedy_tempmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -350,8 +352,24 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            greedy_path (*batch x N x C*)</span>
+<span class="sd">            greedy_max (*batch*)</span>
+<span class="sd">            logits (*batch x N x C*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">TempMax</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">alpha</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">TempMax</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">b</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">c</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Autoregressive.greedy_tempmax"><a class="viewcode-back" href="../../model.html#torch_struct.Autoregressive.greedy_tempmax">[docs]</a>    <span class="k">def</span> <span class="nf">greedy_tempmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute differentiable scheduled sampling using greedy search.</span>
+
+<span class="sd">        Based on:</span>
+
+<span class="sd">        * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            greedy_path (*batch x N x C*)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beam_search</span><span class="p">(</span><span class="n">TempMax</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span> <span class="n">alpha</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Autoregressive.beam_topk"><a class="viewcode-back" href="../../model.html#torch_struct.Autoregressive.beam_topk">[docs]</a>    <span class="k">def</span> <span class="nf">beam_topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

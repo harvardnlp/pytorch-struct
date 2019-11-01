@@ -665,7 +665,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span>
 <span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
@@ -691,83 +691,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-Clipping input data to the valid range for imshow with RGB data ([0..1] for floats or [0..255] for integers).
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_20_1.png" src="_images/model_20_1.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-
-<span class="c1"># Local values must be postive for match and negative for skip.</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span>
-
-<span class="c1"># Block off top rows and columns</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">2</span><span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">AlignmentCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/model_21_0.png" src="_images/model_21_0.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">log_potentials</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">AlignmentCRF</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">argmax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/model_22_0.png" src="_images/model_22_0.png" />
-</div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
+<img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
 </div>
 </div>
 </div>
@@ -801,7 +729,7 @@ arc scores with root scores on diagonal e.g.
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -819,11 +747,11 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_26_0.png" src="_images/model_26_0.png" />
+<img alt="_images/model_23_0.png" src="_images/model_23_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -835,11 +763,11 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_27_0.png" src="_images/model_27_0.png" />
+<img alt="_images/model_24_0.png" src="_images/model_24_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -853,7 +781,7 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
+<img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
 </div>
 </div>
 </div>
@@ -881,7 +809,7 @@ arc scores with root scores on diagonal e.g.
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -899,7 +827,7 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
+<img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
 </div>
 </div>
 </div>
@@ -935,7 +863,7 @@ fast CKY algorithm.</p>
 
 </div></blockquote>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -956,11 +884,11 @@ fast CKY algorithm.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_34_0.png" src="_images/model_34_0.png" />
+<img alt="_images/model_31_0.png" src="_images/model_31_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -972,7 +900,7 @@ fast CKY algorithm.</p>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_35_0.png" src="_images/model_35_0.png" />
+<img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
 </div>
 </div>
 </div>
@@ -1006,7 +934,7 @@ root  (<em>NT</em>)</p></li>
 
 </div></blockquote>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1027,7 +955,7 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1040,11 +968,11 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_39_0.png" src="_images/model_39_0.png" />
+<img alt="_images/model_36_0.png" src="_images/model_36_0.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1054,11 +982,11 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.image.AxesImage at 0x7f1814d70da0&gt;
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f1877a1fb70&gt;
 </pre></div>
 </div>
 </div>
@@ -1066,7 +994,7 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_40_1.png" src="_images/model_40_1.png" />
+<img alt="_images/model_37_1.png" src="_images/model_37_1.png" />
 </div>
 </div>
 </div>
@@ -1103,6 +1031,34 @@ root  (<em>NT</em>)</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="torch_struct.Autoregressive.greedy_max">
+<code class="sig-name descname">greedy_max</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.greedy_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.greedy_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute “argmax” using greedy search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>greedy_path (<em>batch x N x C</em>)
+greedy_max (<em>batch</em>)
+logits (<em>batch x N x C</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torch_struct.Autoregressive.greedy_tempmax">
+<code class="sig-name descname">greedy_tempmax</code><span class="sig-paren">(</span><em class="sig-param">alpha</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.greedy_tempmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.greedy_tempmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute differentiable scheduled sampling using greedy search.</p>
+<p>Based on:</p>
+<ul class="simple">
+<li><p>Differentiable Scheduled Sampling for Credit Assignment <a class="bibtex reference internal" href="refs.html#goyal2017differentiable" id="id7">[GDBK17]</a></p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>greedy_path (<em>batch x N x C</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="torch_struct.Autoregressive.sample">
 <code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
@@ -1123,7 +1079,7 @@ root  (<em>NT</em>)</p></li>
 <p>Based on:</p>
 <ul class="simple">
 <li><dl class="simple">
-<dt>Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</dt><dd><p>Sampling Sequences Without Replacement <a class="bibtex reference internal" href="refs.html#dblp-journals-corr-abs-1903-06059" id="id7">[KvHW19]</a></p>
+<dt>Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</dt><dd><p>Sampling Sequences Without Replacement <a class="bibtex reference internal" href="refs.html#dblp-journals-corr-abs-1903-06059" id="id8">[KvHW19]</a></p>
 </dd>
 </dl>
 </li>
@@ -1148,7 +1104,7 @@ root  (<em>NT</em>)</p></li>
 
 </div></blockquote>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1162,40 +1118,57 @@ root  (<em>NT</em>)</p></li>
      <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
 <span class="k">class</span> <span class="nc">RNN_AR</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparse</span> <span class="o">=</span> <span class="n">sparse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">RNN</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">batch_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">proj</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">embed</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sparse</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">embed</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">embed</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">sparse</span> <span class="ow">and</span> <span class="n">inputs</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">embed</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-        <span class="n">out</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">t</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rnn</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">t</span><span class="p">(</span><span class="n">state</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">proj</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">t</span><span class="p">((</span><span class="n">state</span><span class="p">,))</span>
+
 
 <span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">Autoregressive</span><span class="p">(</span><span class="n">RNN_AR</span><span class="p">(),</span> <span class="n">init</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">path</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_argmax</span><span class="p">()</span>
+<span></span><span class="n">path</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_max</span><span class="p">()</span>
 <span class="n">show_ar</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+tensor(-11.7909, grad_fn=&lt;SelectBackward&gt;)
+</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_44_0.png" src="_images/model_44_0.png" />
+<img alt="_images/model_41_1.png" src="_images/model_41_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1204,16 +1177,16 @@ root  (<em>NT</em>)</p></li>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>tensor([[-12.3654, -12.3715, -12.1309]], grad_fn=&lt;ViewBackward&gt;)
+<span></span>tensor([[-11.7909, -11.8150, -11.7972]], grad_fn=&lt;ViewBackward&gt;)
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1228,25 +1201,25 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
+<img alt="_images/model_43_0.png" src="_images/model_43_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_1.png" src="_images/model_46_1.png" />
+<img alt="_images/model_43_1.png" src="_images/model_43_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_46_2.png" src="_images/model_46_2.png" />
+<img alt="_images/model_43_2.png" src="_images/model_43_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1270,25 +1243,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_47_1.png" src="_images/model_47_1.png" />
+<img alt="_images/model_44_1.png" src="_images/model_44_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_47_2.png" src="_images/model_47_2.png" />
+<img alt="_images/model_44_2.png" src="_images/model_44_2.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_47_3.png" src="_images/model_47_3.png" />
+<img alt="_images/model_44_3.png" src="_images/model_44_3.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1303,21 +1276,41 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_48_0.png" src="_images/model_48_0.png" />
+<img alt="_images/model_45_0.png" src="_images/model_45_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_48_1.png" src="_images/model_48_1.png" />
+<img alt="_images/model_45_1.png" src="_images/model_45_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_48_2.png" src="_images/model_48_2.png" />
+<img alt="_images/model_45_2.png" src="_images/model_45_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">Autoregressive</span><span class="p">(</span><span class="n">RNN_AR</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">init</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">logits</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_tempmax</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">show_ar</span><span class="p">(</span><span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span>
+<span class="n">loss</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
 </div>
 </div>
 </div>
@@ -1330,9 +1323,9 @@ torch.Size([5, 10, 4])
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
 <ul class="simple">
-<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="refs.html#eisner2016inside" id="id8">[Eis16]</a></p></li>
-<li><p>Semiring Parsing <a class="bibtex reference internal" href="refs.html#goodman1999semiring" id="id9">[Goo99]</a></p></li>
-<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id10">[LE09]</a></p></li>
+<li><p>Inside-outside and forward-backward algorithms are just backprop <a class="bibtex reference internal" href="refs.html#eisner2016inside" id="id9">[Eis16]</a></p></li>
+<li><p>Semiring Parsing <a class="bibtex reference internal" href="refs.html#goodman1999semiring" id="id10">[Goo99]</a></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <a class="bibtex reference internal" href="refs.html#li2009first" id="id11">[LE09]</a></p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1450,7 +1443,7 @@ torch.Size([5, 10, 4])
 </dd></dl>
 
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1469,18 +1462,18 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_51_0.png" src="_images/model_51_0.png" />
+<img alt="_images/model_49_0.png" src="_images/model_49_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_51_1.png" src="_images/model_51_1.png" />
+<img alt="_images/model_49_1.png" src="_images/model_49_1.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1494,18 +1487,18 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
+<img alt="_images/model_50_0.png" src="_images/model_50_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
+<img alt="_images/model_50_1.png" src="_images/model_50_1.png" />
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1519,7 +1512,7 @@ torch.Size([5, 10, 4])
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1531,25 +1524,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_0.png" src="_images/model_54_0.png" />
+<img alt="_images/model_52_0.png" src="_images/model_52_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
+<img alt="_images/model_52_1.png" src="_images/model_52_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_54_2.png" src="_images/model_54_2.png" />
+<img alt="_images/model_52_2.png" src="_images/model_52_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1561,25 +1554,25 @@ torch.Size([5, 10, 4])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_55_0.png" src="_images/model_55_0.png" />
+<img alt="_images/model_53_0.png" src="_images/model_53_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
+<img alt="_images/model_53_1.png" src="_images/model_53_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_55_2.png" src="_images/model_55_2.png" />
+<img alt="_images/model_53_2.png" src="_images/model_53_2.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1604,74 +1597,74 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_1.png" src="_images/model_56_1.png" />
+<img alt="_images/model_54_1.png" src="_images/model_54_1.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_2.png" src="_images/model_56_2.png" />
+<img alt="_images/model_54_2.png" src="_images/model_54_2.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_3.png" src="_images/model_56_3.png" />
+<img alt="_images/model_54_3.png" src="_images/model_54_3.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_4.png" src="_images/model_56_4.png" />
+<img alt="_images/model_54_4.png" src="_images/model_54_4.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_5.png" src="_images/model_56_5.png" />
+<img alt="_images/model_54_5.png" src="_images/model_54_5.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_6.png" src="_images/model_56_6.png" />
+<img alt="_images/model_54_6.png" src="_images/model_54_6.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_7.png" src="_images/model_56_7.png" />
+<img alt="_images/model_54_7.png" src="_images/model_54_7.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_8.png" src="_images/model_56_8.png" />
+<img alt="_images/model_54_8.png" src="_images/model_54_8.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_9.png" src="_images/model_56_9.png" />
+<img alt="_images/model_54_9.png" src="_images/model_54_9.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_56_10.png" src="_images/model_56_10.png" />
+<img alt="_images/model_54_10.png" src="_images/model_54_10.png" />
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1680,11 +1673,11 @@ torch.Size([256, 3, 7, 2, 2])
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="output_area highlight-none notranslate"><div class="highlight"><pre>
-<span></span>&lt;matplotlib.image.AxesImage at 0x7f1814a02a90&gt;
+<span></span>&lt;matplotlib.image.AxesImage at 0x7f1877c52c18&gt;
 </pre></div>
 </div>
 </div>
@@ -1692,7 +1685,7 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/model_57_1.png" src="_images/model_57_1.png" />
+<img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
 </div>
 </div>
 </div>
