@@ -200,7 +200,6 @@ class Autoregressive(Distribution):
         """
         return self._beam_search(TempMax(alpha), alpha)[0].squeeze(0)
 
-
     def beam_topk(self, K):
         """
         Compute "top-k" using beam search

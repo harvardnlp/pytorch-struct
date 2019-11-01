@@ -1,6 +1,6 @@
 from .distributions import LinearChainCRF
 from .autoregressive import Autoregressive
-from .semirings import KMaxSemiring, TempMax
+from .semirings import KMaxSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -130,6 +130,7 @@ def test_ar2():
                 self.embed = torch.nn.Embedding(C, H)
             else:
                 self.embed = torch.nn.Linear(C, H)
+
         def forward(self, inputs, state):
             if not self.sparse and inputs.dim() == 2:
                 inputs = torch.nn.functional.one_hot(inputs, C).float()

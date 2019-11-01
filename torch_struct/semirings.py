@@ -147,7 +147,9 @@ def TempMax(alpha):
             m, _ = torch.max(xs, dim=dim)
             a = torch.softmax(alpha * xs, dim)
             return m, (torch.zeros(a.shape[:-1]).long(), a)
+
     return _TempMax
+
 
 def KMaxSemiring(k):
     """
