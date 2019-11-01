@@ -84,7 +84,7 @@ def test_autoregressive(data, seed):
                 )
 
     auto = Autoregressive(Model(), init, n_classes, n_length, normalize=False)
-    v = auto.greedy_argmax()
+    v, _, _ = auto.greedy_max()
     batch, n, c = v.shape
     assert n == n_length
     assert c == n_classes
@@ -140,11 +140,11 @@ def test_ar2():
             return out, t((state,))
 
     dist2 = Autoregressive(AR(sparse=False), init, C, N, normalize=False)
-    path = dist2.greedy_tempmax(1)
+    path, _, _ = dist2.greedy_tempmax(1)
 
     dist = Autoregressive(AR(), init, C, N, normalize=False)
-    scores = dist._greedy_max()
-    path = dist.greedy_argmax()
+
+    path, scores, _ = dist.greedy_max()
 
     assert torch.isclose(scores, dist.log_prob(path.unsqueeze(0))).all()
     scores = dist._beam_max(7)
@@ -192,5 +192,5 @@ def test_ar2():
             return out, t(state)
 
     dist = Autoregressive(AR(), init, C, N)
-    dist.greedy_argmax()
+    dist.greedy_max()
     dist.beam_topk(5)
