@@ -189,7 +189,6 @@ class Autoregressive(Distribution):
         a, b, c = self._beam_search(MaxSemiring)
         return a.squeeze(0), b.squeeze(0), c.squeeze(0)
 
-
     def greedy_tempmax(self, alpha):
         """
         Compute differentiable scheduled sampling using greedy search.
