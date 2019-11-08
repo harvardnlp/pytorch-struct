@@ -140,13 +140,17 @@ class LogMemSemiring(_BaseLog):
         """
         Dot product along last dim. (Faster than calling sum and times.)
         """
-        a2 = a.squeeze(-3)
-        b2 = b.squeeze(-2).transpose(-1, -2)
+        if a.shape[-3] == 1 and b.shape[-2] == 1 and a.shape[-2] != 1:
+            a2 = a.squeeze(-3)
+            b2 = b.squeeze(-2).transpose(-1, -2)
+        else:
+            a2 = a.unsqueeze(-2)
+            b2 = b.unsqueeze(-1)
         max_a = a2.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
         max_b = b2.max(dim=-2, keepdim=True)[0].max(dim=-1, keepdim=True)[0]
         exp_a, exp_b = a2 - max_a, b2 - max_b
         c = torch.matmul(exp_a.exp(), exp_b.exp())
-        c = (c.log() + max_a + max_b)
+        c = (c.log() + max_a + max_b).squeeze(-1).squeeze(-1)
         return c
 
 

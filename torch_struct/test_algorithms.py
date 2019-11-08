@@ -130,7 +130,7 @@ def test_generic_a(data):
     model = data.draw(
         sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
+    semiring = data.draw(sampled_from([LogSemiring, LogMemSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)

@@ -60,7 +60,7 @@ class CKY(_Struct):
                 rule_use[w - 1][:, :, :, :, NT:, NT:] = semiring.times(Y, Z, X_Y1_Z1)
 
             rulesmid = rule_use[w - 1].view(ssize, batch, N - w, NT, S * S)
-            span[w] = semiring.sum(rulesmid, dim=4)
+            span[w] = semiring.sum(rulesmid)
             beta[A][:, :, : N - w, w, :NT] = span[w]
             beta[B][:, :, w:N, N - w - 1, :NT] = beta[A][:, :, : N - w, w, :NT]
 
