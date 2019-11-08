@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-def CheckpointSemiring(cls, max_size):
+def CheckpointSemiring(cls,  max_size, min_size=0):
     class _Check(torch.autograd.Function):
         @staticmethod
         def forward(ctx, a, b):
@@ -28,7 +28,11 @@ def CheckpointSemiring(cls, max_size):
     class _CheckpointSemiring(cls):
         @staticmethod
         def dot(a, b):
-            return _Check.apply(a, b)
+            size = torch.tensor([max(i,j) for i, j in zip(a.shape, b.shape)]).prod()
+            if size > min_size:
+                return cls.dot(a, b)
+            else:
+                return _Check.apply(a, b)
 
     return _CheckpointSemiring
 
@@ -54,7 +58,6 @@ def accumulate_(a, b, ret, fn, preserve, step=10000):
         total *= s
     if step > total:
         ret[:] = fn(a, b)
-
 
     a_one, b_one = ones(a), ones(b)
     indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
