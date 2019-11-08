@@ -11,8 +11,11 @@ class LogSemiringKO(_BaseLog):
     """
 
     @staticmethod
-    def sum(xs, dim=-1):
-        return torch.logsumexp(xs, dim=dim)
+    def sum(a, dim=-1):
+        a_lazy = LazyTensor(a.unsqueeze(-1).unsqueeze(-1).contiguous())
+        c = a_lazy.sum(-1).logsumexp(a.dim()-1).squeeze(-1).squeeze(-1)
+        return c
+
 
     @classmethod
     def dot(cls, a, b):
@@ -45,8 +48,9 @@ class _Max(torch.autograd.Function):
 
 class MaxSemiringKO(_BaseLog):
     @staticmethod
-    def sum(xs, dim=-1):
-        return torch.max(xs, dim=dim)[0]
+    def sum(cls, xs, dim=-1):
+        assert dim == -1
+        return cls.dot(xs, xs.clone().fill_(0))
 
     @classmethod
     def dot(cls, a, b):
