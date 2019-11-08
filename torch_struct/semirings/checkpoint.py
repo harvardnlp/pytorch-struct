@@ -99,7 +99,8 @@ def unaccumulate_(a, b, grad_output, preserve, fn, step=10000):
     b_grad = b2.clone().fill_(0)
 
     grad_output = grad_output.view(-1, b.shape[-3], a.shape[-2])
-    for p in range(0, total, step):
+    for p in range(0, grad_output.shape[0], step):
+
         with torch.enable_grad():
             a_in = a2[p:p+step].clone().requires_grad_(True)
             b_in = b2[p:p+step].clone().requires_grad_(True)
@@ -112,7 +113,6 @@ def unaccumulate_(a, b, grad_output, preserve, fn, step=10000):
     b_grad = b_grad.view(*size[:-2], b.shape[-3],  1, a.shape[-1])
     a_ones = ones(a)
     b_ones = ones(b)
-
     f1, f2 = a_grad.sum(a_ones, keepdim=True), b_grad.sum(b_ones, keepdim=True)
     return f1, f2
 
