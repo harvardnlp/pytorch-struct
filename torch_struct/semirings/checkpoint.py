@@ -64,7 +64,7 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
 
     t = time()
     indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
-    print("trigger", step, total, time() - a)
+    print("trigger", step, total, time() - t)
 
     t = time()
     for p in range(0, total, step):
