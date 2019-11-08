@@ -56,9 +56,10 @@ class LinearChain(_Struct):
         )
         log_N = int(math.ceil(math.log(N - 1, 2)))
         bin_N = int(math.pow(2, log_N))
-        chart = self._make_chart(
-            log_N + 1, (batch, bin_N, C, C), log_potentials, force_grad
-        )
+        chart = [None for _ in range(log_N + 1)]
+        chart[0] = self._make_chart(
+            1, (batch, bin_N, C, C), log_potentials, force_grad
+        )[0]
 
         # Init
         for b in range(lengths.shape[0]):
@@ -76,16 +77,16 @@ class LinearChain(_Struct):
         # Scan
         def merge(x, size):
             return semiring.dot(
-                x[:, :, 0 : size * 2 : 2]
+                x[:, :, 0 : : 2]
                 .transpose(3, 4)
                 .view(ssize, batch, size, 1, C, C),
-                x[:, :, 1 : size * 2 : 2].view(ssize, batch, size, C, 1, C),
+                x[:, :, 1 : : 2].view(ssize, batch, size, C, 1, C),
             )
 
         size = bin_N
         for n in range(1, log_N + 1):
-            size = int(size / 2)
-            chart[n][:, :, :size] = merge(chart[n - 1], size)
+            size = size // 2
+            chart[n] = merge(chart[n - 1], size)
         v = semiring.sum(semiring.sum(chart[-1][:, :, 0]))
         return v, [log_potentials], None
 
