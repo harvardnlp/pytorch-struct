@@ -66,15 +66,16 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     a = a.expand(*size[:-2],  1, a.shape[-2], a.shape[-1])
     b = b.expand(*size[:-2], b.shape[-3], 1,  b.shape[-1])
 
-    a2 = a.contiguous().view(-1, 1, a.shape[-1])
-    b2 = a.contiguous().view(-1, b.shape[-1], 1)
+    a2 = a.contiguous().view(-1, 1, a.shape[-2], a.shape[-1])
+    b2 = b.contiguous().view(-1, b.shape[-3], 1, b.shape[-1])
+    ret = ret.view(-1, b.shape[-3], a.shape[-2])
 
     for p in range(0, total, step):
         # ind = indices[:, p : p + step].unbind()
         # a_ind = mind(a_one, ind)
         # b_ind = mind(b_one, ind)
-        ret[p:p+step] = fn(a[p:p+step], b[p:p+step])
-
+        ret[p:p+step, :] = fn(a2[p:p+step], b2[p:p+step])
+    ret = ret.view(*size)
     # t = time()
     # indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
     # print("trigger", step, total, time() - t)
