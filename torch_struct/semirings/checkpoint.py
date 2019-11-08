@@ -57,11 +57,13 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     if step > total:
         return fn(a, b)
 
+    print("trigger", step, total)
     ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
     a_one, b_one = ones(a), ones(b)
     indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
 
     for p in range(0, total, step):
+        print(p)
         ind = indices[:, p : p + step].unbind()
         a_ind = mind(a_one, ind)
         b_ind = mind(b_one, ind)
