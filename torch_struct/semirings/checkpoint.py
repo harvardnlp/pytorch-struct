@@ -6,14 +6,11 @@ def CheckpointSemiring(cls,  max_size, min_size=0):
         @staticmethod
         def forward(ctx, a, b):
             ctx.save_for_backward(a, b)
-            if True:
-                return cls.dot(a, b)
-            else:
-                size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
-                return accumulate_(a, b, size,
-                            lambda a, b: cls.dot(a, b),
-                            preserve=len(ret.shape),
-                            step=max_size // a.shape[-1] + 2)
+            size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
+            return accumulate_(a, b, size,
+                        lambda a, b: cls.dot(a, b),
+                        preserve=len(ret.shape),
+                        step=max_size // a.shape[-1] + 2)
 
         @staticmethod
         def backward(ctx, grad_output):
