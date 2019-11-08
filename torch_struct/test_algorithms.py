@@ -349,7 +349,7 @@ def test_lc_custom():
     marginals = struct.marginals(vals)
     s = struct.sum(vals)
 
-    struct = LinearChain(CheckpointSemiring(LogSemiring, 1000))
+    struct = LinearChain(CheckpointSemiring(LogSemiring, 2))
     marginals2 = struct.marginals(vals)
     s2 = struct.sum(vals)
     assert torch.isclose(s, s2).all()

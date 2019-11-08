@@ -62,18 +62,30 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
     a_one, b_one = ones(a), ones(b)
 
-    t = time()
-    indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
-    print("trigger", step, total, time() - t)
+    print(a.shape, b.shape)
+    a = a.expand(*size[:-2],  1, a.shape[-2], a.shape[-1])
+    b = b.expand(*size[:-2], b.shape[-3], 1,  b.shape[-1])
 
-    t = time()
+    a2 = a.contiguous().view(-1, 1, a.shape[-1])
+    b2 = a.contiguous().view(-1, b.shape[-1], 1)
+
     for p in range(0, total, step):
+        # ind = indices[:, p : p + step].unbind()
+        # a_ind = mind(a_one, ind)
+        # b_ind = mind(b_one, ind)
+        ret[p:p+step] = fn(a[p:p+step], b[p:p+step])
 
-        ind = indices[:, p : p + step].unbind()
-        a_ind = mind(a_one, ind)
-        b_ind = mind(b_one, ind)
-        ret[ind] = fn(a[tuple(a_ind)], b[tuple(b_ind)])
-    print("done", time() - t)
+    # t = time()
+    # indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
+    # print("trigger", step, total, time() - t)
+
+    # t = time()
+    # for p in range(0, total, step):
+    #     ind = indices[:, p : p + step].unbind()
+    #     a_ind = mind(a_one, ind)
+    #     b_ind = mind(b_one, ind)
+    #     ret[ind] = fn(a[tuple(a_ind)], b[tuple(b_ind)])
+    # print("done", time() - t)
     return ret
 
 # def unaccumulate_(a, b, grad_output, fn, step=10000):
