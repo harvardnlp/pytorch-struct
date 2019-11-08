@@ -92,7 +92,6 @@ class DepTree(_Struct):
 
             ACL, ACR = AC2.unbind(dim=1)
             BCL, BCR = BC2.unbind(dim=1)
-            print(ACL.shape, BCL.shape)
             start = semiring.dot(BCL, ACR)
 
             arcsL = semiring.times(start, arc_scores[:, :, f[1], f[0]])
