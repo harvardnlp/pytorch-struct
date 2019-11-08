@@ -26,10 +26,12 @@ from .semirings import (
     MaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
+    LogSemiringKO,
+    MaxSemiringKO
 )
 
 
-version = "0.2"
+version = "0.3"
 
 # For flake8 compatibility.
 __all__ = [
@@ -44,6 +46,8 @@ __all__ = [
     MaxSemiring,
     SparseMaxSemiring,
     KMaxSemiring,
+    LogSemiringKO,
+    MaxSemiringKO,
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,

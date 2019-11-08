@@ -1,5 +1,4 @@
 import torch
-import torch.distributions
 
 
 class Semiring:
@@ -140,6 +139,7 @@ class LogSemiring(_BaseLog):
         c = (c.log() + max_a + max_b).squeeze(-1).squeeze(-1)
         return c
 
+
 class MaxSemiring(_BaseLog):
     """
     Implements the max semiring (max, +, -inf, 0).
@@ -226,130 +226,6 @@ def KMaxSemiring(k):
     return KMaxSemiring
 
 
-class _SampledLogSumExp(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input, dim):
-        ctx.save_for_backward(input, torch.tensor(dim))
-        return torch.logsumexp(input, dim=dim)
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        logits, dim = ctx.saved_tensors
-        grad_input = None
-        if ctx.needs_input_grad[0]:
-
-            def sample(ls):
-                pre_shape = ls.shape
-                draws = torch.multinomial(
-                    ls.softmax(-1).view(-1, pre_shape[-1]), 1, True
-                )
-                draws.squeeze(1)
-                return (
-                    torch.nn.functional.one_hot(draws, pre_shape[-1])
-                    .view(*pre_shape)
-                    .type_as(ls)
-                )
-
-            if dim == -1:
-                s = sample(logits)
-            else:
-                dim = dim if dim >= 0 else logits.dim() + dim
-                perm = [i for i in range(logits.dim()) if i != dim] + [dim]
-                rev_perm = [a for a, b in sorted(enumerate(perm), key=lambda a: a[1])]
-                s = sample(logits.permute(perm)).permute(rev_perm)
-
-            grad_input = grad_output.unsqueeze(dim).mul(s)
-        return grad_input, None
-
-
-class SampledSemiring(_BaseLog):
-    """
-    Implements a sampling semiring (logsumexp, +, -inf, 0).
-
-    "Gradients" give sample.
-
-    This is an exact forward-filtering, backward-sampling approach.
-    """
-
-    @staticmethod
-    def sum(xs, dim=-1):
-        return _SampledLogSumExp.apply(xs, dim)
-
-
-bits = torch.tensor([pow(2, i) for i in range(1, 18)])
-
-
-class _MultiSampledLogSumExp(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input, dim):
-        part = torch.logsumexp(input, dim=dim)
-        ctx.save_for_backward(input, part, torch.tensor(dim))
-        return part
-
-    @staticmethod
-    def backward(ctx, grad_output):
-
-        logits, part, dim = ctx.saved_tensors
-        grad_input = None
-        if ctx.needs_input_grad[0]:
-
-            def sample(ls):
-                pre_shape = ls.shape
-                draws = torch.multinomial(
-                    ls.softmax(-1).view(-1, pre_shape[-1]), 16, True
-                )
-                draws = draws.transpose(0, 1)
-                return (
-                    torch.nn.functional.one_hot(draws, pre_shape[-1])
-                    .view(16, *pre_shape)
-                    .type_as(ls)
-                )
-
-            if dim == -1:
-                s = sample(logits)
-            else:
-                dim = dim if dim >= 0 else logits.dim() + dim
-                perm = [i for i in range(logits.dim()) if i != dim] + [dim]
-                rev_perm = [0] + [
-                    a + 1 for a, b in sorted(enumerate(perm), key=lambda a: a[1])
-                ]
-                s = sample(logits.permute(perm)).permute(rev_perm)
-
-            dim = dim if dim >= 0 else logits.dim() + dim
-            final = (grad_output % 2).unsqueeze(0)
-            mbits = bits[:].type_as(grad_output)
-            on = grad_output.unsqueeze(0) % mbits.view(17, *[1] * grad_output.dim())
-            on = on[1:] - on[:-1]
-            old_bits = (on + final == 0).unsqueeze(dim + 1)
-
-            grad_input = (
-                mbits[:-1]
-                .view(16, *[1] * (s.dim() - 1))
-                .mul(s.masked_fill_(old_bits, 0))
-            )
-
-        return torch.sum(grad_input, dim=0), None
-
-
-class MultiSampledSemiring(_BaseLog):
-    """
-    Implements a multi-sampling semiring (logsumexp, +, -inf, 0).
-
-    "Gradients" give up to 16 samples with replacement.
-    """
-
-    @staticmethod
-    def sum(xs, dim=-1):
-        return _MultiSampledLogSumExp.apply(xs, dim)
-
-    @staticmethod
-    def to_discrete(xs, j):
-        i = j
-        final = xs % 2
-        mbits = bits.type_as(xs)
-        return (((xs % mbits[i + 1]) - (xs % mbits[i]) + final) != 0).type_as(xs)
-
-
 class EntropySemiring(Semiring):
     """
     Implements an entropy expectation semiring.
@@ -405,72 +281,3 @@ class EntropySemiring(Semiring):
         xs[0].fill_(0)
         xs[1].fill_(0)
         return xs
-
-
-class SparseMaxSemiring(_BaseLog):
-    """
-
-    Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).
-
-    Sparse-max gradients give a more sparse set of marginal like terms.
-
-    * From softmax to sparsemax- A sparse model of attention and multi-label classification :cite:`martins2016softmax`
-    * Differentiable dynamic programming for structured prediction and attention :cite:`mensch2018differentiable`
-    """
-
-    @staticmethod
-    def sum(xs, dim=-1):
-        return _SimplexProject.apply(xs, dim)
-
-
-class _SimplexProject(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, input, dim, z=1):
-        w_star = project_simplex(input, dim)
-        ctx.save_for_backward(input, w_star.clone(), torch.tensor(dim))
-        x = input.mul(w_star).sum(dim) - w_star.norm(p=2, dim=dim)
-        return x
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        input, w_star, dim = ctx.saved_tensors
-        w_star.requires_grad_(True)
-
-        grad_input = None
-        if ctx.needs_input_grad[0]:
-            wstar = _SparseMaxGrad.apply(w_star, dim)
-            grad_input = grad_output.unsqueeze(dim).mul(wstar)
-        return grad_input, None, None
-
-
-class _SparseMaxGrad(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, w_star, dim):
-        ctx.save_for_backward(w_star, dim)
-        return w_star
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        w_star, dim = ctx.saved_tensors
-        return sparsemax_grad(grad_output, w_star, dim.item()), None
-
-
-def project_simplex(v, dim, z=1):
-    v_sorted, _ = torch.sort(v, dim=dim, descending=True)
-    cssv = torch.cumsum(v_sorted, dim=dim) - z
-    ind = torch.arange(1, 1 + v.shape[dim]).to(dtype=v.dtype)
-    cond = v_sorted - cssv / ind >= 0
-    k = cond.sum(dim=dim, keepdim=True)
-    tau = cssv.gather(dim, k - 1) / k.to(dtype=v.dtype)
-    w = torch.clamp(v - tau, min=0)
-    return w
-
-
-def sparsemax_grad(dout, w_star, dim):
-    out = dout.clone()
-    supp = w_star > 0
-    out[w_star <= 0] = 0
-    nnz = supp.to(dtype=dout.dtype).sum(dim=dim, keepdim=True)
-    out = out - (out.sum(dim=dim, keepdim=True) / nnz)
-    out[w_star <= 0] = 0
-    return out

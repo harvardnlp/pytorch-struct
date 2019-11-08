@@ -6,6 +6,8 @@ from .semimarkov import SemiMarkov
 from .alignment import Alignment
 from .semirings import (
     LogSemiring,
+    LogSemiringKO,
+    MaxSemiringKO,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
@@ -336,3 +338,30 @@ def test_sparse_max2():
     print(Alignment(SparseMaxSemiring).sum(torch.rand(1, 8, 8, 3)))
     print(Alignment(SparseMaxSemiring).marginals(torch.rand(1, 8, 8, 3)))
     # assert(False)
+
+def test_lc_custom():
+    model = LinearChain
+    vals, _ = model._rand()
+
+
+    struct = LinearChain(LogSemiring)
+    marginals = struct.marginals(vals)
+    s = struct.sum(vals)
+
+    struct = LinearChain(LogSemiringKO)
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    print(marginals)
+    print(marginals2)
+
+
+    struct = LinearChain(MaxSemiring)
+    marginals = struct.marginals(vals)
+    s = struct.sum(vals)
+
+    struct = LinearChain(MaxSemiringKO)
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    assert torch.isclose(marginals, marginals2).all()
