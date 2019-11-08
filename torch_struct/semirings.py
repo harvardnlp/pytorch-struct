@@ -95,12 +95,22 @@ class _BaseLog(Semiring):
 class StdSemiring(_Base):
     """
     Implements the counting semiring (+, *, 0, 1).
-
     """
 
     @staticmethod
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
+
+
+    @classmethod
+    def dot(cls, a, b):
+        """
+        Dot product along last dim.
+
+        (Faster than calling sum and times.)
+        """
+        return torch.matmul(a.squeeze(-3),
+                           b.transpose(-2,-1).squeeze(-1))
 
 
 class LogSemiring(_BaseLog):
@@ -114,6 +124,21 @@ class LogSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
 
+    @classmethod
+    def dot(cls, a, b):
+        """
+        Dot product along last dim. (Faster than calling sum and times.)
+        """
+
+        a = a.unsqueeze(-2)
+        b = b.unsqueeze(-1)
+        c2 = torch.matmul(a.exp(), b.exp()).log().squeeze(-1).squeeze(-1)
+        max_a = a.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
+        max_b = b.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
+        exp_a, exp_b = a - max_a, b - max_b
+        c = torch.matmul(exp_a.exp(), exp_b.exp())
+        c = (c.log() + max_a + max_b).squeeze(-1).squeeze(-1)
+        return c
 
 class MaxSemiring(_BaseLog):
     """
