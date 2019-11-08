@@ -70,7 +70,7 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     b2 = b.contiguous().view(-1, b.shape[-3], 1, b.shape[-1])
     ret = ret.view(-1, b.shape[-3], a.shape[-2])
 
-    for p in range(0, total, step):
+    for p in range(0, ret.shape[0], step):
         # ind = indices[:, p : p + step].unbind()
         # a_ind = mind(a_one, ind)
         # b_ind = mind(b_one, ind)
