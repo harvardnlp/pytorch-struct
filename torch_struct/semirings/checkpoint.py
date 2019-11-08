@@ -10,12 +10,10 @@ def CheckpointSemiring(cls,  max_size, min_size=0):
                 return cls.dot(a, b)
             else:
                 size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
-                ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
-                accumulate_(a, b, ret,
+                return accumulate_(a, b, size,
                             lambda a, b: cls.dot(a, b),
                             preserve=len(ret.shape),
                             step=max_size // a.shape[-1] + 2)
-                return ret
 
         @staticmethod
         def backward(ctx, grad_output):
@@ -53,15 +51,18 @@ def mind(one, inds):
         inds[v] = inds[v].clone().fill_(0)
     return inds
 
-def accumulate_(a, b, ret, fn, preserve, step=10000):
+def accumulate_(a, b, size, fn, preserve, step=10000):
     slices = []
     total = 1
-    for s in ret.shape[:preserve]:
+    for s in size[:preserve]:
         slices.append(slice(s))
         total *= s
     if step > total:
-        ret[:] = fn(a, b)
+        return fn(a, b)
 
+    print("miss")
+
+    ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
     a_one, b_one = ones(a), ones(b)
     indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
 
@@ -70,7 +71,7 @@ def accumulate_(a, b, ret, fn, preserve, step=10000):
         a_ind = mind(a_one, ind)
         b_ind = mind(b_one, ind)
         ret[ind] = fn(a[tuple(a_ind)], b[tuple(b_ind)])
-
+    return ret
 
 # def unaccumulate_(a, b, grad_output, fn, step=10000):
 #     slices = []
