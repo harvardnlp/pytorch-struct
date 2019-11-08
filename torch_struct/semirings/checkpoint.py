@@ -29,7 +29,7 @@ def CheckpointSemiring(cls,  max_size, min_size=0):
         @staticmethod
         def dot(a, b):
             size = torch.tensor([max(i,j) for i, j in zip(a.shape, b.shape)]).prod()
-            if size > min_size:
+            if size < min_size:
                 return cls.dot(a, b)
             else:
                 return _Check.apply(a, b)
