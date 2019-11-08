@@ -19,6 +19,7 @@ from .alignment import Alignment
 from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
+    LogBasicSemiring,
     StdSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
@@ -46,6 +47,7 @@ __all__ = [
     MaxSemiring,
     SparseMaxSemiring,
     KMaxSemiring,
+    LogBasicSemiring,
     LogSemiringKO,
     MaxSemiringKO,
     EntropySemiring,

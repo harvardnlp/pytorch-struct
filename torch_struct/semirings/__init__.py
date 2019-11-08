@@ -1,4 +1,5 @@
 from .semirings import (
+    LogBasicSemiring,
     LogSemiring,
     StdSemiring,
     KMaxSemiring,
@@ -25,6 +26,7 @@ from .sample import (
 # For flake8 compatibility.
 __all__ = [
     LogSemiring,
+    LogBasicSemiring,
     StdSemiring,
     SampledSemiring,
     MaxSemiring,

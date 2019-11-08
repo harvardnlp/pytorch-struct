@@ -112,6 +112,18 @@ class StdSemiring(_Base):
                            b.transpose(-2,-1).squeeze(-1))
 
 
+class LogBasicSemiring(_BaseLog):
+    """
+    Implements the log-space semiring (logsumexp, +, -inf, 0).
+
+    Gradients give marginals.
+    """
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        return torch.logsumexp(xs, dim=dim)
+
+
 class LogSemiring(_BaseLog):
     """
     Implements the log-space semiring (logsumexp, +, -inf, 0).
