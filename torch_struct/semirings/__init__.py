@@ -1,6 +1,6 @@
 from .semirings import (
-    LogBasicSemiring,
     LogSemiring,
+    LogMemSemiring,
     StdSemiring,
     KMaxSemiring,
     MaxSemiring,
@@ -11,6 +11,10 @@ from .semirings import (
 from .keops import (
     LogSemiringKO,
     MaxSemiringKO
+)
+
+from .checkpoint import (
+    CheckpointSemiring
 )
 
 from .sparse_max import (
@@ -26,7 +30,7 @@ from .sample import (
 # For flake8 compatibility.
 __all__ = [
     LogSemiring,
-    LogBasicSemiring,
+    LogMemSemiring,
     StdSemiring,
     SampledSemiring,
     MaxSemiring,
@@ -35,5 +39,6 @@ __all__ = [
     EntropySemiring,
     MultiSampledSemiring,
     LogSemiringKO,
-    MaxSemiringKO
+    MaxSemiringKO,
+    CheckpointSemiring
 ]

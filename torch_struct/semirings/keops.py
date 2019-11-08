@@ -47,7 +47,7 @@ class _Max(torch.autograd.Function):
         return ret, ret
 
 class MaxSemiringKO(_BaseLog):
-    @staticmethod
+    @classmethod
     def sum(cls, xs, dim=-1):
         assert dim == -1
         return cls.dot(xs, xs.clone().fill_(0))

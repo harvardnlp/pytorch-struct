@@ -112,7 +112,7 @@ class StdSemiring(_Base):
                            b.transpose(-2,-1).squeeze(-1))
 
 
-class LogBasicSemiring(_BaseLog):
+class LogSemiring(_BaseLog):
     """
     Implements the log-space semiring (logsumexp, +, -inf, 0).
 
@@ -124,7 +124,7 @@ class LogBasicSemiring(_BaseLog):
         return torch.logsumexp(xs, dim=dim)
 
 
-class LogSemiring(_BaseLog):
+class LogMemSemiring(_BaseLog):
     """
     Implements the log-space semiring (logsumexp, +, -inf, 0).
 
