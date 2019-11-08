@@ -140,15 +140,13 @@ class LogMemSemiring(_BaseLog):
         """
         Dot product along last dim. (Faster than calling sum and times.)
         """
-
-        a = a.unsqueeze(-2)
-        b = b.unsqueeze(-1)
-        c2 = torch.matmul(a.exp(), b.exp()).log().squeeze(-1).squeeze(-1)
-        max_a = a.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
-        max_b = b.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
-        exp_a, exp_b = a - max_a, b - max_b
+        a2 = a.squeeze(-3)
+        b2 = b.squeeze(-2).transpose(-1, -2)
+        max_a = a2.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
+        max_b = b2.max(dim=-2, keepdim=True)[0].max(dim=-1, keepdim=True)[0]
+        exp_a, exp_b = a2 - max_a, b2 - max_b
         c = torch.matmul(exp_a.exp(), exp_b.exp())
-        c = (c.log() + max_a + max_b).squeeze(-1).squeeze(-1)
+        c = (c.log() + max_a + max_b)
         return c
 
 

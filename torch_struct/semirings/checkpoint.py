@@ -63,7 +63,7 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     a_one, b_one = ones(a), ones(b)
 
     print(a.shape, b.shape)
-    a = a.expand(*size[:-2],  1, a.shape[-2], a.shape[-1])
+    a = a.expand(*size[:-2], 1,  a.shape[-2], a.shape[-1])
     b = b.expand(*size[:-2], b.shape[-3], 1,  b.shape[-1])
 
     a2 = a.contiguous().view(-1, 1, a.shape[-2], a.shape[-1])
