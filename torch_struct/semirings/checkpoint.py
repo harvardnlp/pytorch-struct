@@ -9,7 +9,7 @@ def CheckpointSemiring(cls,  max_size, min_size=0):
             size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
             return accumulate_(a, b, size,
                         lambda a, b: cls.dot(a, b),
-                        preserve=len(ret.shape),
+                        preserve=len(size),
                         step=max_size // a.shape[-1] + 2)
 
         @staticmethod
@@ -56,8 +56,6 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
         total *= s
     if step > total:
         return fn(a, b)
-
-    print("miss")
 
     ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
     a_one, b_one = ones(a), ones(b)
