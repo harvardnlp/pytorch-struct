@@ -52,6 +52,9 @@ def accumulate_(a, b, ret, fn, preserve, step=10000):
     for s in ret.shape[:preserve]:
         slices.append(slice(s))
         total *= s
+    if step > total:
+        ret[:] = fn(a, b)
+
 
     a_one, b_one = ones(a), ones(b)
     indices = torch.tensor(np.mgrid[slices]).view(len(ret.shape[:preserve]), -1)
@@ -95,6 +98,14 @@ def unaccumulate2_(a, b, grad_output, preserve, fn, step=10000):
     for s in grad_output.shape[:preserve]:
         slices.append(slice(s))
         total *= s
+
+    if step > total:
+        with torch.enable_grad():
+            a_in = a.clone().requires_grad_(True)
+            b_in = b.clone().requires_grad_(True)
+            q = fn(a, b)
+        ag, bg = torch.autograd.grad(q, (a, b), grad_output)
+        return ag, bg
 
     a_one, b_one = ones(a), ones(b)
     print(a.shape, b.shape, a_one, b_one, preserve)
