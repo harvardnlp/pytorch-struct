@@ -6,13 +6,16 @@ def CheckpointSemiring(cls,  max_size, min_size=0):
         @staticmethod
         def forward(ctx, a, b):
             ctx.save_for_backward(a, b)
-            size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
-            ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
-            accumulate_(a, b, ret,
-                        lambda a, b: cls.dot(a, b),
-                        preserve=len(ret.shape),
-                        step=max_size // a.shape[-1] + 2)
-            return ret
+            if True:
+                return cls.dot(a, b)
+            else:
+                size = [max(p, q) for p, q in zip(a.shape, b.shape)][:-1]
+                ret = torch.zeros(*size, dtype=a.dtype, device=a.device)
+                accumulate_(a, b, ret,
+                            lambda a, b: cls.dot(a, b),
+                            preserve=len(ret.shape),
+                            step=max_size // a.shape[-1] + 2)
+                return ret
 
         @staticmethod
         def backward(ctx, grad_output):
