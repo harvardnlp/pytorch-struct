@@ -6,3 +6,4 @@ black
 pep8-naming
 dgl
 torchtext
+pykeops

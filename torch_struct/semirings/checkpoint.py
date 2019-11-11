@@ -2,7 +2,37 @@ import torch
 import numpy as np
 from time import time
 
-def CheckpointSemiring(cls,  max_size, min_size=0):
+def broadcast_size(a, b):
+    return torch.tensor([max(i,j) for i, j in zip(a.shape, b.shape)]).prod()
+
+
+def CheckpointSemiring(cls, min_size=0):
+    class _Check(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, a, b):
+            ctx.save_for_backward(a, b)
+            return cls.dot(a, b)
+
+        @staticmethod
+        def backward(ctx, grad_output):
+            a, b = ctx.saved_tensors
+            with torch.enable_grad():
+                q = cls.dot(a, b)
+                return torch.autograd.grad(q, (a, b), grad_output)
+
+    class _CheckpointSemiring(cls):
+        @staticmethod
+        def dot(a, b):
+            if broadcast_size(a, b) > min_size:
+                return _Check.apply(a, b)
+            else:
+                return cls.dot(a, b)
+
+    return _CheckpointSemiring
+
+
+
+def CheckpointShardSemiring(cls,  max_size, min_size=0):
     class _Check(torch.autograd.Function):
         @staticmethod
         def forward(ctx, a, b):

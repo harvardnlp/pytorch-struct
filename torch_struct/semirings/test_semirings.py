@@ -1,31 +1,106 @@
-# smint = integers(min_value=2, max_value=20)
-# @given(smint, smint, smint)
-# def test_mat(a, b, c):
-#     m1 = torch.rand(a, b)
-#     m2 = torch.rand(b, c)
-#     assert(torch.isclose(StdSemiring.contract("ab,bc->ac", m1, m2),
-#             torch.einsum("ab,bc->ac", (m1, m2))).all())
-#     assert(torch.isclose(StdSemiring.contract("ab,bc->a", m1, m2),
-#                          torch.einsum("ab,bc->a", (m1, m2))).all())
-#     assert(torch.isclose(StdSemiring.contract("ab,bc->c", m1, m2),
-#             torch.einsum("ab,bc->c", (m1, m2))).all())
-#     assert(torch.isclose(StdSemiring.contract("ab,bc->", m1, m2),
-#             torch.einsum("ab,bc->", (m1, m2))).all())
+import torch
+from hypothesis import given, settings
+from hypothesis.strategies import integers, data, sampled_from
 
-# @given(smint, smint, smint, smint, smint, smint)
-# def test_tensor(a, b, c, d, e, f):
-#     m1 = torch.rand(a, b, c)
 
-#     m2 = torch.rand(d, e, f)
+from . import (
+    LogSemiring,
+    LogMemSemiring,
+    CheckpointSemiring,
+    CheckpointShardSemiring,
+    LogSemiringKO,
+    MaxSemiringKO,
+    KMaxSemiring,
+    SparseMaxSemiring,
+    MaxSemiring,
+    StdSemiring,
+    SampledSemiring,
+    EntropySemiring,
+    MultiSampledSemiring,
+)
 
-#     assert(StdSemiring.contract("abc,def->ac", m1, m2).shape ==
-#            torch.einsum("abc,def->ac", (m1, m2)).shape)
 
-#     assert(torch.isclose(StdSemiring.contract("abc,def->ac", m1, m2),
-#             torch.einsum("abc,def->ac", (m1, m2))).all())
+lint = integers(min_value=2, max_value=10)
 
-#     m2 = torch.rand(a, b)
-#     print(StdSemiring.contract("abc,ab->ac", m1, m2),
-#                          torch.einsum("abc,ab->ac", (m1, m2)))
-#     assert(torch.isclose(StdSemiring.contract("abc,ab->ac", m1, m2),
-#                          torch.einsum("abc,ab->ac", (m1, m2))).all())
+@given(lint, lint, lint)
+def test_max(a, b, c):
+    torch.manual_seed(0)
+    t1 = torch.rand(a, 1, c).requires_grad_(True)
+    t2 = torch.rand(1, b, c).requires_grad_(True)
+    r1 = MaxSemiring.dot(t1, t2)
+
+    t1a = torch.zeros(2, a, 1, c)
+    t2a = torch.zeros(2, 1, b, c)
+    t1a[0] = t1
+    t2a[0] = t2
+    t1a[1].fill_(-1e10)
+    t2a[1].fill_(-1e10)
+
+    r2 = KMaxSemiring(2).dot(t1a, t2a)
+    assert torch.isclose(r1, r2[0]).all()
+
+    (a, b) = torch.autograd.grad(r1.sum(), (t1, t2))
+    (a2, b2) = torch.autograd.grad(r2[0].sum(), (t1a, t2a))
+
+    assert torch.isclose(a, a2[0]).all()
+    assert torch.isclose(b, b2[0]).all()
+
+@given(lint, lint, lint)
+def test_logsumexp(a, b, c):
+    torch.manual_seed(0)
+    t1 = torch.rand(a, 1, c).requires_grad_(True)
+    t2 = torch.rand(1, b, c).requires_grad_(True)
+
+    r1 = LogSemiring.dot(t1, t2)
+    r2 = LogSemiringKO.dot(t1, t2)
+    r3 = LogMemSemiring.dot(t1, t2)
+
+    assert torch.isclose(r1, r2).all()
+    assert torch.isclose(r1, r3).all()
+
+
+    (a1, b1) = torch.autograd.grad(r1.sum(), (t1, t2))
+    (a2, b2) = torch.autograd.grad(r2.sum(), (t1, t2))
+    (a3, b3) = torch.autograd.grad(r3.sum(), (t1, t2))
+
+    assert torch.isclose(a1, a2).all()
+    assert torch.isclose(b1, b2).all()
+    assert torch.isclose(a1, a3).all()
+    assert torch.isclose(b1, b3).all()
+
+
+@given(lint, lint, lint)
+def test_checkpoint(a, b, c):
+    torch.manual_seed(0)
+    t1 = torch.rand(a, 1, c).requires_grad_(True)
+    t2 = torch.rand(1, b, c).requires_grad_(True)
+
+    r1 = LogSemiring.dot(t1, t2)
+    r2 = CheckpointSemiring(LogSemiring).dot(t1, t2)
+    r2 = CheckpointShardSemiring(LogSemiring, 2).dot(t2, t1)
+    assert torch.isclose(r1, r2).all()
+
+    (a1, b1) = torch.autograd.grad(r1.sum(), (t1, t2))
+    (a2, b2) = torch.autograd.grad(r2.sum(), (t1, t2))
+
+    assert torch.isclose(a1, a2).all()
+    assert torch.isclose(b1, b2).all()
+
+
+@given(lint, lint, lint, lint)
+def test_matmul(a, b, c, d):
+    torch.manual_seed(0)
+    t1 = torch.rand(a, b, c).requires_grad_(True)
+    t2 = torch.rand(a, c, d).requires_grad_(True)
+
+    r1 = StdSemiring.matmul(t1, t2)
+    r2 = StdSemiring.sum(StdSemiring.times(t1.unsqueeze(-2).view(a, b, 1, c),
+                                           t2.transpose(-2,-1).unsqueeze(-3).view(a, 1, d, c)))
+    print(r1.shape, r2.shape, a,b,d)
+    assert torch.isclose(r1, r2).all()
+
+    # (a1, b1) = torch.autograd.grad(r1.sum(), (t1, t2))
+    # (a2, b2) = torch.autograd.grad(r2.sum(), (t1, t2))
+
+    # assert torch.isclose(a1, a2).all()
+    # assert torch.isclose(b1, b2).all()

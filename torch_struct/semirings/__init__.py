@@ -14,7 +14,8 @@ from .keops import (
 )
 
 from .checkpoint import (
-    CheckpointSemiring
+    CheckpointSemiring,
+    CheckpointShardSemiring
 )
 
 from .sparse_max import (

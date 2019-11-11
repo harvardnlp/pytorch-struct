@@ -1,7 +1,11 @@
 import torch
 import torch.distributions
-from pykeops.torch import LazyTensor
 from .semirings import _BaseLog
+
+try:
+    from pykeops.torch import LazyTensor
+except:
+    pass
 
 class LogSemiringKO(_BaseLog):
     """

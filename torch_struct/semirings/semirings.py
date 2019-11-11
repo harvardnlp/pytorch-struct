@@ -22,6 +22,17 @@ class Semiring:
         return cls.sum(cls.times(*ls))
 
     @classmethod
+    def matmul(cls, a, b, dims=1):
+        "Generalized tensordot."
+        act_on = -(dims + 1)
+        a = a.unsqueeze(-1)
+        b = b.unsqueeze(act_on-1)
+        c = cls.times(a, b)
+        for d in range(act_on, -1, 1):
+            c = cls.sum(c, dim=d)
+        return c
+
+    @classmethod
     def times(cls, *ls):
         "Multiply a list of tensors together"
         cur = ls[0]
@@ -102,14 +113,13 @@ class StdSemiring(_Base):
 
 
     @classmethod
-    def dot(cls, a, b):
+    def matmul(cls, a, b, dims=1):
         """
         Dot product along last dim.
 
         (Faster than calling sum and times.)
         """
-        return torch.matmul(a.squeeze(-3),
-                           b.transpose(-2,-1).squeeze(-1))
+        return torch.matmul(a, b)
 
 
 class LogSemiring(_BaseLog):
