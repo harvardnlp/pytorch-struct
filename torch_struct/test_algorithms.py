@@ -356,6 +356,7 @@ def test_lc_custom():
     assert torch.isclose(s, s2).all()
     print(marginals)
     print(marginals2)
+
     assert torch.isclose(marginals, marginals).all()
 
     struct = LinearChain(LogMemSemiring)
