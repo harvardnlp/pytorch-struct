@@ -150,8 +150,8 @@ class LogMemSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b, dims=1):
-        max_a = a.max(dim=-1, keepdim=True)[0]
-        max_b = b.max(dim=-2, keepdim=True)[0]
+        max_a = a.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
+        max_b = b.max(dim=-2, keepdim=True)[0].max(dim=-1, keepdim=True)[0]
         exp_a, exp_b = a - max_a, b - max_b
         c = torch.matmul(exp_a.exp(), exp_b.exp())
         c = (c.log() + max_a + max_b)
