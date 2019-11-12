@@ -30,6 +30,7 @@ class LinearChain(_Struct):
 
     def _check_potentials(self, edge, lengths=None):
         batch, N_1, C, C2 = edge.shape
+        edge.requires_grad_(True)
         edge = self.semiring.convert(edge)
 
         N = N_1 + 1
@@ -49,45 +50,25 @@ class LinearChain(_Struct):
         "Compute forward pass by linear scan"
         # Setup
         semiring = self.semiring
-        log_potentials.requires_grad_(True)
-        ssize = semiring.size()
         log_potentials, batch, N, C, lengths = self._check_potentials(
             log_potentials, lengths
         )
-        log_N = int(math.ceil(math.log(N - 1, 2)))
-        bin_N = int(math.pow(2, log_N))
-        chart = [None for _ in range(log_N + 1)]
-        chart[0] = self._make_chart(
-            1, (batch, bin_N, C, C), log_potentials, force_grad
-        )[0]
+        log_N, bin_N = self._bin_length(N - 1)
+        chart = self._chart((batch, bin_N, C, C), log_potentials, force_grad)
 
         # Init
         for b in range(lengths.shape[0]):
             end = lengths[b] - 1
-            semiring.zero_(chart[0][:, b, end:])
-            cs = torch.arange(C)
-            chart[0][:, b, end:, cs, cs] = semiring.one_(
-                chart[0][:, b, end:].diagonal(0, 2, 3)
-            )
-
-        for b in range(lengths.shape[0]):
-            end = lengths[b] - 1
-            chart[0][:, b, :end] = log_potentials[:, b, :end]
+            semiring.one_(chart[:, b, end:].diagonal(0, 2, 3))
+            chart[:, b, :end] = log_potentials[:, b, :end]
 
         # Scan
-        def merge(x, size):
-            return semiring.dot(
-                x[:, :, 0 : : 2]
-                .transpose(3, 4)
-                .view(ssize, batch, size, 1, C, C),
-                x[:, :, 1 : : 2].view(ssize, batch, size, C, 1, C),
-            )
-
-        size = bin_N
         for n in range(1, log_N + 1):
-            size = size // 2
-            chart[n] = merge(chart[n - 1], size)
-        v = semiring.sum(semiring.sum(chart[-1][:, :, 0]))
+            chart = semiring.matmul(
+                chart[:, :, 1 : : 2],
+                chart[:, :, 0 : : 2]
+            )
+        v = semiring.sum(semiring.sum(chart[:, :, 0]))
         return v, [log_potentials], None
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):

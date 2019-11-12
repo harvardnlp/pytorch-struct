@@ -1,4 +1,5 @@
 import torch
+import math
 from .semirings import LogSemiring
 from torch.autograd import Function
 
@@ -19,6 +20,15 @@ class _Struct:
         score = torch.mul(potentials, parts)
         batch = tuple((score.shape[b] for b in batch_dims))
         return self.semiring.prod(score.view(batch + (-1,)))
+
+    def _bin_length(self, length):
+        log_N = int(math.ceil(math.log(length, 2)))
+        bin_N = int(math.pow(2, log_N))
+        return log_N, bin_N
+
+
+    def _chart(self, size, potentials, force_grad):
+        return self._make_chart(1, size, potentials, force_grad)[0]
 
     def _make_chart(self, N, size, potentials, force_grad=False):
         return [

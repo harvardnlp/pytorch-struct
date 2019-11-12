@@ -8,6 +8,7 @@ from .semirings import (
     LogSemiring,
     LogMemSemiring,
     CheckpointSemiring,
+    CheckpointShardSemiring,
     LogSemiringKO,
     MaxSemiringKO,
     KMaxSemiring,
@@ -123,6 +124,23 @@ def test_kmax(data):
         for k in range(K):
             assert (torch.isclose(alpha[k], tops[k])).all()
 
+@given(data())
+@settings(max_examples=50, deadline=None)
+def test_cky(data):
+    model = data.draw(
+        sampled_from([CKY])
+    )
+    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+
+    assert alpha.shape[0] == batch
+    assert count.shape[0] == batch
+    assert alpha.shape == count.shape
+    assert torch.isclose(count[0], alpha[0])
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)
@@ -130,7 +148,7 @@ def test_generic_a(data):
     model = data.draw(
         sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
-    semiring = data.draw(sampled_from([LogSemiring, LogMemSemiring, MaxSemiring]))
+    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
@@ -354,43 +372,53 @@ def test_lc_custom():
     marginals2 = struct.marginals(vals)
     s2 = struct.sum(vals)
     assert torch.isclose(s, s2).all()
-    print(marginals)
-    print(marginals2)
-
     assert torch.isclose(marginals, marginals).all()
 
-    struct = LinearChain(LogMemSemiring)
-    marginals = struct.marginals(vals)
-    s = struct.sum(vals)
-
-    struct = LinearChain(LogSemiringKO)
+    struct = LinearChain(CheckpointShardSemiring(LogSemiring, 1))
     marginals2 = struct.marginals(vals)
     s2 = struct.sum(vals)
     assert torch.isclose(s, s2).all()
     assert torch.isclose(marginals, marginals).all()
-    print(marginals)
-    print(marginals2)
 
-
-
-    struct = LinearChain(LogSemiring)
-    marginals = struct.marginals(vals)
-    s = struct.sum(vals)
-
-    struct = LinearChain(LogSemiringKO)
+    struct = LinearChain(LogMemSemiring)
     marginals2 = struct.marginals(vals)
     s2 = struct.sum(vals)
     assert torch.isclose(s, s2).all()
-    print(marginals)
-    print(marginals2)
+    assert torch.isclose(marginals, marginals).all()
 
 
-    struct = LinearChain(MaxSemiring)
-    marginals = struct.marginals(vals)
-    s = struct.sum(vals)
+    # struct = LinearChain(LogMemSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
 
-    struct = LinearChain(MaxSemiringKO)
-    marginals2 = struct.marginals(vals)
-    s2 = struct.sum(vals)
-    assert torch.isclose(s, s2).all()
-    assert torch.isclose(marginals, marginals2).all()
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals).all()
+    # print(marginals)
+    # print(marginals2)
+
+
+
+    # struct = LinearChain(LogSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # print(marginals)
+    # print(marginals2)
+
+
+    # struct = LinearChain(MaxSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(MaxSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals2).all()

@@ -12,18 +12,8 @@ class Semiring:
     """
 
     @classmethod
-    def size(cls):
-        "Additional *ssize* first dimension needed."
-        return 1
-
-    @classmethod
-    def dot(cls, *ls):
-        "Dot product along last dim."
-        return cls.sum(cls.times(*ls))
-
-    @classmethod
     def matmul(cls, a, b, dims=1):
-        "Generalized tensordot."
+        "Generalized tensordot. Classes should override."
         act_on = -(dims + 1)
         a = a.unsqueeze(-1)
         b = b.unsqueeze(act_on-1)
@@ -31,6 +21,19 @@ class Semiring:
         for d in range(act_on, -1, 1):
             c = cls.sum(c, dim=d)
         return c
+
+    @classmethod
+    def size(cls):
+        "Additional *ssize* first dimension needed."
+        return 1
+
+    @classmethod
+    def dot(cls, a, b):
+        "Dot product along last dim."
+        a = a.unsqueeze(-2)
+        b = b.unsqueeze(-1)
+        return cls.matmul(a, b).squeeze(-1).squeeze(-1)
+
 
     @classmethod
     def times(cls, *ls):
@@ -146,21 +149,12 @@ class LogMemSemiring(_BaseLog):
         return torch.logsumexp(xs, dim=dim)
 
     @classmethod
-    def dot(cls, a, b):
-        """
-        Dot product along last dim. (Faster than calling sum and times.)
-        """
-        if a.shape[-3] == 1 and b.shape[-2] == 1 and a.shape[-2] != 1:
-            a2 = a.squeeze(-3)
-            b2 = b.squeeze(-2).transpose(-1, -2)
-        else:
-            a2 = a.unsqueeze(-2)
-            b2 = b.unsqueeze(-1)
-        max_a = a2.max(dim=-1, keepdim=True)[0].max(dim=-2, keepdim=True)[0]
-        max_b = b2.max(dim=-2, keepdim=True)[0].max(dim=-1, keepdim=True)[0]
-        exp_a, exp_b = a2 - max_a, b2 - max_b
+    def matmul(cls, a, b, dims=1):
+        max_a = a.max(dim=-1, keepdim=True)[0]
+        max_b = b.max(dim=-2, keepdim=True)[0]
+        exp_a, exp_b = a - max_a, b - max_b
         c = torch.matmul(exp_a.exp(), exp_b.exp())
-        c = (c.log() + max_a + max_b).squeeze(-1).squeeze(-1)
+        c = (c.log() + max_a + max_b)
         return c
 
 

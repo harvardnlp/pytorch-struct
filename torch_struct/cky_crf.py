@@ -5,33 +5,46 @@ A, B = 0, 1
 
 
 class CKY_CRF(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False):
-        semiring = self.semiring
-        batch, N, _, NT = scores.shape
-        scores = semiring.convert(scores)
+    def _check_potentials(self, edge, lengths=None):
+        batch, N, _, NT = edge.shape
+        edge.requires_grad_(True)
+        edge = self.semiring.convert(edge)
         if lengths is None:
             lengths = torch.LongTensor([N] * batch)
-        scores.requires_grad_(True)
+
+        return edge, batch, N, NT, lengths
+
+
+    def _dp(self, scores, lengths=None, force_grad=False):
+        semiring = self.semiring
+        scores, batch, N, NT, lengths = self._check_potentials(
+            scores, lengths
+        )
         beta = self._make_chart(2, (batch, N, N), scores, force_grad)
+        L_DIM, R_DIM = 2, 3
 
         # Initialize
         reduced_scores = semiring.sum(scores)
-        rule_use = reduced_scores.diagonal(0, 2, 3)
+        term = reduced_scores.diagonal(0, L_DIM, R_DIM)
         ns = torch.arange(N)
-        beta[A][:, :, ns, 0] = rule_use
-        beta[B][:, :, ns, N - 1] = rule_use
+        beta[A][:, :, ns, 0] = term
+        beta[B][:, :, ns, N - 1] = term
 
         # Run
         for w in range(1, N):
             Y = beta[A][:, :, : N - w, :w]
             Z = beta[B][:, :, w:, N - w :]
-            score = reduced_scores.diagonal(w, 2, 3)
-            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), score)
+            score = reduced_scores.diagonal(w, L_DIM, R_DIM)
+            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z),
+                                                       score)
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
 
         final = beta[A][:, :, 0]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
+
+
+    # For testing
 
     def enumerate(self, scores):
         semiring = self.semiring
