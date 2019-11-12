@@ -47,7 +47,7 @@ def CheckpointShardSemiring(cls,  max_size, min_size=0):
             return accumulate_(a, b, size,
                         lambda a, b: cls.matmul(a, b),
                         preserve=len(size),
-                        step=max_size // a.shape[-1] + 2)
+                        step=max_size // (b.shape[-2] * a.shape[-1]) + 2)
 
         @staticmethod
         def backward(ctx, grad_output):
@@ -56,7 +56,7 @@ def CheckpointShardSemiring(cls,  max_size, min_size=0):
             fn = lambda a, b: cls.matmul(a, b)
             grad_a, grad_b = unaccumulate_(
                 a, b, grad_output, len(grad_output.shape), fn,
-                step=max_size // a.shape[-1] + 2
+                step=max_size // (b.shape[-2] * a.shape[-1]) + 2
             )
             return grad_a, grad_b
 
