@@ -41,5 +41,6 @@ __all__ = [
     MultiSampledSemiring,
     LogSemiringKO,
     MaxSemiringKO,
-    CheckpointSemiring
+    CheckpointSemiring,
+    CheckpointShardSemiring
 ]

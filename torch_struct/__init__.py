@@ -29,7 +29,8 @@ from .semirings import (
     MultiSampledSemiring,
     LogSemiringKO,
     MaxSemiringKO,
-    CheckpointSemiring
+    CheckpointSemiring,
+    CheckpointShardSemiring
 )
 
 
@@ -66,5 +67,6 @@ __all__ = [
     HMM,
     AlignmentCRF,
     Alignment,
-    CheckpointSemiring
+    CheckpointSemiring,
+    CheckpointShardSemiring
 ]
