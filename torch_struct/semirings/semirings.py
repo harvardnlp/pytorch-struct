@@ -136,7 +136,7 @@ class LogSemiring(_BaseLog):
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
 
-
+from pykeops.torch import LazyTensor
 class LogMemSemiring(_BaseLog):
     """
     Implements the log-space semiring (logsumexp, +, -inf, 0).
@@ -150,8 +150,8 @@ class LogMemSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b, dims=1):
-        max_a = a.max()
-        max_b = b.max()
+        max_a = a.max(dim=-1, keepdim=True)[0]
+        max_b = b.max(dim=-2, keepdim=True)[0]
         exp_a, exp_b = a - max_a, b - max_b
         c = torch.matmul(exp_a.exp(), exp_b.exp())
         c = (c.log() + max_a + max_b)
