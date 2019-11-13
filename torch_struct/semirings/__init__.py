@@ -8,7 +8,9 @@ from .semirings import (
 )
 
 from .fast_semirings import (
-    FastLogSemiring
+    FastLogSemiring,
+    FastMaxSemiring,
+    FastSampleSemiring,
 )
 
 
@@ -30,6 +32,8 @@ from .sample import (
 # For flake8 compatibility.
 __all__ = [
     FastLogSemiring,
+    FastMaxSemiring,
+    FastSampleSemiring,
     LogSemiring,
     StdSemiring,
     SampledSemiring,

@@ -20,6 +20,8 @@ from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     FastLogSemiring,
+    FastMaxSemiring,
+    FastSampleSemiring,
     StdSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
@@ -48,6 +50,9 @@ __all__ = [
     SparseMaxSemiring,
     KMaxSemiring,
     FastLogSemiring,
+    FastMaxSemiring,
+    FastSampleSemiring,
+
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,
