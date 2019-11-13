@@ -16,6 +16,10 @@ class FastLogSemiring(_BaseLog):
 
     Gradients give marginals.
     """
+    @staticmethod
+    def sum(xs, dim=-1):
+        return torch.logsumexp(xs, dim=dim)
+
 
     @staticmethod
     def matmul(a, b, dims=1):
