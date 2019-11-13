@@ -78,6 +78,7 @@ class DepTree(_Struct):
 
         ends = [None]
         for k in range(1, N):
+
             def tf(a):
                 return torch.narrow(a, 3, 0, N - k)
 

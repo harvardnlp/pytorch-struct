@@ -126,8 +126,8 @@ def unaccumulate_(a, b, grad_output, preserve, fn, step=10000):
 
     a2 = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
     b2 = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
-    a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])
-    b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
+    a2 = a2.contiguous().view(-1, a.shape[-2], a.shape[-1])
+    b2 = b2.contiguous().view(-1, b.shape[-2], b.shape[-1])
 
     a_grad = a2.clone().fill_(0)
     b_grad = b2.clone().fill_(0)

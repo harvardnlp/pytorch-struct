@@ -14,12 +14,9 @@ class CKY_CRF(_Struct):
 
         return edge, batch, N, NT, lengths
 
-
     def _dp(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
-        scores, batch, N, NT, lengths = self._check_potentials(
-            scores, lengths
-        )
+        scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
         beta = self._make_chart(2, (batch, N, N), scores, force_grad)
         L_DIM, R_DIM = 2, 3
 
@@ -35,14 +32,12 @@ class CKY_CRF(_Struct):
             Y = beta[A][:, :, : N - w, :w]
             Z = beta[B][:, :, w:, N - w :]
             score = reduced_scores.diagonal(w, L_DIM, R_DIM)
-            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z),
-                                                       score)
+            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), score)
             beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
 
         final = beta[A][:, :, 0]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
-
 
     # For testing
 

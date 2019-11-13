@@ -30,7 +30,7 @@ from .semirings import (
     EntropySemiring,
     MultiSampledSemiring,
     CheckpointSemiring,
-    CheckpointShardSemiring
+    CheckpointShardSemiring,
 )
 
 
@@ -52,7 +52,6 @@ __all__ = [
     FastLogSemiring,
     FastMaxSemiring,
     FastSampleSemiring,
-
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,
@@ -69,5 +68,5 @@ __all__ = [
     AlignmentCRF,
     Alignment,
     CheckpointSemiring,
-    CheckpointShardSemiring
+    CheckpointShardSemiring,
 ]

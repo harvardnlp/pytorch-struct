@@ -5,11 +5,8 @@ from hypothesis.strategies import integers, data, sampled_from
 
 from . import (
     LogSemiring,
-    LogMemSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
-    LogSemiringKO,
-    MaxSemiringKO,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
@@ -44,29 +41,6 @@ def test_max(a, b, c):
 
     assert torch.isclose(a, a2[0]).all()
     assert torch.isclose(b, b2[0]).all()
-
-@given(lint, lint, lint)
-def test_logsumexp(a, b, c):
-    torch.manual_seed(0)
-    t1 = torch.rand(a, 1, c).requires_grad_(True)
-    t2 = torch.rand(1, b, c).requires_grad_(True)
-
-    r1 = LogSemiring.dot(t1, t2)
-    r2 = LogSemiringKO.dot(t1, t2)
-    r3 = LogMemSemiring.dot(t1, t2)
-
-    assert torch.isclose(r1, r2).all()
-    assert torch.isclose(r1, r3).all()
-
-
-    (a1, b1) = torch.autograd.grad(r1.sum(), (t1, t2))
-    (a2, b2) = torch.autograd.grad(r2.sum(), (t1, t2))
-    (a3, b3) = torch.autograd.grad(r3.sum(), (t1, t2))
-
-    assert torch.isclose(a1, a2).all()
-    assert torch.isclose(b1, b2).all()
-    assert torch.isclose(a1, a3).all()
-    assert torch.isclose(b1, b3).all()
 
 
 @given(lint, lint, lint)

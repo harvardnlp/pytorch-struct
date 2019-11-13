@@ -12,14 +12,15 @@ class Semiring:
     """
 
     @classmethod
-    def matmul(cls, a, b, dims=1):
+    def matmul(cls, a, b):
         "Generalized tensordot. Classes should override."
+        dims = 1
         act_on = -(dims + 1)
         a = a.unsqueeze(-1)
         b = b.unsqueeze(act_on-1)
         c = cls.times(a, b)
         for d in range(act_on, -1, 1):
-            c = cls.sum(c, dim=d)
+            c = cls.sum(c.transpose(-2, -1))
         return c
 
     @classmethod

@@ -29,8 +29,9 @@ class SemiMarkov(_Struct):
             log_potentials, lengths
         )
         log_N, bin_N = self._bin_length(N - 1)
-        init = self._chart((batch, bin_N, K-1, K-1, C, C),
-                           log_potentials, force_grad)
+        init = self._chart(
+            (batch, bin_N, K - 1, K - 1, C, C), log_potentials, force_grad
+        )
 
         # Init.
         for b in range(lengths.shape[0]):
@@ -42,12 +43,14 @@ class SemiMarkov(_Struct):
         K_1 = K - 1
 
         # Order n, n-1
-        chart = init.permute(0, 1, 2, 3, 5, 4, 6).contiguous() \
-                       .view(-1, batch, bin_N, K_1*C, K_1*C)
+        chart = (
+            init.permute(0, 1, 2, 3, 5, 4, 6)
+            .contiguous()
+            .view(-1, batch, bin_N, K_1 * C, K_1 * C)
+        )
 
         for n in range(1, log_N + 1):
-            chart = semiring.matmul(chart[:, :, 1::2],
-                                    chart[:, :, 0::2])
+            chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
 
         final = chart.view(-1, batch, 1, K_1, C, K_1, C)
         v = semiring.sum(semiring.sum(final[:, :, 0, 0, :, 0, :]))

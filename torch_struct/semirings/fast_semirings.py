@@ -2,7 +2,12 @@ import torch
 import torch.distributions
 from .semirings import _BaseLog
 from .sample import _SampledLogSumExp
-import genbmm
+try:
+    import genbmm
+except:
+    pass
+
+
 
 def matmul_size(a, b):
     size = [max(i,j) for i, j in zip(a.shape[:-2], b.shape[:-2])]
