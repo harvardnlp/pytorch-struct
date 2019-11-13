@@ -190,11 +190,21 @@
 <a class="reference external" href="https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master"><img alt="Coverage Status" src="https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master" /></a></p>
 <p align="center">
   <img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png">
-  </p><p>A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.
-(or an implementation of <a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Inside-Outside and Forward-Backward Algorithms Are Just Backprop”<a/>)</p>
+  </p><p>A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.</p>
+<ul class="simple">
+<li><p>HMM / LinearChain-CRF</p></li>
+<li><p>HSMM / SemiMarkov-CRF</p></li>
+<li><p>Dependency Tree-CRF</p></li>
+<li><p>PCFG Binary Tree-CRF</p></li>
+<li><p>…</p></li>
+</ul>
+<p>Designed to be used as efficient batched layers in other PyTorch code.</p>
 <div class="section" id="getting-started">
 <h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span>!pip install -qU git+https://github.com/harvardnlp/pytorch-struct
+# Optional CUDA kernels for FastLogSemiring
+!pip install -qU git+https://github.com/harvardnlp/genbmm
+# For plotting.
 !pip install -q matplotlib
 </pre></div>
 </div>
@@ -278,12 +288,6 @@
 <li><p>Adapters for generative structured models (CFG / HMM / HSMM)</p></li>
 <li><p>Common tree structured parameterizations TreeLSTM / SpanLSTM</p></li>
 </ul>
-<p>Design Strategy:</p>
-<ol class="simple">
-<li><p>Minimal efficient python implementatations.</p></li>
-<li><p>Batched for GPU.</p></li>
-<li><p>Code can be ported to other backends</p></li>
-</ol>
 </div>
 <div class="section" id="low-level-api">
 <h2>Low-level API:<a class="headerlink" href="#low-level-api" title="Permalink to this headline">¶</a></h2>

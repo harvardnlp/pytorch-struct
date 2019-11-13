@@ -8,16 +8,24 @@
   </p>
 
 
-
 A library of tested, GPU implementations of core structured prediction algorithms for deep learning applications.
-(or an implementation of <a href="https://www.cs.jhu.edu/~jason/papers/eisner.spnlp16.pdf">Inside-Outside and Forward-Backward Algorithms Are Just Backprop"<a/>)
 
+* HMM / LinearChain-CRF 
+* HSMM / SemiMarkov-CRF 
+* Dependency Tree-CRF 
+* PCFG Binary Tree-CRF 
+* ...
+
+Designed to be used as efficient batched layers in other PyTorch code. 
 
 ## Getting Started
 
 
 ```python
 !pip install -qU git+https://github.com/harvardnlp/pytorch-struct
+# Optional CUDA kernels for FastLogSemiring
+!pip install -qU git+https://github.com/harvardnlp/genbmm
+# For plotting.
 !pip install -q matplotlib
 ```
 
@@ -138,12 +146,6 @@ Extensions:
 * Adapters for generative structured models (CFG / HMM / HSMM)
 * Common tree structured parameterizations TreeLSTM / SpanLSTM
 
-Design Strategy:
-
-1) Minimal efficient python implementatations. 
-2) Batched for GPU.
-3) Code can be ported to other backends
-
 
 ## Low-level API: 
 
@@ -153,8 +155,6 @@ Everything implemented through semiring dynamic programming.
 * Max and MAP computation
 * Sampling through specialized backprop
 * Entropy and first-order semirings. 
-
-
 
 
 ## Examples
