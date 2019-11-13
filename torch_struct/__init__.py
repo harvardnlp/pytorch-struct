@@ -20,6 +20,7 @@ from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     FastLogSemiring,
+    TempMax,
     FastMaxSemiring,
     FastSampleSemiring,
     StdSemiring,
@@ -69,4 +70,5 @@ __all__ = [
     Alignment,
     CheckpointSemiring,
     CheckpointShardSemiring,
+    TempMax
 ]

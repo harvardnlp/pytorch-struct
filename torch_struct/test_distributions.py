@@ -84,7 +84,7 @@ def test_autoregressive(data, seed):
                 )
 
     auto = Autoregressive(Model(), init, n_classes, n_length, normalize=False)
-    v = auto.greedy_argmax()
+    v, _, _ = auto.greedy_max()
     batch, n, c = v.shape
     assert n == n_length
     assert c == n_classes
@@ -121,21 +121,31 @@ def test_ar2():
     init = (torch.zeros(batch, layer, H),)
 
     class AR(torch.nn.Module):
-        def __init__(self):
+        def __init__(self, sparse=True):
             super().__init__()
+            self.sparse = sparse
             self.rnn = torch.nn.RNN(H, H, batch_first=True)
             self.proj = torch.nn.Linear(H, C)
-            self.embed = torch.nn.Embedding(C, H)
+            if sparse:
+                self.embed = torch.nn.Embedding(C, H)
+            else:
+                self.embed = torch.nn.Linear(C, H)
 
         def forward(self, inputs, state):
+            if not self.sparse and inputs.dim() == 2:
+                inputs = torch.nn.functional.one_hot(inputs, C).float()
             inputs = self.embed(inputs)
             out, state = self.rnn(inputs, t(state)[0])
             out = self.proj(out)
             return out, t((state,))
 
+    dist2 = Autoregressive(AR(sparse=False), init, C, N, normalize=False)
+    path, _, _ = dist2.greedy_tempmax(1)
+
     dist = Autoregressive(AR(), init, C, N, normalize=False)
-    scores = dist._greedy_max()
-    path = dist.greedy_argmax()
+
+    path, scores, _ = dist.greedy_max()
+
     assert torch.isclose(scores, dist.log_prob(path.unsqueeze(0))).all()
     scores = dist._beam_max(7)
     path = dist.beam_topk(7)
@@ -182,5 +192,5 @@ def test_ar2():
             return out, t(state)
 
     dist = Autoregressive(AR(), init, C, N)
-    dist.greedy_argmax()
+    dist.greedy_max()
     dist.beam_topk(5)

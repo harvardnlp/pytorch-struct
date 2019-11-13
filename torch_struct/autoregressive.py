@@ -1,5 +1,5 @@
 import torch
-from .semirings import MaxSemiring, KMaxSemiring
+from .semirings import MaxSemiring, KMaxSemiring, TempMax
 from torch.distributions.distribution import Distribution
 
 
@@ -13,7 +13,7 @@ class AutoregressiveModel(torch.nn.Module):
         Compute the logits for all tokens in a batched sequence :math:`p(y_{t+1}, ... y_{T}| y_1 \ldots t)`
 
         Parameters:
-            inputs (batch_size x N x C): next tokens to update representation
+            inputs (batch_size x N x C ): next tokens to update representation
             state (tuple of batch_size x ...): everything needed for conditioning.
 
         Retuns:
@@ -138,6 +138,7 @@ class Autoregressive(Distribution):
 
         # Beam Search
         all_beams = []
+        all_logits = []
         for t in range(0, self.n_length):
             logits, state = self.model(unwrap(tokens).unsqueeze(1), state)
             b2, n2, c2 = logits.shape
@@ -157,6 +158,7 @@ class Autoregressive(Distribution):
                 )
             if self.normalize:
                 logits = logits.log_softmax(-1)
+            all_logits.append(logits)
             ex_beam = beam.unsqueeze(-1) + logits
             ex_beam.requires_grad_(True)
             all_beams.append(ex_beam)
@@ -173,19 +175,35 @@ class Autoregressive(Distribution):
             )
             marg = torch.stack(marg, dim=2)
             all_m.append(marg.sum(0))
-        return torch.stack(all_m, dim=0), v
+        return torch.stack(all_m, dim=0), v, torch.stack(all_logits, dim=2)
 
-    def greedy_argmax(self):
+    def greedy_max(self):
         """
         Compute "argmax" using greedy search.
 
         Returns:
             greedy_path (*batch x N x C*)
+            greedy_max (*batch*)
+            logits (*batch x N x C*)
         """
-        return self._beam_search(MaxSemiring)[0].squeeze(0)
+        a, b, c = self._beam_search(MaxSemiring)
+        return a.squeeze(0), b.squeeze(0), c.squeeze(0)
 
-    def _greedy_max(self):
-        return self._beam_search(MaxSemiring)[1].squeeze(0)
+    def greedy_tempmax(self, alpha):
+        """
+        Compute differentiable scheduled sampling using greedy search.
+
+        Based on:
+
+        * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`
+
+        Returns:
+            greedy_path (*batch x N x C*)
+            greedy_max (*batch*)
+            logits (*batch x N x C*)
+        """
+        a, b, c = self._beam_search(TempMax(alpha), alpha)
+        return a.squeeze(0), b.squeeze(0), c.squeeze(0)
 
     def beam_topk(self, K):
         """
