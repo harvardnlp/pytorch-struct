@@ -4,29 +4,16 @@ from .semirings import (
     KMaxSemiring,
     MaxSemiring,
     EntropySemiring,
-
 )
 
-from .fast_semirings import (
-    FastLogSemiring,
-    FastMaxSemiring,
-    FastSampleSemiring,
-)
+from .fast_semirings import FastLogSemiring, FastMaxSemiring, FastSampleSemiring
 
 
-from .checkpoint import (
-    CheckpointSemiring,
-    CheckpointShardSemiring
-)
+from .checkpoint import CheckpointSemiring, CheckpointShardSemiring
 
-from .sparse_max import (
-    SparseMaxSemiring,
-)
+from .sparse_max import SparseMaxSemiring
 
-from .sample import (
-   MultiSampledSemiring,
-   SampledSemiring,
-)
+from .sample import MultiSampledSemiring, SampledSemiring
 
 
 # For flake8 compatibility.
@@ -43,5 +30,5 @@ __all__ = [
     EntropySemiring,
     MultiSampledSemiring,
     CheckpointSemiring,
-    CheckpointShardSemiring
+    CheckpointShardSemiring,
 ]

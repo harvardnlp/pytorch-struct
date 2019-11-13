@@ -19,7 +19,6 @@ Example use cases:
 
 import torch
 from .helpers import _Struct
-import math
 
 
 class LinearChain(_Struct):

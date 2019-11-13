@@ -1,6 +1,6 @@
 import torch
-from hypothesis import given, settings
-from hypothesis.strategies import integers, data, sampled_from
+from hypothesis import given
+from hypothesis.strategies import integers
 
 
 from . import (
@@ -8,16 +8,13 @@ from . import (
     CheckpointSemiring,
     CheckpointShardSemiring,
     KMaxSemiring,
-    SparseMaxSemiring,
     MaxSemiring,
     StdSemiring,
-    SampledSemiring,
-    EntropySemiring,
-    MultiSampledSemiring,
 )
 
 
 lint = integers(min_value=2, max_value=10)
+
 
 @given(lint, lint, lint)
 def test_max(a, b, c):
@@ -68,9 +65,13 @@ def test_matmul(a, b, c, d):
     t2 = torch.rand(a, c, d).requires_grad_(True)
 
     r1 = StdSemiring.matmul(t1, t2)
-    r2 = StdSemiring.sum(StdSemiring.times(t1.unsqueeze(-2).view(a, b, 1, c),
-                                           t2.transpose(-2,-1).unsqueeze(-3).view(a, 1, d, c)))
-    print(r1.shape, r2.shape, a,b,d)
+    r2 = StdSemiring.sum(
+        StdSemiring.times(
+            t1.unsqueeze(-2).view(a, b, 1, c),
+            t2.transpose(-2, -1).unsqueeze(-3).view(a, 1, d, c),
+        )
+    )
+    print(r1.shape, r2.shape, a, b, d)
     assert torch.isclose(r1, r2).all()
 
     # (a1, b1) = torch.autograd.grad(r1.sum(), (t1, t2))

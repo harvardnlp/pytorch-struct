@@ -2,6 +2,7 @@ import torch
 import torch.distributions
 from .semirings import _BaseLog
 
+
 class _SampledLogSumExp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input, dim):
@@ -53,6 +54,7 @@ class SampledSemiring(_BaseLog):
 
 
 bits = torch.tensor([pow(2, i) for i in range(1, 18)])
+
 
 class _MultiSampledLogSumExp(torch.autograd.Function):
     @staticmethod

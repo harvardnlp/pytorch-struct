@@ -1,6 +1,5 @@
 import torch
 from .helpers import _Struct
-from .semirings import LogSemiring
 
 A, B = 0, 1
 
@@ -127,7 +126,6 @@ class CKY(_Struct):
         terms, rules, roots = scores
         batch, N, T = terms.shape
         _, NT, _, _ = rules.shape
-        S = NT + T
         v, (term_use, rule_use, top, spans), alpha = self._dp(
             scores, lengths=lengths, force_grad=True
         )

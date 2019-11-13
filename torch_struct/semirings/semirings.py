@@ -17,7 +17,7 @@ class Semiring:
         dims = 1
         act_on = -(dims + 1)
         a = a.unsqueeze(-1)
-        b = b.unsqueeze(act_on-1)
+        b = b.unsqueeze(act_on - 1)
         c = cls.times(a, b)
         for d in range(act_on, -1, 1):
             c = cls.sum(c.transpose(-2, -1))
@@ -34,7 +34,6 @@ class Semiring:
         a = a.unsqueeze(-2)
         b = b.unsqueeze(-1)
         return cls.matmul(a, b).squeeze(-1).squeeze(-1)
-
 
     @classmethod
     def times(cls, *ls):
@@ -114,7 +113,6 @@ class StdSemiring(_Base):
     @staticmethod
     def sum(xs, dim=-1):
         return torch.sum(xs, dim=dim)
-
 
     @classmethod
     def matmul(cls, a, b, dims=1):

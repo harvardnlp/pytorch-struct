@@ -1,12 +1,12 @@
 import torch
-import numpy as np
-from time import time
+
 
 def broadcast_size(a, b):
-    return torch.tensor([max(i,j) for i, j in zip(a.shape, b.shape)]).prod()
+    return torch.tensor([max(i, j) for i, j in zip(a.shape, b.shape)]).prod()
+
 
 def matmul_size(a, b):
-    size = [max(i,j) for i, j in zip(a.shape[:-2], b.shape[:-2])]
+    size = [max(i, j) for i, j in zip(a.shape[:-2], b.shape[:-2])]
     size.append(a.shape[-2])
     size.append(b.shape[-1])
     return size
@@ -37,33 +37,38 @@ def CheckpointSemiring(cls, min_size=0):
     return _CheckpointSemiring
 
 
-
-def CheckpointShardSemiring(cls,  max_size, min_size=0):
+def CheckpointShardSemiring(cls, max_size, min_size=0):
     class _Check(torch.autograd.Function):
         @staticmethod
         def forward(ctx, a, b):
             ctx.save_for_backward(a, b)
             size = matmul_size(a, b)
-            return accumulate_(a, b, size,
-                        lambda a, b: cls.matmul(a, b),
-                        preserve=len(size),
-                        step=max_size // (b.shape[-2] * a.shape[-1]) + 2)
+            return accumulate_(
+                a,
+                b,
+                size,
+                lambda a, b: cls.matmul(a, b),
+                preserve=len(size),
+                step=max_size // (b.shape[-2] * a.shape[-1]) + 2,
+            )
 
         @staticmethod
         def backward(ctx, grad_output):
             a, b = ctx.saved_tensors
-            size = matmul_size(a, b)
-            fn = lambda a, b: cls.matmul(a, b)
             grad_a, grad_b = unaccumulate_(
-                a, b, grad_output, len(grad_output.shape), fn,
-                step=max_size // (b.shape[-2] * a.shape[-1]) + 2
+                a,
+                b,
+                grad_output,
+                len(grad_output.shape),
+                lambda a, b: cls.matmul(a, b),
+                step=max_size // (b.shape[-2] * a.shape[-1]) + 2,
             )
             return grad_a, grad_b
 
     class _CheckpointSemiring(cls):
         @staticmethod
         def matmul(a, b):
-            size = torch.tensor([max(i,j) for i, j in zip(a.shape, b.shape)]).prod()
+            size = torch.tensor([max(i, j) for i, j in zip(a.shape, b.shape)]).prod()
             if size < min_size:
                 return cls.matmul(a, b)
             else:
@@ -79,11 +84,13 @@ def ones(x):
             one.append(i)
     return one
 
+
 def mind(one, inds):
     inds = list(inds)
     for v in one:
         inds[v] = inds[v].clone().fill_(0)
     return inds
+
 
 def accumulate_(a, b, size, fn, preserve, step=10000):
     slices = []
@@ -103,7 +110,7 @@ def accumulate_(a, b, size, fn, preserve, step=10000):
     b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
     ret = ret.view(-1, a.shape[-2], b.shape[-1])
     for p in range(0, ret.shape[0], step):
-        ret[p:p+step, :] = fn(a2[p:p+step], b2[p:p+step])
+        ret[p : p + step, :] = fn(a2[p : p + step], b2[p : p + step])
     ret = ret.view(*size)
     return ret
 
@@ -135,12 +142,12 @@ def unaccumulate_(a, b, grad_output, preserve, fn, step=10000):
     grad_output = grad_output.view(-1, a.shape[-2], b.shape[-1])
     for p in range(0, grad_output.shape[0], step):
         with torch.enable_grad():
-            a_in = a2[p:p+step].clone().requires_grad_(True)
-            b_in = b2[p:p+step].clone().requires_grad_(True)
+            a_in = a2[p : p + step].clone().requires_grad_(True)
+            b_in = b2[p : p + step].clone().requires_grad_(True)
             q = fn(a_in, b_in)
-        ag, bg = torch.autograd.grad(q, (a_in, b_in), grad_output[p:p+step])
-        a_grad[p:p+step] += ag
-        b_grad[p:p+step] += bg
+        ag, bg = torch.autograd.grad(q, (a_in, b_in), grad_output[p : p + step])
+        a_grad[p : p + step] += ag
+        b_grad[p : p + step] += bg
 
     a_grad = a_grad.view(*size[:-2], a.shape[-2], a.shape[-1])
     b_grad = b_grad.view(*size[:-2], b.shape[-2], b.shape[-1])

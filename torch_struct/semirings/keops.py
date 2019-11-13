@@ -4,8 +4,9 @@ from .semirings import _BaseLog
 
 try:
     from pykeops.torch import LazyTensor
-except:
+except ImportError:
     pass
+
 
 class LogSemiringKO(_BaseLog):
     """
@@ -17,9 +18,8 @@ class LogSemiringKO(_BaseLog):
     @staticmethod
     def sum(a, dim=-1):
         a_lazy = LazyTensor(a.unsqueeze(-1).unsqueeze(-1).contiguous())
-        c = a_lazy.sum(-1).logsumexp(a.dim()-1).squeeze(-1).squeeze(-1)
+        c = a_lazy.sum(-1).logsumexp(a.dim() - 1).squeeze(-1).squeeze(-1)
         return c
-
 
     @classmethod
     def dot(cls, a, b):
@@ -28,7 +28,7 @@ class LogSemiringKO(_BaseLog):
         """
         a_lazy = LazyTensor(a.unsqueeze(-1).unsqueeze(-1).contiguous())
         b_lazy = LazyTensor(b.unsqueeze(-1).unsqueeze(-1).contiguous())
-        c = (a_lazy + b_lazy).sum(-1).logsumexp(a.dim()-1).squeeze(-1).squeeze(-1)
+        c = (a_lazy + b_lazy).sum(-1).logsumexp(a.dim() - 1).squeeze(-1).squeeze(-1)
         return c
 
 
@@ -38,8 +38,8 @@ class _Max(torch.autograd.Function):
         one_hot = b.shape[-1]
         a_lazy = LazyTensor(a.unsqueeze(-1).unsqueeze(-1).contiguous())
         b_lazy = LazyTensor(b.unsqueeze(-1).unsqueeze(-1).contiguous())
-        c = (a_lazy + b_lazy).sum(-1).max(a.dim()-1).squeeze(-1).squeeze(-1)
-        ac = (a_lazy + b_lazy).sum(-1).argmax(a.dim()-1).squeeze(-1).squeeze(-1)
+        c = (a_lazy + b_lazy).sum(-1).max(a.dim() - 1).squeeze(-1).squeeze(-1)
+        ac = (a_lazy + b_lazy).sum(-1).argmax(a.dim() - 1).squeeze(-1).squeeze(-1)
         ctx.save_for_backward(ac, torch.tensor(one_hot))
         return c
 
@@ -49,6 +49,7 @@ class _Max(torch.autograd.Function):
         back = torch.nn.functional.one_hot(ac, size).type_as(grad_output)
         ret = grad_output.unsqueeze(-1).mul(back)
         return ret, ret
+
 
 class MaxSemiringKO(_BaseLog):
     @classmethod
