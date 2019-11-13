@@ -469,7 +469,7 @@ div.rendered_html tbody tr:hover {
 <h2>Log<a class="headerlink" href="#Log" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.LogSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the log-space semiring (logsumexp, +, -inf, 0).</p>
 <p>Gradients give marginals.</p>
 </dd></dl>
@@ -516,7 +516,7 @@ div.rendered_html tbody tr:hover {
 <h2>Max<a class="headerlink" href="#Max" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.MaxSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the max semiring (max, +, -inf, 0).</p>
 <p>Gradients give argmax.</p>
 </dd></dl>
@@ -603,7 +603,7 @@ div.rendered_html tbody tr:hover {
 <h2>Counting<a class="headerlink" href="#Counting" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.StdSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the counting semiring (+, <a href="#id1"><span class="problematic" id="id2">*</span></a>, 0, 1).</p>
 </dd></dl>
 
@@ -649,7 +649,7 @@ div.rendered_html tbody tr:hover {
 <h2>Sampled<a class="headerlink" href="#Sampled" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.SampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give sample.</p>
 <p>This is an exact forward-filtering, backward-sampling approach.</p>
@@ -694,7 +694,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <dl class="class">
 <dt id="torch_struct.MultiSampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give up to 16 samples with replacement.</p>
 </dd></dl>
@@ -741,7 +741,7 @@ div.rendered_html tbody tr:hover {
 <h2>Entropy<a class="headerlink" href="#Entropy" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.EntropySemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements an entropy expectation semiring.</p>
 <p>Computes both the log-values and the running distributional entropy.</p>
 <p>Based on descriptions in:</p>
@@ -793,7 +793,7 @@ div.rendered_html tbody tr:hover {
 <h2>Sparsemax<a class="headerlink" href="#Sparsemax" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="torch_struct.SparseMaxSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SparseMaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings.html#SparseMaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SparseMaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sparse_max.html#SparseMaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).</p>
 <p>Sparse-max gradients give a more sparse set of marginal like terms.</p>
 <ul class="simple">
