@@ -1,5 +1,4 @@
 import torch
-import math
 from .helpers import _Struct
 
 
@@ -25,55 +24,35 @@ class SemiMarkov(_Struct):
         # Setup
         semiring = self.semiring
         log_potentials.requires_grad_(True)
-        ssize = semiring.size()
         log_potentials, batch, N, K, C, lengths = self._check_potentials(
             log_potentials, lengths
         )
-        log_N = int(math.ceil(math.log(N - 1, 2)))
-        bin_N = int(math.pow(2, log_N))
-        chart = [
-            self._make_chart(
-                1, (batch, bin_N, K - 1, K - 1, C, C), log_potentials, force_grad
-            )[0]
-            if i == 0
-            else None
-            for i in range(log_N + 1)
-        ]
+        log_N, bin_N = self._bin_length(N - 1)
+        init = self._chart(
+            (batch, bin_N, K - 1, K - 1, C, C), log_potentials, force_grad
+        )
 
-        # Init
+        # Init.
         for b in range(lengths.shape[0]):
             end = lengths[b] - 1
-            semiring.zero_(chart[0][:, b, end:])
-            cs = torch.arange(C)
-            chart[0][:, b, end:, 0, 0, cs, cs] = semiring.one_(
-                chart[0][:, b, end:, 0, 0].diagonal(0, 2, 3)
-            )
-
-        for b in range(lengths.shape[0]):
-            end = lengths[b] - 1
-            chart[0][:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
-            cs = torch.arange(C)
+            semiring.one_(init[:, b, end:, 0, 0].diagonal(0, 2, 3))
+            init[:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
             for k in range(1, K - 1):
-                chart[0][:, b, : end - (k - 1), k - 1, k, cs, cs] = semiring.one_(
-                    chart[0][:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3)
-                )
-
+                semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3))
         K_1 = K - 1
-        # Scan
 
-        def merge(x, size):
-            left = x[:, :, 0 : size * 2 : 2].permute(0, 1, 2, 4, 6, 3, 5).contiguous()
-            right = x[:, :, 1 : size * 2 : 2].permute(0, 1, 2, 3, 5, 4, 6).contiguous()
-            return semiring.dot(
-                left.view(ssize, batch, size, 1, K_1, 1, C, K_1 * C),
-                right.view(ssize, batch, size, K_1, 1, C, 1, K_1 * C),
-            )
+        # Order n, n-1
+        chart = (
+            init.permute(0, 1, 2, 3, 5, 4, 6)
+            .contiguous()
+            .view(-1, batch, bin_N, K_1 * C, K_1 * C)
+        )
 
-        size = bin_N
         for n in range(1, log_N + 1):
-            size = int(size / 2)
-            chart[n] = merge(chart[n - 1], size)
-        v = semiring.sum(semiring.sum(chart[-1][:, :, 0, 0, 0, :, :]))
+            chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
+
+        final = chart.view(-1, batch, 1, K_1, C, K_1, C)
+        v = semiring.sum(semiring.sum(final[:, :, 0, 0, :, 0, :]))
         return v, [log_potentials], None
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):

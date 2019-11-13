@@ -6,6 +6,8 @@ from .semimarkov import SemiMarkov
 from .alignment import Alignment
 from .semirings import (
     LogSemiring,
+    CheckpointSemiring,
+    CheckpointShardSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
@@ -47,34 +49,34 @@ def test_simple_b(batch, N, K, C):
     SemiMarkov(MultiSampledSemiring).marginals(vals)
 
 
-@given(data())
-@settings(max_examples=50, deadline=None)
-def test_networkx(data):
-    batch = 5
-    N = 10
-    NT = 5
-    T = 5
+# @given(data())
+# @settings(max_examples=50, deadline=None)
+# def test_networkx(data):
+#     batch = 5
+#     N = 10
+#     NT = 5
+#     T = 5
 
-    torch.manual_seed(0)
+#     torch.manual_seed(0)
 
-    terms = torch.rand(batch, N, T)
-    rules = torch.rand(batch, NT, (NT + T), (NT + T))
-    roots = torch.rand(batch, NT)
-    vals = (terms, rules, roots)
-    model = CKY
-    lengths = torch.tensor(
-        [data.draw(integers(min_value=3, max_value=N)) for b in range(batch - 1)] + [N]
-    )
-    struct = model(SampledSemiring)
-    marginals = struct.marginals(vals, lengths=lengths)
-    spans = CKY.from_parts(marginals)[0]
-    CKY.to_networkx(spans)
+#     terms = torch.rand(batch, N, T)
+#     rules = torch.rand(batch, NT, (NT + T), (NT + T))
+#     roots = torch.rand(batch, NT)
+#     vals = (terms, rules, roots)
+#     model = CKY
+#     lengths = torch.tensor(
+#         [data.draw(integers(min_value=3, max_value=N)) for b in range(batch - 1)] + [N]
+#     )
+#     struct = model(SampledSemiring)
+#     marginals = struct.marginals(vals, lengths=lengths)
+#     spans = CKY.from_parts(marginals)[0]
+#     CKY.to_networkx(spans)
 
-    struct = model(MultiSampledSemiring)
-    marginals = struct.marginals(vals, lengths=lengths)
-    m2 = tuple((MultiSampledSemiring.to_discrete(m, 5) for m in marginals))
-    spans = CKY.from_parts(m2)[0]
-    CKY.to_networkx(spans)
+#     struct = model(MultiSampledSemiring)
+#     marginals = struct.marginals(vals, lengths=lengths)
+#     m2 = tuple((MultiSampledSemiring.to_discrete(m, 5) for m in marginals))
+#     spans = CKY.from_parts(m2)[0]
+#     CKY.to_networkx(spans)
 
 
 @given(data())
@@ -118,6 +120,22 @@ def test_kmax(data):
         assert torch.isclose(struct.score(topk[1], vals), alpha[1]).all()
         for k in range(K):
             assert (torch.isclose(alpha[k], tops[k])).all()
+
+
+@given(data())
+@settings(max_examples=50, deadline=None)
+def test_cky(data):
+    model = data.draw(sampled_from([CKY]))
+    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+
+    assert alpha.shape[0] == batch
+    assert count.shape[0] == batch
+    assert alpha.shape == count.shape
+    assert torch.isclose(count[0], alpha[0])
 
 
 @given(data())
@@ -248,6 +266,9 @@ def test_generic_lengths(data, seed):
     # m2 = deptree(vals, lengths=lengths)
     # assert (m2 < part).all()
 
+    if model == CKY:
+        return
+
     seqs, extra = struct.from_parts(m)
     # assert (seqs.shape == (batch, N))
     # assert seqs.max().item() <= N
@@ -367,3 +388,63 @@ def test_sparse_max2():
     print(Alignment(SparseMaxSemiring).sum(torch.rand(1, 8, 8, 3)))
     print(Alignment(SparseMaxSemiring).marginals(torch.rand(1, 8, 8, 3)))
     # assert(False)
+
+
+def test_lc_custom():
+    model = LinearChain
+    vals, _ = model._rand()
+
+    struct = LinearChain(LogSemiring)
+    marginals = struct.marginals(vals)
+    s = struct.sum(vals)
+
+    struct = LinearChain(CheckpointSemiring(LogSemiring, 1))
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    assert torch.isclose(marginals, marginals2).all()
+
+    struct = LinearChain(CheckpointShardSemiring(LogSemiring, 1))
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    assert torch.isclose(marginals, marginals2).all()
+
+    # struct = LinearChain(LogMemSemiring)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals).all()
+
+    # struct = LinearChain(LogMemSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals).all()
+    # print(marginals)
+    # print(marginals2)
+
+    # struct = LinearChain(LogSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # print(marginals)
+    # print(marginals2)
+
+    # struct = LinearChain(MaxSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(MaxSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals2).all()

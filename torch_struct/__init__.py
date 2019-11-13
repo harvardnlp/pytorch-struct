@@ -19,6 +19,10 @@ from .alignment import Alignment
 from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
+    FastLogSemiring,
+    TempMax,
+    FastMaxSemiring,
+    FastSampleSemiring,
     StdSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
@@ -26,10 +30,12 @@ from .semirings import (
     MaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
+    CheckpointSemiring,
+    CheckpointShardSemiring,
 )
 
 
-version = "0.2"
+version = "0.3"
 
 # For flake8 compatibility.
 __all__ = [
@@ -44,6 +50,9 @@ __all__ = [
     MaxSemiring,
     SparseMaxSemiring,
     KMaxSemiring,
+    FastLogSemiring,
+    FastMaxSemiring,
+    FastSampleSemiring,
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,
@@ -59,4 +68,7 @@ __all__ = [
     HMM,
     AlignmentCRF,
     Alignment,
+    CheckpointSemiring,
+    CheckpointShardSemiring,
+    TempMax
 ]
