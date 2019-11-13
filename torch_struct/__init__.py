@@ -27,8 +27,6 @@ from .semirings import (
     MaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
-    LogSemiringKO,
-    MaxSemiringKO,
     CheckpointSemiring,
     CheckpointShardSemiring
 )
@@ -50,8 +48,6 @@ __all__ = [
     SparseMaxSemiring,
     KMaxSemiring,
     FastLogSemiring,
-    LogSemiringKO,
-    MaxSemiringKO,
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,

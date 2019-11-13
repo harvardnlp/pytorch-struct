@@ -38,8 +38,6 @@ __all__ = [
     KMaxSemiring,
     EntropySemiring,
     MultiSampledSemiring,
-    LogSemiringKO,
-    MaxSemiringKO,
     CheckpointSemiring,
     CheckpointShardSemiring
 ]
