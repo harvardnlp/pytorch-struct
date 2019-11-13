@@ -6,4 +6,3 @@ black
 pep8-naming
 dgl
 torchtext
-git+https://github.com/harvardnlp/semirings
