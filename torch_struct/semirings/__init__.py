@@ -1,6 +1,5 @@
 from .semirings import (
     LogSemiring,
-    LogMemSemiring,
     StdSemiring,
     KMaxSemiring,
     MaxSemiring,
@@ -8,10 +7,10 @@ from .semirings import (
 
 )
 
-from .keops import (
-    LogSemiringKO,
-    MaxSemiringKO
+from .fast_semirings import (
+    FastLogSemiring
 )
+
 
 from .checkpoint import (
     CheckpointSemiring,
@@ -30,8 +29,8 @@ from .sample import (
 
 # For flake8 compatibility.
 __all__ = [
+    FastLogSemiring,
     LogSemiring,
-    LogMemSemiring,
     StdSemiring,
     SampledSemiring,
     MaxSemiring,
