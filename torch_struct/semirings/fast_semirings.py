@@ -2,7 +2,7 @@ import torch
 import torch.distributions
 from .semirings import _BaseLog
 from .sample import _SampledLogSumExp
-import genmatmul
+import genbmm
 
 def matmul_size(a, b):
     size = [max(i,j) for i, j in zip(a.shape[:-2], b.shape[:-2])]
@@ -10,6 +10,13 @@ def matmul_size(a, b):
     size.append(b.shape[-1])
     return size
 
+def broadcast(a, b):
+    size = matmul_size(a, b)
+    a = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
+    b = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
+    a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])
+    b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
+    return a2, b2, size
 
 class FastLogSemiring(_BaseLog):
     """
@@ -24,12 +31,8 @@ class FastLogSemiring(_BaseLog):
 
     @staticmethod
     def matmul(a, b, dims=1):
-        size = matmul_size(a, b)
-        a = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
-        b = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
-        a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])
-        b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
-        return genmatmul.logmatmul(a2, b2).view(size)
+        a2, b2, size = broadcast(a, b)
+        return genbmm.logbmm(a2, b2).view(size)
 
 class FastMaxSemiring(_BaseLog):
     @staticmethod
@@ -39,12 +42,8 @@ class FastMaxSemiring(_BaseLog):
 
     @staticmethod
     def matmul(a, b, dims=1):
-        size = matmul_size(a, b)
-        a = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
-        b = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
-        a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])
-        b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
-        return genmatmul.maxmatmul(a2, b2).view(size)
+        a2, b2, size = broadcast(a, b)
+        return genbmm.maxbmm(a2, b2).view(size)
 
 
 class FastSampleSemiring(_BaseLog):
@@ -54,9 +53,5 @@ class FastSampleSemiring(_BaseLog):
 
     @staticmethod
     def matmul(a, b, dims=1):
-        size = matmul_size(a, b)
-        a = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
-        b = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
-        a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])
-        b2 = b.contiguous().view(-1, b.shape[-2], b.shape[-1])
-        return genmatmul.samplematmul(a2, b2).view(size)
+        a2, b2, size = broadcast(a, b)
+        return genbmm.samplebmm(a2, b2).view(size)
