@@ -66,6 +66,7 @@ class CKY_CRF(_Struct):
 
         ai = slice(None)
         # Run
+        print("hellO")
         for w in range(1, N):
             # Y = beta[A][:, :, : N - w, :]
             # Z = beta[B][:, :, w:, :]
