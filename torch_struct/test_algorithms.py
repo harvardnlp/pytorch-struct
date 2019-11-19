@@ -247,7 +247,7 @@ def test_parts_from_sequence(data, seed):
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
     model = data.draw(
-        sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+        sampled_from([CKY_CRF])#, Alignment, LinearChain, SemiMarkov, CKY, DepTree])
     )
     struct = model()
     torch.manual_seed(seed)
