@@ -1,5 +1,5 @@
 import torch
-from .helpers import _Struct
+from .helpers import _Struct, Chart
 
 A, B = 0, 1
 
@@ -18,93 +18,77 @@ class CKY(_Struct):
         S = NT + T
 
         terms, rules, roots = (
-            semiring.convert(terms),
-            semiring.convert(rules),
-            semiring.convert(roots),
+            semiring.convert(terms).requires_grad_(True),
+            semiring.convert(rules).requires_grad_(True),
+            semiring.convert(roots).requires_grad_(True),
         )
         if lengths is None:
             lengths = torch.LongTensor([N] * batch)
 
         # Charts
-        beta = self._make_chart(2, (batch, N, N, NT), rules, force_grad)
-        span = self._make_chart(N, (batch, N, NT), rules, force_grad)
-
-        # Terminals and Tops
-        top = self._chart((batch, NT), rules, force_grad)
-        term_use = self._chart((batch, N, T), terms, force_grad)
-        term_use[:] = terms + 0.0
+        beta = [Chart((batch, N, N, NT), rules, semiring)
+                for _ in range(2)]
+        span = [None for _ in range(N)]
+        v = (ssize, batch)
+        term_use = terms + 0.0
 
         # Split into NT/T groups
         NTs = slice(0, NT)
         Ts = slice(NT, S)
         rules = rules.view(ssize, batch, 1, NT, S, S)
-        X_Y_Z = (
-            rules[..., NTs, NTs]
-            .contiguous()
-            .view(ssize, batch, NT, NT * NT)
-            .transpose(-2, -1)
-        )
-        X_Y1_Z = (
-            rules[..., Ts, NTs]
-            .contiguous()
-            .view(ssize, batch, NT, T * NT)
-            .transpose(-2, -1)
-        )
-        X_Y_Z1 = (
-            rules[..., NTs, Ts]
-            .contiguous()
-            .view(ssize, batch, NT, NT * T)
-            .transpose(-2, -1)
-        )
-        X_Y1_Z1 = (
-            rules[..., Ts, Ts]
-            .contiguous()
-            .view(ssize, batch, NT, T * T)
-            .transpose(-2, -1)
-        )
+        def arr(a, b):
+            return rules[..., a, b] \
+                .contiguous() \
+                .view(*v + (NT, -1)) \
+                .transpose(-2, -1)
 
-        # Here
+        matmul = semiring.matmul
+        times = semiring.times
+        X_Y_Z = arr(NTs, NTs)
+        X_Y1_Z = arr(Ts, NTs)
+        X_Y_Z1 = arr(NTs, Ts)
+        X_Y1_Z1 = arr(Ts, Ts)
+
         for w in range(1, N):
             all_span = []
+            v2 = v +(N - w, -1)
 
-            Y = beta[A][..., : N - w, :w, :].transpose(-2, -1)
-            Z = beta[B][..., w:, N - w :, :]
-            all_span.append(
-                semiring.matmul(
-                    semiring.matmul(Y, Z).view(ssize, batch, N - w, NT * NT), X_Y_Z
-                )
+            Y = beta[A][: N - w, :w, :]
+            Z = beta[B][w:, N - w :, :]
+            X1 = matmul(
+                matmul(Y.transpose(-2, -1), Z).view(*v2), X_Y_Z
             )
+            all_span.append(X1)
+
             Y_term = term_use[..., : N - w, :, None]
             Z_term = term_use[..., w:, None, :]
 
-            Y = beta[A][..., : N - w, w - 1, :, None]
-            all_span.append(
-                semiring.matmul(
-                    semiring.times(Y, Z_term).view(ssize, batch, N - w, T * NT), X_Y_Z1
+            Y = Y[...,-1, :].unsqueeze(-1)
+            X2 = matmul(
+                    times(Y, Z_term).view(*v2), X_Y_Z1
                 )
-            )
 
-            Z = beta[B][..., w:, N - w, None, :]
-            all_span.append(
-                semiring.matmul(
-                    semiring.times(Y_term, Z).view(ssize, batch, N - w, NT * T), X_Y1_Z
+            Z = Z[..., 0, :].unsqueeze(-2)
+            X3 = matmul(
+                    times(Y_term, Z).view(*v2), X_Y1_Z
                 )
-            )
+            all_span += [X2, X3]
 
             if w == 1:
-                all_span.append(
-                    semiring.matmul(
-                        semiring.times(Y_term, Z_term).view(ssize, batch, N - w, T * T),
-                        X_Y1_Z1,
-                    )
+                X4 = matmul(
+                    times(Y_term, Z_term).view(*v2),
+                    X_Y1_Z1,
                 )
+                all_span.append(X4)
 
             span[w] = semiring.sum(torch.stack(all_span, dim=-1))
-            beta[A][..., : N - w, w, :] = span[w]
-            beta[B][..., w:N, N - w - 1, :] = beta[A][..., : N - w, w, :]
+            beta[A][: N - w, w, :] = span[w]
+            beta[B][w:N, N - w - 1, :] = span[w]
 
-        top[:] = torch.stack(
-            [beta[A][:, i, 0, l - 1, NTs] for i, l in enumerate(lengths)], dim=1
+        final = beta[A][0, :, NTs]
+        top = torch.stack(
+            [final[:, i, l-1]
+             for i, l in enumerate(lengths)], dim=1
         )
         log_Z = semiring.dot(top, roots)
         return semiring.unconvert(log_Z), (term_use, rules, top, span[1:]), beta

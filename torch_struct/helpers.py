@@ -7,8 +7,8 @@ from torch.autograd import Function
 class Get(torch.autograd.Function):
     @staticmethod
     def forward(ctx, chart, grad_chart, indices):
-        out = chart[indices]
         ctx.save_for_backward(grad_chart)
+        out = chart[indices]
         ctx.indices = indices
         return out
 
@@ -32,7 +32,8 @@ class Set(torch.autograd.Function):
 
 
 class Chart:
-    def __init__(self, size, potentials, semiring):
+    def __init__(self, size, potentials, semiring,
+                 cache=True):
         self.data = semiring.zero_(
             torch.zeros(
                 *((semiring.size(),) + size),
@@ -41,13 +42,21 @@ class Chart:
             )
         )
         self.grad = self.data.detach().clone().fill_(0.0)
+        self.cache = cache
 
     def __getitem__(self, ind):
         I = slice(None)
-        return Get.apply(self.data, self.grad, (I, I) + ind)
+        if self.cache:
+            return Get.apply(self.data, self.grad, (I, I) + ind)
+        else:
+            return self.data[(I, I) + ind]
+
     def __setitem__(self, ind, new):
         I = slice(None)
-        self.data = Set.apply(self.data, (I, I) + ind, new)
+        if self.cache:
+            self.data = Set.apply(self.data, (I, I) + ind, new)
+        else:
+            self.data[(I, I) + ind] = new
 
 
     def get(self, ind):

@@ -49,13 +49,14 @@ class CKY_CRF(_Struct):
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
 
-        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
+        beta = [Chart((batch, N, N), scores, semiring)
+                for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize
         reduced_scores = semiring.sum(scores)
         term = reduced_scores.diagonal(0, L_DIM, R_DIM)
-
+        ns = torch.arange(N)
         beta[A][ns, 0] = term
         beta[B][ns, N-1] = term
 
@@ -70,7 +71,7 @@ class CKY_CRF(_Struct):
             beta[A][left, w] = new
             beta[B][right, N - w - 1] = new
 
-        final = beta[A][0, I]
+        final = beta[A][0, :]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
 

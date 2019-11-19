@@ -159,6 +159,8 @@ def test_generic_a(data):
     struct = model(MaxSemiring)
     score = struct.sum(vals)
     marginals = struct.marginals(vals)
+    # print(marginals)
+    # # assert(False)
     assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
@@ -247,7 +249,7 @@ def test_parts_from_sequence(data, seed):
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
     model = data.draw(
-        sampled_from([CKY_CRF])#, Alignment, LinearChain, SemiMarkov, CKY, DepTree])
+        sampled_from([CKY, Alignment, LinearChain, SemiMarkov, CKY_CRF, DepTree])
     )
     struct = model()
     torch.manual_seed(seed)
@@ -259,6 +261,7 @@ def test_generic_lengths(data, seed):
     m = model(MaxSemiring).marginals(vals, lengths=lengths)
     maxes = struct.score(vals, m)
     part = model().sum(vals, lengths=lengths)
+    print(maxes, part)
     assert (maxes <= part).all()
     m_part = model(MaxSemiring).sum(vals, lengths=lengths)
     assert (torch.isclose(maxes, m_part)).all(), maxes - m_part
