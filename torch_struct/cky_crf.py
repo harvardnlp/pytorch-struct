@@ -1,35 +1,36 @@
 import torch
-from .helpers import _Struct
+from .helpers import _Struct, Chart
 
 A, B = 0, 1
 
 
+# class Get(torch.autograd.Function):
+#     @staticmethod
+#     def forward(ctx, chart, grad_chart, indices):
+#         out = chart[indices]
+#         ctx.save_for_backward(grad_chart)
+#         ctx.indices = indices
+#         return out
 
-class Get(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, chart, grad_chart, indices):
-        out = chart[indices]
-        ctx.save_for_backward(grad_chart)
-        ctx.indices = indices
-        return out
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         grad_chart, = ctx.saved_tensors
+#         grad_chart[ctx.indices] += grad_output
+#         return grad_chart, None, None
 
-    @staticmethod
-    def backward(ctx, grad_output):
-        grad_chart, = ctx.saved_tensors
-        grad_chart[ctx.indices] += grad_output
-        return grad_chart, None, None
+# class Set(torch.autograd.Function):
+#     @staticmethod
+#     def forward(ctx, chart, indices, vals):
+#         chart[indices] = vals
+#         ctx.indices = indices
+#         return chart
 
-class Set(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, chart, indices, vals):
-        chart[indices] = vals
-        ctx.indices = indices
-        return chart
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         z = grad_output[ctx.indices]
+#         return None, None, z
 
-    @staticmethod
-    def backward(ctx, grad_output):
-        z = grad_output[ctx.indices]
-        return None, None, z
+
 
 
 class CKY_CRF(_Struct):
@@ -46,49 +47,37 @@ class CKY_CRF(_Struct):
     def _dp(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
-        beta = self._make_chart(2, (batch, N, N), scores, force_grad)
-        grad_beta = self._make_chart(2, (batch, N, N), scores, force_grad)
-        grad_beta[A].fill_(0.0)
-        grad_beta[B].fill_(0.0)
+
+
+        beta = [None, None]
+        beta[A] = Chart((batch, N, N), scores, semiring)
+        beta[B] = Chart((batch, N, N), scores, semiring)
         L_DIM, R_DIM = 2, 3
 
         # Initialize
         reduced_scores = semiring.sum(scores)
         term = reduced_scores.diagonal(0, L_DIM, R_DIM)
         ns = torch.arange(N)
-        beta[A][:, :, ns, 0] = term
-        beta[B][:, :, ns, N-1] = term
 
+        I = slice(None)
         def ind(pos, width):
             return (I, I, pos, width)
 
-        I = slice(None)
+        beta[A][ns, 0] = term
+        beta[B][ns, N-1] = term
+
         # Run
         for w in range(1, N):
             left = slice(None, N-w)
             right = slice(w, None)
-
-            # beta[B][(ai, ai, slice(w,N), N - w - 1)] = \
-            #     new
-
-                # beta[A][(ai, ai, slice(None, N-w), slice(w, w+1))]
-
-            # Get.apply(beta[A], grad_beta[A],
-            #          (ai, ai, slice(None, N-w), slice(w, w+1)))
-            # beta[A][(ai, ai, slice(None, N - w), w)] = new
-            # beta[A][:, :, : N - w, w] =
-            # beta[B][:, :, w:N, N - w - 1] =  beta[A][:, :, :N-w, w]
-
-            Y = Get.apply(beta[A], grad_beta[A],
-                          ind(left, slice(None, w)))
-            Z = Get.apply(beta[B], grad_beta[B],
-                          ind(right, slice(N-w, None)))
+            Y = beta[A][left, :w]
+            Z = beta[B][right, N-w:]
             score = reduced_scores.diagonal(w, L_DIM, R_DIM)
             new = semiring.times(semiring.dot(Y, Z), score)
-            beta[A] = Set.apply(beta[A], ind(left, w), new)
-            beta[B] = Set.apply(beta[B], ind(right, N - w - 1), new)
+            beta[A][left, w] = new
+            beta[B][right, N - w - 1] = new
 
-        final = Get.apply(beta[A], grad_beta[A], ind(0, I))
+        final = beta[A][0, I]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
 

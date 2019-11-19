@@ -4,13 +4,57 @@ from .semirings import LogSemiring
 from torch.autograd import Function
 
 
-# def roll(a, b, N, k, gap=0):
-#     return (a[:, : N - (k + gap), (k + gap) :], b[:, k + gap :, : N - (k + gap)])
+class Get(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, chart, grad_chart, indices):
+        out = chart[indices]
+        ctx.save_for_backward(grad_chart)
+        ctx.indices = indices
+        return out
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        grad_chart, = ctx.saved_tensors
+        grad_chart[ctx.indices] += grad_output
+        return grad_chart, None, None
+
+class Set(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, chart, indices, vals):
+        chart[indices] = vals
+        ctx.indices = indices
+        return chart
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        z = grad_output[ctx.indices]
+        return None, None, z
 
 
-# def roll2(a, b, N, k, gap=0):
-#     return (a[:, :, : N - (k + gap), (k + gap) :], b[:, :, k + gap :, : N - (k + gap)])
+class Chart:
+    def __init__(self, size, potentials, semiring):
+        self.data = semiring.zero_(
+            torch.zeros(
+                *((semiring.size(),) + size),
+                dtype=potentials.dtype,
+                device=potentials.device
+            )
+        )
+        self.grad = self.data.detach().clone().fill_(0.0)
 
+    def __getitem__(self, ind):
+        I = slice(None)
+        return Get.apply(self.data, self.grad, (I, I) + ind)
+    def __setitem__(self, ind, new):
+        I = slice(None)
+        self.data = Set.apply(self.data, (I, I) + ind, new)
+
+
+    def get(self, ind):
+        return Get.apply(self.data, self.grad, ind)
+
+    def set(self, ind, new):
+        self.data = Set.apply(self.data, ind, new)
 
 class _Struct:
     def __init__(self, semiring=LogSemiring):
