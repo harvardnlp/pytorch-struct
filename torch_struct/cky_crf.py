@@ -49,19 +49,12 @@ class CKY_CRF(_Struct):
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
 
-        beta = [None, None]
-        beta[A] = Chart((batch, N, N), scores, semiring)
-        beta[B] = Chart((batch, N, N), scores, semiring)
+        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize
         reduced_scores = semiring.sum(scores)
         term = reduced_scores.diagonal(0, L_DIM, R_DIM)
-        ns = torch.arange(N)
-
-        I = slice(None)
-        def ind(pos, width):
-            return (I, I, pos, width)
 
         beta[A][ns, 0] = term
         beta[B][ns, N-1] = term
