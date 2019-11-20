@@ -26,8 +26,7 @@ class CKY(_Struct):
             lengths = torch.LongTensor([N] * batch)
 
         # Charts
-        beta = [Chart((batch, N, N, NT), rules, semiring)
-                for _ in range(2)]
+        beta = [Chart((batch, N, N, NT), rules, semiring) for _ in range(2)]
         span = [None for _ in range(N)]
         v = (ssize, batch)
         term_use = terms + 0.0
@@ -36,11 +35,9 @@ class CKY(_Struct):
         NTs = slice(0, NT)
         Ts = slice(NT, S)
         rules = rules.view(ssize, batch, 1, NT, S, S)
+
         def arr(a, b):
-            return rules[..., a, b] \
-                .contiguous() \
-                .view(*v + (NT, -1)) \
-                .transpose(-2, -1)
+            return rules[..., a, b].contiguous().view(*v + (NT, -1)).transpose(-2, -1)
 
         matmul = semiring.matmul
         times = semiring.times
@@ -51,34 +48,25 @@ class CKY(_Struct):
 
         for w in range(1, N):
             all_span = []
-            v2 = v +(N - w, -1)
+            v2 = v + (N - w, -1)
 
             Y = beta[A][: N - w, :w, :]
             Z = beta[B][w:, N - w :, :]
-            X1 = matmul(
-                matmul(Y.transpose(-2, -1), Z).view(*v2), X_Y_Z
-            )
+            X1 = matmul(matmul(Y.transpose(-2, -1), Z).view(*v2), X_Y_Z)
             all_span.append(X1)
 
             Y_term = term_use[..., : N - w, :, None]
             Z_term = term_use[..., w:, None, :]
 
-            Y = Y[...,-1, :].unsqueeze(-1)
-            X2 = matmul(
-                    times(Y, Z_term).view(*v2), X_Y_Z1
-                )
+            Y = Y[..., -1, :].unsqueeze(-1)
+            X2 = matmul(times(Y, Z_term).view(*v2), X_Y_Z1)
 
             Z = Z[..., 0, :].unsqueeze(-2)
-            X3 = matmul(
-                    times(Y_term, Z).view(*v2), X_Y1_Z
-                )
+            X3 = matmul(times(Y_term, Z).view(*v2), X_Y1_Z)
             all_span += [X2, X3]
 
             if w == 1:
-                X4 = matmul(
-                    times(Y_term, Z_term).view(*v2),
-                    X_Y1_Z1,
-                )
+                X4 = matmul(times(Y_term, Z_term).view(*v2), X_Y1_Z1)
                 all_span.append(X4)
 
             span[w] = semiring.sum(torch.stack(all_span, dim=-1))
@@ -86,10 +74,7 @@ class CKY(_Struct):
             beta[B][w:N, N - w - 1, :] = span[w]
 
         final = beta[A][0, :, NTs]
-        top = torch.stack(
-            [final[:, i, l-1]
-             for i, l in enumerate(lengths)], dim=1
-        )
+        top = torch.stack([final[:, i, l - 1] for i, l in enumerate(lengths)], dim=1)
         log_Z = semiring.dot(top, roots)
         return semiring.unconvert(log_Z), (term_use, rules, top, span[1:]), beta
 

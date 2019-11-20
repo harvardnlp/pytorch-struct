@@ -70,5 +70,5 @@ __all__ = [
     Alignment,
     CheckpointSemiring,
     CheckpointShardSemiring,
-    TempMax
+    TempMax,
 ]

@@ -18,6 +18,7 @@ class Get(torch.autograd.Function):
         grad_chart[ctx.indices] += grad_output
         return grad_chart, None, None
 
+
 class Set(torch.autograd.Function):
     @staticmethod
     def forward(ctx, chart, indices, vals):
@@ -32,8 +33,7 @@ class Set(torch.autograd.Function):
 
 
 class Chart:
-    def __init__(self, size, potentials, semiring,
-                 cache=True):
+    def __init__(self, size, potentials, semiring, cache=True):
         self.data = semiring.zero_(
             torch.zeros(
                 *((semiring.size(),) + size),
@@ -58,12 +58,12 @@ class Chart:
         else:
             self.data[(I, I) + ind] = new
 
-
     def get(self, ind):
         return Get.apply(self.data, self.grad, ind)
 
     def set(self, ind, new):
         self.data = Set.apply(self.data, ind, new)
+
 
 class _Struct:
     def __init__(self, semiring=LogSemiring):

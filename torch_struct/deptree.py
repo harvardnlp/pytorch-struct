@@ -52,16 +52,18 @@ class DepTree(_Struct):
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         arc_scores.requires_grad_(True)
         DIRS = 2
-        alpha = [[Chart((batch, DIRS, N, N), arc_scores, semiring)
-                  for _ in range(2)] for _ in range(2)]
+        alpha = [
+            [Chart((batch, DIRS, N, N), arc_scores, semiring) for _ in range(2)]
+            for _ in range(2)
+        ]
         semiring.one_(alpha[A][C].data[:, :, :, :, 0].data)
         semiring.one_(alpha[B][C].data[:, :, :, :, -1].data)
+
         def stack(a, b=None):
             if b is None:
                 return torch.stack([a, a], dim=2)
             else:
                 return torch.stack([a, b], dim=2)
-
 
         for k in range(1, N):
             f = torch.arange(N - k), torch.arange(k, N)
@@ -71,27 +73,23 @@ class DepTree(_Struct):
             BC = alpha[B][C][:, k:, N - k :]
             BCL, BCR = BC.unbind(2)
             arcs = semiring.dot(
-                semiring.times(
-                    stack(ACR), stack(BCL)),
-                stack(arc_scores[:, :, f[1], f[0]],
-                      arc_scores[:, :, f[0], f[1]]).unsqueeze(-1),
+                semiring.times(stack(ACR), stack(BCL)),
+                stack(
+                    arc_scores[:, :, f[1], f[0]], arc_scores[:, :, f[0], f[1]]
+                ).unsqueeze(-1),
             )
             alpha[A][I][:, : N - k, k] = arcs
             alpha[B][I][:, k:N, N - k - 1] = arcs
 
             AIR = alpha[A][I][R, : N - k, 1 : k + 1]
             BIL = alpha[B][I][L, k:, N - k - 1 : N - 1]
-            new  = semiring.dot(
-                stack(ACL, AIR),
-                stack(BIL, BCR),
-            )
+            new = semiring.dot(stack(ACL, AIR), stack(BIL, BCR))
             alpha[A][C][:, : N - k, k] = new
             alpha[B][C][:, k:N, N - k - 1] = new
 
         final = alpha[A][C][R, 0]
         v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
         return v, [arc_scores], alpha
-
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring

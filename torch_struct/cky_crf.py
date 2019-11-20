@@ -31,10 +31,7 @@ A, B = 0, 1
 #         return None, None, z
 
 
-
-
 class CKY_CRF(_Struct):
-
     def _check_potentials(self, edge, lengths=None):
         batch, N, _, NT = edge.shape
         edge.requires_grad_(True)
@@ -48,9 +45,7 @@ class CKY_CRF(_Struct):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
-
-        beta = [Chart((batch, N, N), scores, semiring)
-                for _ in range(2)]
+        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize
@@ -58,14 +53,14 @@ class CKY_CRF(_Struct):
         term = reduced_scores.diagonal(0, L_DIM, R_DIM)
         ns = torch.arange(N)
         beta[A][ns, 0] = term
-        beta[B][ns, N-1] = term
+        beta[B][ns, N - 1] = term
 
         # Run
         for w in range(1, N):
-            left = slice(None, N-w)
+            left = slice(None, N - w)
             right = slice(w, None)
             Y = beta[A][left, :w]
-            Z = beta[B][right, N-w:]
+            Z = beta[B][right, N - w :]
             score = reduced_scores.diagonal(w, L_DIM, R_DIM)
             new = semiring.times(semiring.dot(Y, Z), score)
             beta[A][left, w] = new
