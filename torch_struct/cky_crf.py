@@ -1,7 +1,34 @@
 import torch
-from .helpers import _Struct
+from .helpers import _Struct, Chart
 
 A, B = 0, 1
+
+
+# class Get(torch.autograd.Function):
+#     @staticmethod
+#     def forward(ctx, chart, grad_chart, indices):
+#         out = chart[indices]
+#         ctx.save_for_backward(grad_chart)
+#         ctx.indices = indices
+#         return out
+
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         grad_chart, = ctx.saved_tensors
+#         grad_chart[ctx.indices] += grad_output
+#         return grad_chart, None, None
+
+# class Set(torch.autograd.Function):
+#     @staticmethod
+#     def forward(ctx, chart, indices, vals):
+#         chart[indices] = vals
+#         ctx.indices = indices
+#         return chart
+
+#     @staticmethod
+#     def backward(ctx, grad_output):
+#         z = grad_output[ctx.indices]
+#         return None, None, z
 
 
 class CKY_CRF(_Struct):
@@ -17,25 +44,29 @@ class CKY_CRF(_Struct):
     def _dp(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
-        beta = self._make_chart(2, (batch, N, N), scores, force_grad)
+
+        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize
         reduced_scores = semiring.sum(scores)
         term = reduced_scores.diagonal(0, L_DIM, R_DIM)
         ns = torch.arange(N)
-        beta[A][:, :, ns, 0] = term
-        beta[B][:, :, ns, N - 1] = term
+        beta[A][ns, 0] = term
+        beta[B][ns, N - 1] = term
 
         # Run
         for w in range(1, N):
-            Y = beta[A][:, :, : N - w, :w]
-            Z = beta[B][:, :, w:, N - w :]
+            left = slice(None, N - w)
+            right = slice(w, None)
+            Y = beta[A][left, :w]
+            Z = beta[B][right, N - w :]
             score = reduced_scores.diagonal(w, L_DIM, R_DIM)
-            beta[A][:, :, : N - w, w] = semiring.times(semiring.dot(Y, Z), score)
-            beta[B][:, :, w:N, N - w - 1] = beta[A][:, :, : N - w, w]
+            new = semiring.times(semiring.dot(Y, Z), score)
+            beta[A][left, w] = new
+            beta[B][right, N - w - 1] = new
 
-        final = beta[A][:, :, 0]
+        final = beta[A][0, :]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
 
