@@ -1,6 +1,7 @@
 import torch
 try:
     import genbmm
+    from genbmm import BandedMatrix
 except ImportError:
     pass
 
