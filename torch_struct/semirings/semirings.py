@@ -1,5 +1,5 @@
 import torch
-
+import genbmm
 
 class Semiring:
     """
@@ -74,6 +74,8 @@ class Semiring:
 
 
 class _Base(Semiring):
+    zero = 0
+
     @staticmethod
     def mul(a, b):
         return torch.mul(a, b)
@@ -92,6 +94,12 @@ class _Base(Semiring):
 
 
 class _BaseLog(Semiring):
+    zero = -1e9
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        return torch.logsumexp(xs, dim=dim)
+
     @staticmethod
     def mul(a, b):
         return a + b
@@ -108,6 +116,9 @@ class _BaseLog(Semiring):
     def prod(a, dim=-1):
         return torch.sum(a, dim=dim)
 
+    # @classmethod
+    # def matmul(cls, a, b):
+    #     return super(cls).matmul(a, b)
 
 class StdSemiring(_Base):
     """
@@ -125,7 +136,11 @@ class StdSemiring(_Base):
 
         (Faster than calling sum and times.)
         """
-        return torch.matmul(a, b)
+
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply(a.transpose())
+        else:
+            return torch.matmul(a, b)
 
 
 class LogSemiring(_BaseLog):
@@ -135,10 +150,12 @@ class LogSemiring(_BaseLog):
     Gradients give marginals.
     """
 
-    @staticmethod
-    def sum(xs, dim=-1):
-        return torch.logsumexp(xs, dim=dim)
-
+    @classmethod
+    def matmul(cls, a, b):
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_log(a.transpose())
+        else:
+            return _BaseLog.matmul(a, b)
 
 class MaxSemiring(_BaseLog):
     """

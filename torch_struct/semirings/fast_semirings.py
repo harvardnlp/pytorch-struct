@@ -18,6 +18,7 @@ def matmul_size(a, b):
 
 def broadcast(a, b):
     size = matmul_size(a, b)
+    print(size)
     a = a.expand(*size[:-2], a.shape[-2], a.shape[-1])
     b = b.expand(*size[:-2], b.shape[-2], b.shape[-1])
     a2 = a.contiguous().view(-1, a.shape[-2], a.shape[-1])

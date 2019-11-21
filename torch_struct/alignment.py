@@ -1,50 +1,23 @@
 import torch
 from .helpers import _Struct
-from .semirings import LogSemiring
 import math
-
-
-def pad_conv(x, k, dim, sr, extra_b=0, extra_t=0):
-    return pad(x, (k - 1) // 2 + extra_b, (k - 1) // 2 + extra_t, dim, sr).unfold(
-        dim, k, 1
-    )
-
-
-def pad(x, n_bot, n_top, dim, sr):
-    shape = list(x.shape)
-    base = sr.zero_(torch.zeros([1] * len(shape), dtype=x.dtype, device=x.device))
-
-    shape[dim] = n_bot
-    padb = base.expand(shape)
-    if n_top == n_bot:
-        padt = padb
-    else:
-        shape[dim] = n_top
-        padt = base.expand(shape)
-
-    return torch.cat([padb, x, padt], dim=dim)
-
-
-def demote(x, index):
-    total = x.dim()
-    order = tuple(range(index)) + tuple(range(index + 1, total)) + (index,)
-    return x.permute(order)
-
+# from .sparse import *
+import genbmm
+from pytorch_memlab import MemReporter
+from .semirings import LogSemiring
+from .semirings.fast_semirings import broadcast
 
 class Alignment(_Struct):
-    def __init__(self, semiring=LogSemiring, local=False, max_gap=None):
+    def __init__(self, semiring=LogSemiring, sparse_rounds=3):
         self.semiring = semiring
-        self.local = local
-        self.max_gap = max_gap
+        self.sparse_rounds = sparse_rounds
+
 
     def _check_potentials(self, edge, lengths=None):
         batch, N_1, M_1, x = edge.shape
         assert x == 3
-        if self.local:
-            assert (edge[..., 0] <= 0).all(), "skips must be negative"
-            assert (edge[..., 1] >= 0).all(), "alignment must be positive"
-            assert (edge[..., 2] <= 0).all(), "skips must be negative"
         edge = self.semiring.convert(edge)
+
         N = N_1
         M = M_1
         if lengths is None:
@@ -66,83 +39,40 @@ class Alignment(_Struct):
         log_potentials, batch, N, M, lengths = self._check_potentials(
             log_potentials, lengths
         )
-        assert self.max_gap is None or self.max_gap > abs(N - M)
-
         steps = N + M
         log_MN = int(math.ceil(math.log(steps, 2)))
         bin_MN = int(math.pow(2, log_MN))
 
         Down, Mid, Up = 0, 1, 2
         Open, Close = 0, 1
-        LOC = 2 if self.local else 1
+        # Create a chart N, N, back
 
-        # Grid
-        grid_x = torch.arange(N).view(N, 1).expand(N, M)
-        grid_y = torch.arange(M).view(1, M).expand(N, M)
-        rot_x = grid_x + grid_y
-        rot_y = grid_y - grid_x + N
 
-        # Helpers
-        ind = torch.arange(bin_MN)
-        ind_M = ind
-        ind_U = torch.arange(1, bin_MN)
-        ind_D = torch.arange(bin_MN - 1)
+        chart = [None for i in range(log_MN + 1)]
+        charta = [None for i in range(log_MN + 1)]
+        chartb = [None for i in range(log_MN + 1)]
+        charta[0] = self._make_chart(
+            1, (batch, bin_MN, 1, bin_MN,  2, 2, 3), log_potentials, force_grad
+        )[0]
+        chartb[0] = self._make_chart(
+            1, (batch, bin_MN, bin_MN, 1,  2, 2, 3), log_potentials, force_grad
+        )[0]
 
-        charta = [
-            self._make_chart(
-                1,
-                (
-                    batch,
-                    bin_MN // pow(2, i),
-                    2 * bin_MN // pow(2, log_MN - i) - 1,
-                    bin_MN,
-                    LOC,
-                    LOC,
-                    3,
-                ),
-                log_potentials,
-                force_grad,
-            )[0]
-            if i <= 1
-            else None
-            for i in range(log_MN + 1)
-        ]
-
-        chartb = [
-            self._make_chart(
-                1,
-                (
-                    batch,
-                    bin_MN // pow(2, i),
-                    bin_MN,
-                    2 * bin_MN // pow(2, log_MN - i) - 1,
-                    LOC,
-                    LOC,
-                    3,
-                ),
-                log_potentials,
-                force_grad,
-            )[0]
-            if i <= 1
-            else None
-            for i in range(log_MN + 1)
-        ]
-
-        def reflect(x, size):
-            ex = x.shape[3]
-            f, r = torch.arange(ex), torch.arange(ex - 1, -1, -1)
-            sp = pad_conv(x, ex, 4, semiring)
-            sp.view(ssize, batch, size, ex, bin_MN, LOC, LOC, 3, ex)
-            sp = (
-                sp[:, :, :, r, :, :, :, :, f]
-                .permute(1, 2, 3, 4, 0, 5, 6, 7)
-                .view(ssize, batch, size, bin_MN, ex, LOC, LOC, 3)
-            )
-            return sp
+        charta[1] = self._make_chart(
+            1, (batch, bin_MN // 2, 3, bin_MN, 2, 2, 3), log_potentials, force_grad
+        )[0]
 
         # Init
         # This part is complicated. Rotate the scores by 45% and
         # then compress one.
+        grid_x = torch.arange(N).view(N, 1).expand(N, M)
+        grid_y = torch.arange(M).view(1, M).expand(N, M)
+        rot_x = grid_x + grid_y
+        rot_y = grid_y - grid_x + N
+        ind = torch.arange(bin_MN)
+        ind_M = ind
+        ind_U = torch.arange(1, bin_MN)
+        ind_D = torch.arange(bin_MN - 1)
 
         for b in range(lengths.shape[0]):
             end = lengths[b]
@@ -204,114 +134,211 @@ class Alignment(_Struct):
             )
             charta[1][:, b, :point, z, y, :, :, :] = tmp
 
-        charta[1] = charta[1][:, :, :, :3]
-        chartb[1] = reflect(charta[1], bin_MN // 2)
 
+        # for b in range(lengths.shape[0]):
+        #     end = lengths[b]
+        #     # Add path to end.
+        #     point = (end + M) // 2
+        #     point = (end + M) // 2
+        #     lim = point * 2
+        #     chart[1][:, b, point : bin_MN // 2, ind, ind, Mid] = semiring.one_(
+        #         chart[1][:, b, point : bin_MN // 2, ind, ind, Mid]
+        #     )
+        #     chart[0][
+        #         :, b, rot_x[: end + M], rot_y[:lim], rot_y[:lim], :
+        #     ] = log_potentials[:, b, : end + M]
+
+        # for b in range(lengths.shape[0]):
+        #     end = lengths[b]
+        #     point = (end + M) // 2
+        #     lim = point * 2
+        #     chart[1][:, b, :point, ind_M, ind_M, :] = torch.stack(
+        #         [
+        #             chart[0][:, b, :lim:2, ind_M, ind_M, Down],
+        #             semiring.sum(
+        #                 torch.stack(
+        #                     [
+        #                         chart[0][:, b, :lim:2, ind_M, ind_M, Mid],
+        #                         chart[0][:, b, 1:lim:2, ind_M, ind_M, Mid],
+        #                     ],
+        #                     dim=-1,
+        #                 )
+        #             ),
+        #             chart[0][:, b, :lim:2, ind_M, ind_M, Up],
+        #         ],
+        #         dim=-1,
+        #     )
+
+        #     x = torch.stack([ind_U, ind_D], dim=0)
+        #     y = torch.stack([ind_D, ind_U], dim=0)
+        #     q = torch.stack(
+        #         [
+        #             semiring.times(
+        #                 chart[0][:, b, :lim:2, ind_D, ind_D, :],
+        #                 chart[0][:, b, 1:lim:2, ind_U, ind_U, Down : Down + 1],
+        #             ),
+        #             semiring.times(
+        #                 chart[0][:, b, :lim:2, ind_U, ind_U, :],
+        #                 chart[0][:, b, 1:lim:2, ind_D, ind_D, Up : Up + 1],
+        #             ),
+        #         ],
+        #         dim=2,
+        #     )
+
+        #     chart[1][:, b, :point, x, y, :] = q
+
+
+        # print(chart[1])
+        # print(charta[1])
         # Scan
-        def merge2(xa, xb, size, rsize):
-            nrsize = (rsize - 1) * 2 + 3
-            rsize += 2
-            st = []
+
+        def merge(x, size, sparse=False):
+
+            tsize = x.shape[3]
+            inner = bin_MN
+            if sparse:
+                inner = tsize
+
             left = (
-                pad_conv(
-                    demote(xa[:, :, 0 : size * 2 : 2, :], 3), nrsize, 7, semiring, 2, 2
-                )
-                .transpose(-1, -2)
-                .view(ssize, batch, size, bin_MN, 1, LOC, LOC, 3, nrsize, rsize + 2)
+                x[:, :, 0 : size * 2 : 2]
+                .permute(0, 1, 2, 5, 4, 3)
+                .view(ssize, batch, size, 3, bin_MN,  inner)
             )
-
             right = (
-                pad(
-                    pad_conv(
-                        demote(xb[:, :, 1 : size * 2 : 2, :, :], 4), nrsize, 3, semiring
-                    ),
-                    1,
-                    1,
-                    -2,
-                    semiring,
-                )
-                .transpose(-1, -2)
-                .view(ssize, batch, size, bin_MN, LOC, 1, LOC, 1, 3, nrsize, rsize)
+                x[:, :, 1 : size * 2 : 2]
+                .permute(0, 1, 2, 5, 4, 3)
+                .view(ssize, batch, size, 1, 3, bin_MN, inner)
             )
-
-            for op in (Up, Down, Mid):
-                top, bot = rsize + 1, 1
+            st = []
+            for op in (Mid,Up, Down):
+                a, b, c, d = 0, bin_MN, 0, bin_MN
                 if op == Up:
-                    top, bot = rsize + 2, 2
+                    a, b, c, d = 1, bin_MN, 0, bin_MN - 1
                 if op == Down:
-                    top, bot = rsize, 0
+                    a, b, c, d = 0, bin_MN - 1, 1, bin_MN
 
-                combine = semiring.dot(
-                    left[:, :, :, :, :, Open, :, :, :, bot:top],
-                    right[:, :, :, :, :, Open, :, :, op, :, :],
-                )
-                combine = combine.view(
-                    ssize, batch, size, bin_MN, LOC, LOC, 3, nrsize
-                ).permute(0, 1, 2, 7, 3, 4, 5, 6)
-                st.append(combine)
+                if not sparse:
+                    v = semiring.matmul(left[..., a:b],
+                                        right.transpose(-2, -1)[..., op, :,  c:d].transpose(-2, -1))
 
-            if self.local:
-                left_ = pad(
-                    xa[:, :, 0::2, :, :, Close, :, :],
-                    rsize // 2,
-                    rsize // 2,
-                    3,
-                    semiring,
-                )
-                right = pad(
-                    xa[:, :, 1::2, :, :, :, Close, :],
-                    rsize // 2,
-                    rsize // 2,
-                    3,
-                    semiring,
-                )
-                st.append(torch.stack([semiring.zero_(left_.clone()), left_], dim=-3))
-                st.append(torch.stack([semiring.zero_(right.clone()), right], dim=-2))
+                    v = v.view(ssize, batch, size, 3, bin_MN, bin_MN) \
+                        .permute(0, 1, 2, 5, 4, 3)
+
+                else:
+                    leftb, rightb, _ = broadcast(left, right[..., op,  :, :])
+                    leftb = leftb.contiguous().view(-1, bin_MN, inner)
+                    rightb = rightb.contiguous().view(-1, bin_MN, inner)
+                    width = (inner -1) // 2
+
+                    # print("shape", v.transpose().data[0], v2[0])
+                    # v3, _ = genbmm.banddiag(v2, (rsize-1)//2, (rsize-1)//2)
+                    # print(torch.isclose(v.transpose().data, v3))
+                    # print("shape", v.lu, v.ld, rsize, v.transpose().data[0], v3[0])
+
+                    # v2 = semiring.matmul(
+                    #     genbmm.BandedMatrix(leftb, lu=width,ld=width).transpose().to_dense(semiring.zero)[..., a:b],
+                    #     genbmm.BandedMatrix(rightb, lu=width, ld=width).to_dense(semiring.zero)[..., :, c:d].transpose(-2, -1)
+                    # )
+                    # v2 = v2.transpose(-2, -1)
+                    # assert torch.isclose(v.transpose().to_dense(), v2).all()
+
+                    leftb = genbmm.BandedMatrix(leftb, width, width, semiring.zero)
+                    rightb = genbmm.BandedMatrix(rightb, width, width, semiring.zero)
+                    if a == 1:
+                        leftb = leftb.transpose().col_shift()
+                    elif c == 1:
+                        leftb = leftb.transpose().col_unshift()
+                    else:
+                        leftb = leftb.transpose()
+                    v = semiring.matmul(
+                        leftb,
+                        rightb.transpose()
+                    )
+                    rsize = v.data.shape[-1]
+
+
+                    v = v.transpose()
+                    if a == 1:
+                        v = v.band_shift()
+                    elif c == 1:
+                        v = v.band_unshift()
+                    v = v.data
+                    v = v.view(ssize, batch, size, 3, bin_MN, rsize) \
+                        .permute(0, 1, 2, 5, 4, 3) \
+                        .view(ssize, batch, size, rsize, bin_MN, 3)
+
+                st.append(v)
             st = torch.stack(st, dim=-1)
             return semiring.sum(st)
 
         size = bin_MN // 2
-        rsize = 2
-        for n in range(2, log_MN + 1):
-            size = int(size / 2)
-            rsize *= 2
-            q = merge2(charta[n - 1], chartb[n - 1], size, charta[n - 1].shape[3])
-            charta[n] = q
-            gap = charta[n].shape[3]
-            if self.max_gap is not None and (gap - 1) // 2 > self.max_gap:
-                reduced = (gap - 1) // 2 - self.max_gap
-                charta[n] = charta[n][:, :, :, reduced:-reduced]
-                chartb[n] = reflect(charta[n], size)
-            else:
-                chartb[n] = reflect(q, size)
+        chart[1] = charta[1][..., 0, 0, :]
+        # c = chart[1].view(ssize, batch, size, rsize+1, bin_MN, 3) \
+        #          .permute(0, 1, 2, 5, 4, 3)  \
+        #          .view(ssize, batch, size, 3, bin_MN, rsize+1)
 
-        if self.local:
-            v = semiring.sum(semiring.sum(charta[-1][:, :, 0, :, :, Close, Close, Mid]))
-        else:
-            v = charta[-1][
-                :, :, 0, M - N + (charta[-1].shape[3] // 2), N, Open, Open, Mid
-            ]
+        # c = flip(c, 3, semiring=semiring)
+
+        # chart[1] = c.view(ssize, batch, size, 3, bin_MN, rsize+1) \
+        #          .permute(0, 1, 2, 5, 4, 3)
+
+        sparse = True
+
+        def convert(chart, size):
+            rsize = chart.shape[3]
+            c = chart.view(ssize, batch, size, rsize, bin_MN, 3) \
+                          .permute(0, 1, 2, 5, 4, 3)  \
+                          .view(ssize, batch, size, 3, bin_MN, rsize) \
+                          .contiguous() \
+                          .view(-1, bin_MN, rsize)
+            width = (rsize - 1) // 2
+            c2 = genbmm.BandedMatrix(c, lu = width, ld = width, fill=semiring.zero)\
+                       .to_dense()
+            return c2.view(ssize, batch, size, 3, bin_MN, bin_MN) \
+                     .permute(0, 1, 2, 4, 5, 3) \
+                     .view(ssize, batch, size, bin_MN, bin_MN, 3)
+
+        for n in range(2, log_MN + 1):
+            if n == min(self.sparse_rounds, log_MN):
+                # charta[n-1] = convert(chart[n-1], size)
+                chart[n-1] = convert(chart[n-1], size)
+                sparse = False
+            size = int(size / 2)
+
+            chart[n] = merge(chart[n - 1], size, sparse=sparse)
+
+            # charta[n] = merge(charta[n - 1], size,  sparse=False)
+            # chart[n] = merge(chart[n - 1], size, sparse=True)
+
+            # back = convert(chart[n], size)
+            # assert charta[n].shape == back.shape
+
+            # print("a", charta[n][0,0,0,:, :, 1])
+            # print("c", chart[n][0,0,0,:, :, 1])
+            # print("b", back[0,0,0,:, :, 1])
+            # assert torch.isclose(charta[n], back).all()
+            # print("Success")
+
+        # reporter = MemReporter()
+        # reporter.report()
+        # print("answer",chart[-1][:, :, 0, :, :, Mid])
+        # print("return", M, N, chart[-1][:, :, 0, M, N, Mid])
+        v = chart[-1][:, :, 0, M, N, Mid]
         return v, [log_potentials], None
 
     @staticmethod
     def _rand(min_n=2):
-        b = torch.randint(2, 3, (1,))
-        N = torch.randint(min_n, 6, (1,))
-        M = torch.randint(min_n, 6, (1,))
+        b = torch.randint(2, 4, (1,))
+        N = torch.randint(min_n, 4, (1,))
+        M = torch.randint(min_n, 4, (1,))
         return torch.rand(b, N, M, 3), (b.item(), (N).item())
 
     def enumerate(self, edge, lengths=None):
         semiring = self.semiring
         edge, batch, N, M, lengths = self._check_potentials(edge, lengths)
         d = {}
-        d[0, 0] = [([(0, 0, 1)], edge[:, :, 0, 0, 1])]
+        d[0, 0] = [([(0, 0)], edge[:, :, 0, 0, 1])]
         # enum_lengths = torch.LongTensor(lengths.shape)
-        if self.local:
-            for i in range(N):
-                for j in range(M):
-                    d.setdefault((i, j), [])
-                    d[i, j].append(([(i, j, 1)], edge[:, :, i, j, 1]))
-
         for i in range(N):
             for j in range(M):
                 d.setdefault((i + 1, j + 1), [])
@@ -321,7 +348,7 @@ class Alignment(_Struct):
                     if i + 1 < N and j + 1 < M:
                         d[i + 1, j + 1].append(
                             (
-                                chain + [(i + 1, j + 1, 1)],
+                                chain + [(i + 1, j + 1)],
                                 semiring.mul(score, edge[:, :, i + 1, j + 1, 1]),
                             )
                         )
@@ -329,25 +356,16 @@ class Alignment(_Struct):
 
                         d[i + 1, j].append(
                             (
-                                chain + [(i + 1, j, 2)],
+                                chain + [(i + 1, j)],
                                 semiring.mul(score, edge[:, :, i + 1, j, 2]),
                             )
                         )
                     if j + 1 < M:
                         d[i, j + 1].append(
                             (
-                                chain + [(i, j + 1, 0)],
+                                chain + [(i, j + 1)],
                                 semiring.mul(score, edge[:, :, i, j + 1, 0]),
                             )
                         )
-        if self.local:
-            positions = [x[0] for i in range(N) for j in range(M) for x in d[i, j]]
-            all_val = torch.stack(
-                [x[1] for i in range(N) for j in range(M) for x in d[i, j]], dim=-1
-            )
-            _, ind = all_val.max(dim=-1)
-            print(positions[ind[0, 0]])
-        else:
-            all_val = torch.stack([x[1] for x in d[N - 1, M - 1]], dim=-1)
-
+        all_val = torch.stack([x[1] for x in d[N - 1, M - 1]], dim=-1)
         return semiring.unconvert(semiring.sum(all_val)), None
