@@ -306,7 +306,7 @@ class Alignment(_Struct):
             size = int(size / 2)
             print(n, sparse, chart[n-1].shape)
             chart[n] = merge(chart[n - 1], size, sparse=sparse)
-
+            print(n, "done")
             # charta[n] = merge(charta[n - 1], size,  sparse=False)
             # chart[n] = merge(chart[n - 1], size, sparse=True)
 
