@@ -299,30 +299,15 @@ class Alignment(_Struct):
                      .view(ssize, batch, size, bin_MN, bin_MN, 3)
 
         for n in range(2, log_MN + 1):
-            if n == min(self.sparse_rounds, log_MN):
-                # charta[n-1] = convert(chart[n-1], size)
-                chart[n-1] = convert(chart[n-1], size)
-                sparse = False
             size = int(size / 2)
+
             print(n, sparse, chart[n-1].shape)
             chart[n] = merge(chart[n - 1], size, sparse=sparse)
             print(n, "done")
-            # charta[n] = merge(charta[n - 1], size,  sparse=False)
-            # chart[n] = merge(chart[n - 1], size, sparse=True)
+            if n == min(self.sparse_rounds, log_MN):
+                chart[n] = convert(chart[n], size)
+                sparse = False
 
-            # back = convert(chart[n], size)
-            # assert charta[n].shape == back.shape
-
-            # print("a", charta[n][0,0,0,:, :, 1])
-            # print("c", chart[n][0,0,0,:, :, 1])
-            # print("b", back[0,0,0,:, :, 1])
-            # assert torch.isclose(charta[n], back).all()
-            # print("Success")
-
-        # reporter = MemReporter()
-        # reporter.report()
-        # print("answer",chart[-1][:, :, 0, :, :, Mid])
-        # print("return", M, N, chart[-1][:, :, 0, M, N, Mid])
         v = chart[-1][:, :, 0, M, N, Mid]
         return v, [log_potentials], None
 
