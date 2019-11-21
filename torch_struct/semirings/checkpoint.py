@@ -1,4 +1,8 @@
 import torch
+try:
+    import genbmm
+except ImportError:
+    pass
 
 
 def broadcast_size(a, b):
@@ -26,9 +30,27 @@ def CheckpointSemiring(cls, min_size=0):
                 q = cls.matmul(a, b)
                 return torch.autograd.grad(q, (a, b), grad_output)
 
+    class _CheckBand(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, a, b):
+            ctx.a = a
+            ctx.b = b
+            return cls.matmul(a, b)
+
+        @staticmethod
+        def backward(ctx, grad_output):
+            with torch.enable_grad():
+                q = cls.matmul(ctx.a, ctx.b)
+                grad_a, grad_b = torch.autograd.grad(q.data, (ctx.a.data, ctx.b.data),
+                                                     grad_output)
+                return BandedMatrix(grad_a, a.lu, a.lb, a.fill), BandedMatrix(grad_b, b.lu, b.lb, b.fill)
+
+
     class _CheckpointSemiring(cls):
         @staticmethod
         def matmul(a, b):
+            if isinstance(a, genbmm.BandedMatrix):
+                return _CheckBand.apply(a, b)
             if broadcast_size(a, b) > min_size:
                 return _Check.apply(a, b)
             else:
