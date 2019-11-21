@@ -33,7 +33,7 @@ def CheckpointSemiring(cls, min_size=0):
 
     class _CheckBand(torch.autograd.Function):
         @staticmethod
-        def forward(ctx, a, b):
+        def forward(ctx, a, a_lu, a_ld, b, b_lu, b_ld):
             ctx.save_for_backward(a, b,
                                   torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
             return cls.matmul(a, b)
@@ -48,7 +48,7 @@ def CheckpointSemiring(cls, min_size=0):
                                BandedMatrix(b, b_lu, b_ld))
                 grad_a, grad_b = torch.autograd.grad(q.data, (a, b),
                                                      grad_output)
-                return grad_a, grad_b
+                return grad_a, None, None, grad_b, None, None
 
 
     class _CheckpointSemiring(cls):
