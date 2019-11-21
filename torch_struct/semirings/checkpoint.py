@@ -37,6 +37,8 @@ def CheckpointSemiring(cls, min_size=0):
         def forward(ctx, a, a_lu, a_ld, b, b_lu, b_ld):
             ctx.save_for_backward(a, b,
                                   torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
+            a = BandedMatrix(a, a_lu, a_ld)
+            b = BandedMatrix(b, b_lu, b_ld)
             return cls.matmul(a, b).data
 
         @staticmethod
