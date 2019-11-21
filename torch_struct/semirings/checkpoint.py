@@ -33,24 +33,28 @@ def CheckpointSemiring(cls, min_size=0):
     class _CheckBand(torch.autograd.Function):
         @staticmethod
         def forward(ctx, a, b):
-            ctx.a = a
-            ctx.b = b
+            ctx.save_for_backward(a, b,
+                                  torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
             return cls.matmul(a, b)
 
         @staticmethod
         def backward(ctx, grad_output):
+            a, b, bands = ctx.saved_tensors
+            a_lu, a_ld, b_lu, b_ld = bands.tolist()
             with torch.enable_grad():
-                q = cls.matmul(ctx.a, ctx.b)
-                grad_a, grad_b = torch.autograd.grad(q.data, (ctx.a.data, ctx.b.data),
+                q = cls.matmul(BandedMatrix(a, a_lu, a_ld),
+                               BandedMatrix(b, b_lu, b_ld))
+                grad_a, grad_b = torch.autograd.grad(q.data, (a, b),
                                                      grad_output)
-                return BandedMatrix(grad_a, a.lu, a.lb, a.fill), BandedMatrix(grad_b, b.lu, b.lb, b.fill)
+                return grad_a, grad_b
 
 
     class _CheckpointSemiring(cls):
         @staticmethod
         def matmul(a, b):
             if isinstance(a, genbmm.BandedMatrix):
-                return _CheckBand.apply(a, b)
+                return _CheckBand.apply(a.data, a.lu, a.ld,
+                                        b.data, b.lu, b.ld)
             if broadcast_size(a, b) > min_size:
                 return _Check.apply(a, b)
             else:
