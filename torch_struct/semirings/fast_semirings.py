@@ -39,8 +39,11 @@ class FastLogSemiring(_BaseLog):
 
     @staticmethod
     def matmul(a, b, dims=1):
-        a2, b2, size = broadcast(a, b)
-        return genbmm.logbmm(a2, b2).view(size)
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_log(a.transpose())
+        else:
+            a2, b2, size = broadcast(a, b)
+            return genbmm.logbmm(a2, b2).view(size)
 
 
 class FastMaxSemiring(_BaseLog):
