@@ -36,7 +36,7 @@ def CheckpointSemiring(cls, min_size=0):
         def forward(ctx, a, a_lu, a_ld, b, b_lu, b_ld):
             ctx.save_for_backward(a, b,
                                   torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
-            return cls.matmul(a, b)
+            return cls.matmul(a, b).data
 
         @staticmethod
         def backward(ctx, grad_output):
@@ -55,8 +55,12 @@ def CheckpointSemiring(cls, min_size=0):
         @staticmethod
         def matmul(a, b):
             if isinstance(a, genbmm.BandedMatrix):
-                return _CheckBand.apply(a.data, a.lu, a.ld,
-                                        b.data, b.lu, b.ld)
+                lu = a.lu + b.lu
+                ld = a.ld + b.ld
+                c =  _CheckBand.apply(a.data, a.lu, a.ld,
+                                      b.data, b.lu, b.ld)
+                return BandedMatrix(c, lu, ld, cls.zero)
+
             if broadcast_size(a, b) > min_size:
                 return _Check.apply(a, b)
             else:
