@@ -3,7 +3,7 @@ from .helpers import _Struct
 import math
 # from .sparse import *
 import genbmm
-from pytorch_memlab import MemReporter
+# from pytorch_memlab import MemReporter
 from .semirings import LogSemiring
 from .semirings.fast_semirings import broadcast
 
