@@ -338,7 +338,7 @@ def test_alignment(data):
 
     model = data.draw(sampled_from([Alignment]))
     semiring = data.draw(sampled_from([StdSemiring]))
-    struct = model(semiring)
+    struct = model(semiring, sparse_rounds=10)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
@@ -346,7 +346,7 @@ def test_alignment(data):
 
     model = data.draw(sampled_from([Alignment]))
     semiring = data.draw(sampled_from([LogSemiring]))
-    struct = model(semiring)
+    struct = model(semiring, sparse_rounds=10)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]

@@ -284,31 +284,33 @@ class Alignment(_Struct):
 
         sparse = True
 
-        def convert(chart, size):
-            rsize = chart.shape[3]
-            c = chart.view(ssize, batch, size, rsize, bin_MN, 3) \
-                          .permute(0, 1, 2, 5, 4, 3)  \
-                          .view(ssize, batch, size, 3, bin_MN, rsize) \
-                          .contiguous() \
-                          .view(-1, bin_MN, rsize)
-            width = (rsize - 1) // 2
-            c2 = genbmm.BandedMatrix(c, lu = width, ld = width, fill=semiring.zero)\
-                       .to_dense()
-            return c2.view(ssize, batch, size, 3, bin_MN, bin_MN) \
-                     .permute(0, 1, 2, 4, 5, 3) \
-                     .view(ssize, batch, size, bin_MN, bin_MN, 3)
+        # def convert(chart, size):
+        #     rsize = chart.shape[3]
+        #     c = chart.view(ssize, batch, size, rsize, bin_MN, 3) \
+        #                   .permute(0, 1, 2, 5, 4, 3)  \
+        #                   .view(ssize, batch, size, 3, bin_MN, rsize) \
+        #                   .contiguous() \
+        #                   .view(-1, bin_MN, rsize)
+        #     width = (rsize - 1) // 2
+        #     c2 = genbmm.BandedMatrix(c, lu = width, ld = width, fill=semiring.zero)\
+        #                .to_dense()
+        #     return c2.view(ssize, batch, size, 3, bin_MN, bin_MN) \
+        #              .permute(0, 1, 2, 4, 5, 3) \
+        #              .view(ssize, batch, size, bin_MN, bin_MN, 3)
 
         for n in range(2, log_MN + 1):
             size = int(size / 2)
-
-            print(n, sparse, chart[n-1].shape)
+            print(n, sparse, chart[n-1].shape, chart[n-1].shape[-3])
             chart[n] = merge(chart[n - 1], size, sparse=sparse)
-            print(n, "done")
-            if n == min(self.sparse_rounds, log_MN):
-                chart[n] = convert(chart[n], size)
-                sparse = False
-
-        v = chart[-1][:, :, 0, M, N, Mid]
+            # print(n, "done")
+        #     if n == min(self.sparse_rounds, log_MN):
+        #         print(chart[n].shape)
+        #         chart[n] = convert(chart[n], size)
+        #         print(chart[n].shape)
+        #         sparse = False
+        # assert(False)
+        # print(M, N, chart[-1].shape)
+        v = chart[-1][:, :, 0, M - N + ((chart[-1].shape[-3] -1)//2), M, Mid]
         return v, [log_potentials], None
 
     @staticmethod
