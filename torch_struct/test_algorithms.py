@@ -142,7 +142,7 @@ def test_cky(data):
 @settings(max_examples=50, deadline=None)
 def test_generic_a(data):
     model = data.draw(
-        sampled_from([Alignment, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+        sampled_from([Alignment])#, LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
@@ -154,6 +154,7 @@ def test_generic_a(data):
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
+
 
     vals, _ = model._rand()
     struct = model(MaxSemiring)

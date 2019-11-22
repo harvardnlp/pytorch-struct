@@ -198,17 +198,28 @@ class Alignment(_Struct):
             inner = bin_MN
             if sparse:
                 inner = tsize
+                left = (
+                    x[:, :, 0 : size * 2 : 2]
+                    .permute(0, 1, 2, 5, 4, 3)
+                    .view(ssize, batch, size, 3, bin_MN,  inner)
+                )
+                right = (
+                    x[:, :, 1 : size * 2 : 2]
+                    .permute(0, 1, 2, 5, 4, 3)
+                    .view(ssize, batch, size, 1, 3, bin_MN, inner)
+                )
 
-            left = (
-                x[:, :, 0 : size * 2 : 2]
-                .permute(0, 1, 2, 5, 4, 3)
-                .view(ssize, batch, size, 3, bin_MN,  inner)
-            )
-            right = (
-                x[:, :, 1 : size * 2 : 2]
-                .permute(0, 1, 2, 5, 4, 3)
-                .view(ssize, batch, size, 1, 3, bin_MN, inner)
-            )
+            else:
+                left = (
+                    x[:, :, 0 : size * 2 : 2]
+                    .permute(0, 1, 2, 5, 4, 3)
+                    .view(ssize, batch, size, 3, bin_MN,  inner)
+                )
+                right = (
+                    x[:, :, 1 : size * 2 : 2]
+                    .permute(0, 1, 2, 5, 4, 3)
+                    .view(ssize, batch, size, 1, 3, bin_MN, inner)
+                )
             st = []
             for op in (Mid,Up, Down):
                 a, b, c, d = 0, bin_MN, 0, bin_MN
@@ -244,24 +255,26 @@ class Alignment(_Struct):
 
                     leftb = genbmm.BandedMatrix(leftb, width, width, semiring.zero)
                     rightb = genbmm.BandedMatrix(rightb, width, width, semiring.zero)
+
                     if a == 1:
-                        leftb = leftb.transpose().col_shift()
+                        leftb = leftb.transpose().col_shift().transpose()
                     elif c == 1:
-                        leftb = leftb.transpose().col_unshift()
+                        leftb = leftb.transpose().col_unshift().transpose()
                     else:
-                        leftb = leftb.transpose()
+                        leftb = leftb
                     v = semiring.matmul(
-                        leftb,
-                        rightb.transpose()
+                        rightb,
+                        leftb
                     )
                     rsize = v.data.shape[-1]
+                    v = v
 
-
-                    v = v.transpose()
                     if a == 1:
                         v = v.band_shift()
                     elif c == 1:
                         v = v.band_unshift()
+
+
                     v = v.data
                     v = v.view(ssize, batch, size, 3, bin_MN, rsize) \
                         .permute(0, 1, 2, 5, 4, 3) \
@@ -284,33 +297,35 @@ class Alignment(_Struct):
 
         sparse = True
 
-        # def convert(chart, size):
-        #     rsize = chart.shape[3]
-        #     c = chart.view(ssize, batch, size, rsize, bin_MN, 3) \
-        #                   .permute(0, 1, 2, 5, 4, 3)  \
-        #                   .view(ssize, batch, size, 3, bin_MN, rsize) \
-        #                   .contiguous() \
-        #                   .view(-1, bin_MN, rsize)
-        #     width = (rsize - 1) // 2
-        #     c2 = genbmm.BandedMatrix(c, lu = width, ld = width, fill=semiring.zero)\
-        #                .to_dense()
-        #     return c2.view(ssize, batch, size, 3, bin_MN, bin_MN) \
-        #              .permute(0, 1, 2, 4, 5, 3) \
-        #              .view(ssize, batch, size, bin_MN, bin_MN, 3)
+        def convert(chart, size):
+            rsize = chart.shape[3]
+            c = chart.view(ssize, batch, size, rsize, bin_MN, 3) \
+                          .permute(0, 1, 2, 5, 4, 3)  \
+                          .view(ssize, batch, size, 3, bin_MN, rsize) \
+                          .contiguous() \
+                          .view(-1, bin_MN, rsize)
+            width = (rsize - 1) // 2
+            c2 = genbmm.BandedMatrix(c, lu = width, ld = width, fill=semiring.zero)\
+                       .to_dense()
+            return c2.view(ssize, batch, size, 3, bin_MN, bin_MN) \
+                     .permute(0, 1, 2, 4, 5, 3) \
+                     .view(ssize, batch, size, bin_MN, bin_MN, 3)
 
         for n in range(2, log_MN + 1):
             size = int(size / 2)
-            print(n, sparse, chart[n-1].shape, chart[n-1].shape[-3])
+            # print(n, sparse, chart[n-1].shape, chart[n-1].shape[-3])
             chart[n] = merge(chart[n - 1], size, sparse=sparse)
             # print(n, "done")
-        #     if n == min(self.sparse_rounds, log_MN):
-        #         print(chart[n].shape)
-        #         chart[n] = convert(chart[n], size)
-        #         print(chart[n].shape)
-        #         sparse = False
+            # if n == min(self.sparse_rounds, log_MN):
+            #     print("convert")
+            #     print(chart[n].shape)
+            #     chart[n] = convert(chart[n], size)
+            #     print(chart[n].shape)
+            #     sparse = False
         # assert(False)
         # print(M, N, chart[-1].shape)
-        v = chart[-1][:, :, 0, M - N + ((chart[-1].shape[-3] -1)//2), M, Mid]
+        v = chart[-1][:, :, 0, M - N + ((chart[-1].shape[-3] -1)//2), N, Mid]
+        # v = chart[-1][:, :, 0, M, N, Mid]
         return v, [log_potentials], None
 
     @staticmethod

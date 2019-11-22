@@ -163,6 +163,13 @@ class MaxSemiring(_BaseLog):
 
     Gradients give argmax.
     """
+    @classmethod
+    def matmul(cls, a, b):
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_max(a.transpose())
+        else:
+            print("matmul")
+            return _BaseLog.__cls__.matmul(cls, a, b)
 
     @staticmethod
     def sum(xs, dim=-1):
