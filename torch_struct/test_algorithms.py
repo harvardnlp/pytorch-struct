@@ -296,6 +296,7 @@ def test_generic_lengths(data, seed):
         )
 
 
+@settings(max_examples=50, deadline=None)
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
     model = data.draw(
@@ -389,8 +390,8 @@ def test_sparse_max(data):
 
 
 def test_sparse_max2():
-    print(Alignment(SparseMaxSemiring).sum(torch.rand(1, 8, 8, 3)))
-    print(Alignment(SparseMaxSemiring).marginals(torch.rand(1, 8, 8, 3)))
+    print(LinearChain(SparseMaxSemiring).sum(torch.rand(1, 8, 3, 3)))
+    print(LinearChain(SparseMaxSemiring).marginals(torch.rand(1, 8, 3, 3)))
     # assert(False)
 
 

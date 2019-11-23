@@ -115,7 +115,6 @@ class _Struct:
         ):
 
             v = self._dp(edge, lengths)[0]
-            print("dp done")
             if _raw:
                 return v
             return self.semiring.unconvert(v)
