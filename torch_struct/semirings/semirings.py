@@ -1,6 +1,17 @@
 import torch
 import genbmm
 
+def matmul(cls, a, b):
+    dims = 1
+    act_on = -(dims + 1)
+    a = a.unsqueeze(-1)
+    b = b.unsqueeze(act_on - 1)
+    c = cls.times(a, b)
+    for d in range(act_on, -1, 1):
+        c = cls.sum(c.transpose(-2, -1))
+    return c
+
+
 class Semiring:
     """
     Base semiring class.
@@ -14,14 +25,7 @@ class Semiring:
     @classmethod
     def matmul(cls, a, b):
         "Generalized tensordot. Classes should override."
-        dims = 1
-        act_on = -(dims + 1)
-        a = a.unsqueeze(-1)
-        b = b.unsqueeze(act_on - 1)
-        c = cls.times(a, b)
-        for d in range(act_on, -1, 1):
-            c = cls.sum(c.transpose(-2, -1))
-        return c
+        return matmul(cls, a, b)
 
     @classmethod
     def size(cls):
@@ -155,7 +159,7 @@ class LogSemiring(_BaseLog):
         if isinstance(a, genbmm.BandedMatrix):
             return b.multiply_log(a.transpose())
         else:
-            return _BaseLog.matmul(a, b)
+             return _BaseLog.matmul(a, b)
 
 class MaxSemiring(_BaseLog):
     """
@@ -168,8 +172,7 @@ class MaxSemiring(_BaseLog):
         if isinstance(a, genbmm.BandedMatrix):
             return b.multiply_max(a.transpose())
         else:
-            print("matmul")
-            return _BaseLog.__cls__.matmul(cls, a, b)
+            return matmul(cls, a, b)
 
     @staticmethod
     def sum(xs, dim=-1):

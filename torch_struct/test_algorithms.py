@@ -353,19 +353,19 @@ def test_alignment(data):
     count = struct.enumerate(vals)[0]
     assert torch.isclose(count, alpha).all()
 
-    # semiring = data.draw(sampled_from([MaxSemiring]))
-    # struct = model(semiring, local=True)
-    # vals, (batch, N) = model._rand()
-    # vals[..., 0] = -2 * vals[..., 0].abs()
-    # vals[..., 1] = vals[..., 1].abs()
-    # vals[..., 2] = -2 * vals[..., 2].abs()
-    # alpha = struct.sum(vals)
-    # count = struct.enumerate(vals)[0]
-    # mx = struct.marginals(vals)
-    # print(alpha, count)
-    # print(mx[0].nonzero())
+    semiring = data.draw(sampled_from([MaxSemiring]))
+    struct = model(semiring, local=True)
+    vals, (batch, N) = model._rand()
+    vals[..., 0] = -2 * vals[..., 0].abs()
+    vals[..., 1] = vals[..., 1].abs()
+    vals[..., 2] = -2 * vals[..., 2].abs()
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
+    mx = struct.marginals(vals)
+    print(alpha, count)
+    print(mx[0].nonzero())
 
-    # assert torch.isclose(count, alpha).all()
+    assert torch.isclose(count, alpha).all()
 
 
 def test_hmm():

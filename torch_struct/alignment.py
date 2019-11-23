@@ -12,14 +12,19 @@ Open, Close = 0, 1
 
 
 class Alignment(_Struct):
-    def __init__(self, semiring=LogSemiring, sparse_rounds=3):
+    def __init__(self, semiring=LogSemiring, sparse_rounds=3, local=False):
         self.semiring = semiring
         self.sparse_rounds = sparse_rounds
-
+        self.local = local
 
     def _check_potentials(self, edge, lengths=None):
         batch, N_1, M_1, x = edge.shape
         assert x == 3
+        if self.local:
+            assert (edge[..., 0] <= 0).all(), "skips must be negative"
+            assert (edge[..., 1] >= 0).all(), "alignment must be positive"
+            assert (edge[..., 2] <= 0).all(), "skips must be negative"
+
         edge = self.semiring.convert(edge)
 
         N = N_1
@@ -46,6 +51,7 @@ class Alignment(_Struct):
         steps = N + M
         log_MN = int(math.ceil(math.log(steps, 2)))
         bin_MN = int(math.pow(2, log_MN))
+        LOC = 2 if self.local else 1
 
         # Create a chart N, N, back
         charta = [None, None]
@@ -122,19 +128,19 @@ class Alignment(_Struct):
             )
 
 
-        chart = charta[1][..., 0, 0, :].permute(0, 1, 2, 5, 4, 3)
+        chart = charta[1][..., :, :, :].permute(0, 1, 2, 5, 6, 7, 4, 3)
 
         # Scan
         def merge(x):
             inner = x.shape[-1]
             width = (inner -1) // 2
             left = (
-                x[:, :, 0 : : 2]
-                .view(ssize, batch, -1, 3, bin_MN,  inner)
+                x[:, :, 0 : : 2, Open, :]
+                .view(ssize, batch, -1, 1, 2, 3, bin_MN,  inner)
             )
             right = (
-                x[:, :, 1 : : 2]
-                .view(ssize, batch, -1, 1, 3, bin_MN, inner)
+                x[:, :, 1 : : 2, :, Open]
+                .view(ssize, batch, -1, 2, 1, 1, 3, bin_MN, inner)
             )
 
             st = []
@@ -144,14 +150,38 @@ class Alignment(_Struct):
                 rightb = genbmm.BandedMatrix(rightb, width, width, semiring.zero)
                 leftb = leftb.transpose().col_shift(op-1).transpose()
                 v = semiring.matmul(rightb, leftb).band_shift(op-1)
-                v = v.data.view(ssize, batch, -1, 3, bin_MN, v.data.shape[-1])
+                v = v.data.view(ssize, batch, -1, 2, 2, 3, bin_MN, v.data.shape[-1])
                 st.append(v)
+                rsize = v.data.shape[-1]
+
+            if self.local:
+                def pad(v):
+                    s = list(v.shape)
+                    s[-1] = inner // 2
+                    pads = torch.zeros(*s).fill_(semiring.zero)
+                    return torch.cat([pads, v, pads], -1)
+                left_ = (
+                    x[:, :, 0 : : 2, Close, :]
+                    .view(ssize, batch, -1, 1, 2, 3, bin_MN, inner)
+                )
+                left_ = pad(left)
+                right = (
+                    x[:, :, 1 : : 2, :, Close]
+                    .view(ssize, batch, -1, 2, 1, 3, bin_MN, inner)
+                )
+                right = pad(right)
+
+                st.append(torch.cat([semiring.zero_(left_.clone()), left_], dim=3))
+                st.append(torch.cat([semiring.zero_(right.clone()), right], dim=4))
             return semiring.sum(torch.stack(st, dim=-1))
 
         for n in range(2, log_MN + 1):
             chart = merge(chart)
 
-        v = chart[..., 0, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
+        if self.local:
+            v = chart[..., 0, Close, Close, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
+        else:
+            v = chart[..., 0, Open, Open, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
         return v, [log_potentials], None
 
     @staticmethod
