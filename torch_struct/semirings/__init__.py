@@ -4,7 +4,7 @@ from .semirings import (
     KMaxSemiring,
     MaxSemiring,
     EntropySemiring,
-    TempMax
+    TempMax,
 )
 
 from .fast_semirings import FastLogSemiring, FastMaxSemiring, FastSampleSemiring
@@ -32,5 +32,5 @@ __all__ = [
     MultiSampledSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
-    TempMax
+    TempMax,
 ]

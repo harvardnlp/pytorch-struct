@@ -1,4 +1,5 @@
 import torch
+
 try:
     import genbmm
     from genbmm import BandedMatrix
@@ -35,8 +36,7 @@ def CheckpointSemiring(cls, min_size=0):
     class _CheckBand(torch.autograd.Function):
         @staticmethod
         def forward(ctx, a, a_lu, a_ld, b, b_lu, b_ld):
-            ctx.save_for_backward(a, b,
-                                  torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
+            ctx.save_for_backward(a, b, torch.LongTensor([a_lu, a_ld, b_lu, b_ld]))
             a = BandedMatrix(a, a_lu, a_ld)
             b = BandedMatrix(b, b_lu, b_ld)
             return cls.matmul(a, b).data
@@ -47,12 +47,9 @@ def CheckpointSemiring(cls, min_size=0):
             a, b, bands = ctx.saved_tensors
             a_lu, a_ld, b_lu, b_ld = bands.tolist()
             with torch.enable_grad():
-                q = cls.matmul(BandedMatrix(a, a_lu, a_ld),
-                               BandedMatrix(b, b_lu, b_ld))
-                grad_a, grad_b = torch.autograd.grad(q.data, (a, b),
-                                                     grad_output)
+                q = cls.matmul(BandedMatrix(a, a_lu, a_ld), BandedMatrix(b, b_lu, b_ld))
+                grad_a, grad_b = torch.autograd.grad(q.data, (a, b), grad_output)
                 return grad_a, None, None, grad_b, None, None
-
 
     class _CheckpointSemiring(cls):
         @staticmethod
@@ -60,8 +57,7 @@ def CheckpointSemiring(cls, min_size=0):
             if isinstance(a, genbmm.BandedMatrix):
                 lu = a.lu + b.lu
                 ld = a.ld + b.ld
-                c =  _CheckBand.apply(a.data, a.lu, a.ld,
-                                      b.data, b.lu, b.ld)
+                c = _CheckBand.apply(a.data, a.lu, a.ld, b.data, b.lu, b.ld)
                 return BandedMatrix(c, lu, ld, cls.zero)
 
             if broadcast_size(a, b) > min_size:

@@ -1,8 +1,10 @@
 import torch
 from .helpers import _Struct
 import math
+
 # from .sparse import *
 import genbmm
+
 # from pytorch_memlab import MemReporter
 from .semirings import LogSemiring
 from .semirings.fast_semirings import broadcast
@@ -51,13 +53,12 @@ class Alignment(_Struct):
         steps = N + M
         log_MN = int(math.ceil(math.log(steps, 2)))
         bin_MN = int(math.pow(2, log_MN))
-        LOC = 2 if self.local else 1
+        # LOC = 2 if self.local else 1
 
         # Create a chart N, N, back
         charta = [None, None]
-        chartb = [None]
         charta[0] = self._make_chart(
-            1, (batch, bin_MN, 1, bin_MN,  2, 2, 3), log_potentials, force_grad
+            1, (batch, bin_MN, 1, bin_MN, 2, 2, 3), log_potentials, force_grad
         )[0]
         charta[1] = self._make_chart(
             1, (batch, bin_MN // 2, 3, bin_MN, 2, 2, 3), log_potentials, force_grad
@@ -99,10 +100,7 @@ class Alignment(_Struct):
             charta[1][:, b, :point, 1, ind_M] = torch.stack(
                 [
                     left_[..., Down],
-                    semiring.plus(
-                        left_[..., Mid],
-                        right[..., Mid],
-                    ),
+                    semiring.plus(left_[..., Mid], right[..., Mid]),
                     left_[..., Up],
                 ],
                 dim=-1,
@@ -116,58 +114,54 @@ class Alignment(_Struct):
             charta[1][:, b, :point, z, y, :, :, :] = torch.stack(
                 [
                     semiring.times(
-                        left_[:, :,  ind_D, Open : Open + 1 :, :],
-                        right[:, :,  ind_U, :, Open : Open + 1, Down : Down + 1],
+                        left_[:, :, ind_D, Open : Open + 1 :, :],
+                        right[:, :, ind_U, :, Open : Open + 1, Down : Down + 1],
                     ),
                     semiring.times(
-                        left_[:, :,  ind_U, Open : Open + 1, :, :],
-                        right[:, :,  ind_D, :, Open : Open + 1, Up : Up + 1],
+                        left_[:, :, ind_U, Open : Open + 1, :, :],
+                        right[:, :, ind_D, :, Open : Open + 1, Up : Up + 1],
                     ),
                 ],
                 dim=2,
             )
-
 
         chart = charta[1][..., :, :, :].permute(0, 1, 2, 5, 6, 7, 4, 3)
 
         # Scan
         def merge(x):
             inner = x.shape[-1]
-            width = (inner -1) // 2
-            left = (
-                x[:, :, 0 : : 2, Open, :]
-                .view(ssize, batch, -1, 1, 2, 3, bin_MN,  inner)
-            )
-            right = (
-                x[:, :, 1 : : 2, :, Open]
-                .view(ssize, batch, -1, 2, 1, 1, 3, bin_MN, inner)
+            width = (inner - 1) // 2
+            left = x[:, :, 0::2, Open, :].view(ssize, batch, -1, 1, 2, 3, bin_MN, inner)
+            right = x[:, :, 1::2, :, Open].view(
+                ssize, batch, -1, 2, 1, 1, 3, bin_MN, inner
             )
 
             st = []
-            for op in (Mid,Up, Down):
-                leftb, rightb, _ = broadcast(left, right[..., op,  :, :])
+            for op in (Mid, Up, Down):
+                leftb, rightb, _ = broadcast(left, right[..., op, :, :])
                 leftb = genbmm.BandedMatrix(leftb, width, width, semiring.zero)
                 rightb = genbmm.BandedMatrix(rightb, width, width, semiring.zero)
-                leftb = leftb.transpose().col_shift(op-1).transpose()
-                v = semiring.matmul(rightb, leftb).band_shift(op-1)
+                leftb = leftb.transpose().col_shift(op - 1).transpose()
+                v = semiring.matmul(rightb, leftb).band_shift(op - 1)
                 v = v.data.view(ssize, batch, -1, 2, 2, 3, bin_MN, v.data.shape[-1])
                 st.append(v)
-                rsize = v.data.shape[-1]
 
             if self.local:
+
                 def pad(v):
                     s = list(v.shape)
                     s[-1] = inner // 2
-                    pads = torch.zeros(*s, device=v.device, dtype=v.dtype).fill_(semiring.zero)
+                    pads = torch.zeros(*s, device=v.device, dtype=v.dtype).fill_(
+                        semiring.zero
+                    )
                     return torch.cat([pads, v, pads], -1)
-                left_ = (
-                    x[:, :, 0 : : 2, Close, :]
-                    .view(ssize, batch, -1, 1, 2, 3, bin_MN, inner)
+
+                left_ = x[:, :, 0::2, Close, :].view(
+                    ssize, batch, -1, 1, 2, 3, bin_MN, inner
                 )
                 left_ = pad(left)
-                right = (
-                    x[:, :, 1 : : 2, :, Close]
-                    .view(ssize, batch, -1, 2, 1, 3, bin_MN, inner)
+                right = x[:, :, 1::2, :, Close].view(
+                    ssize, batch, -1, 2, 1, 3, bin_MN, inner
                 )
                 right = pad(right)
 
@@ -182,7 +176,7 @@ class Alignment(_Struct):
             v = semiring.sum(semiring.sum(chart[..., 0, Close, Close, Mid, :, :]))
             # v = chart[..., 0, Close, Close, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
         else:
-            v = chart[..., 0, Open, Open, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
+            v = chart[..., 0, Open, Open, Mid, N, M - N + ((chart.shape[-1] - 1) // 2)]
         return v, [log_potentials], None
 
     @staticmethod

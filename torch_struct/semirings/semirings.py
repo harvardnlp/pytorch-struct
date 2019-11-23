@@ -1,6 +1,7 @@
 import torch
 import genbmm
 
+
 def matmul(cls, a, b):
     dims = 1
     act_on = -(dims + 1)
@@ -124,6 +125,7 @@ class _BaseLog(Semiring):
     # def matmul(cls, a, b):
     #     return super(cls).matmul(a, b)
 
+
 class StdSemiring(_Base):
     """
     Implements the counting semiring (+, *, 0, 1).
@@ -159,7 +161,8 @@ class LogSemiring(_BaseLog):
         if isinstance(a, genbmm.BandedMatrix):
             return b.multiply_log(a.transpose())
         else:
-             return _BaseLog.matmul(a, b)
+            return _BaseLog.matmul(a, b)
+
 
 class MaxSemiring(_BaseLog):
     """
@@ -167,6 +170,7 @@ class MaxSemiring(_BaseLog):
 
     Gradients give argmax.
     """
+
     @classmethod
     def matmul(cls, a, b):
         if isinstance(a, genbmm.BandedMatrix):
