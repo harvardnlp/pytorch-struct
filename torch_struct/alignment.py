@@ -158,7 +158,7 @@ class Alignment(_Struct):
                 def pad(v):
                     s = list(v.shape)
                     s[-1] = inner // 2
-                    pads = torch.zeros(*s).fill_(semiring.zero)
+                    pads = torch.zeros(*s, device=v.device, dtype=v.dtype).fill_(semiring.zero)
                     return torch.cat([pads, v, pads], -1)
                 left_ = (
                     x[:, :, 0 : : 2, Close, :]
