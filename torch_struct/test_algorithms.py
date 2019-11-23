@@ -364,7 +364,6 @@ def test_alignment(data):
     mx = struct.marginals(vals)
     print(alpha, count)
     print(mx[0].nonzero())
-
     assert torch.isclose(count, alpha).all()
 
 

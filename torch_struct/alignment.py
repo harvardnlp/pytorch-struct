@@ -179,7 +179,8 @@ class Alignment(_Struct):
             chart = merge(chart)
 
         if self.local:
-            v = semiring.sum(semiring.sum(chart[..., 0, Close, Close, Mid]))
+            v = semiring.sum(semiring.sum(chart[..., 0, Close, Close, Mid, :, :]))
+            # v = chart[..., 0, Close, Close, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
         else:
             v = chart[..., 0, Open, Open, Mid, N, M - N + ((chart.shape[-1] -1)//2)]
         return v, [log_potentials], None
