@@ -152,6 +152,18 @@
             
   <h1>Source code for torch_struct.semirings.semirings</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">genbmm</span>
+
+
+<span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">dims</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">act_on</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">dims</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">act_on</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">act_on</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">c</span>
 
 
 <span class="k">class</span> <span class="nc">Semiring</span><span class="p">:</span>
@@ -167,14 +179,7 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="s2">&quot;Generalized tensordot. Classes should override.&quot;</span>
-        <span class="n">dims</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">act_on</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">dims</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="n">act_on</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">act_on</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">c</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">c</span>
+        <span class="k">return</span> <span class="n">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">size</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
@@ -227,6 +232,8 @@
 
 
 <span class="k">class</span> <span class="nc">_Base</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
+    <span class="n">zero</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
@@ -245,6 +252,12 @@
 
 
 <span class="k">class</span> <span class="nc">_BaseLog</span><span class="p">(</span><span class="n">Semiring</span><span class="p">):</span>
+    <span class="n">zero</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e9</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
@@ -260,6 +273,10 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="c1"># @classmethod</span>
+    <span class="c1"># def matmul(cls, a, b):</span>
+    <span class="c1">#     return super(cls).matmul(a, b)</span>
 
 
 <div class="viewcode-block" id="StdSemiring"><a class="viewcode-back" href="../../../semiring.html#torch_struct.StdSemiring">[docs]</a><span class="k">class</span> <span class="nc">StdSemiring</span><span class="p">(</span><span class="n">_Base</span><span class="p">):</span>
@@ -278,7 +295,11 @@
 
 <span class="sd">        (Faster than calling sum and times.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="LogSemiring"><a class="viewcode-back" href="../../../semiring.html#torch_struct.LogSemiring">[docs]</a><span class="k">class</span> <span class="nc">LogSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
@@ -288,9 +309,12 @@
 <span class="sd">    Gradients give marginals.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply_log</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_BaseLog</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="MaxSemiring"><a class="viewcode-back" href="../../../semiring.html#torch_struct.MaxSemiring">[docs]</a><span class="k">class</span> <span class="nc">MaxSemiring</span><span class="p">(</span><span class="n">_BaseLog</span><span class="p">):</span>
@@ -299,6 +323,13 @@
 
 <span class="sd">    Gradients give argmax.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply_max</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
