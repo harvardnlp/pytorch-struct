@@ -27,7 +27,6 @@ def CheckpointSemiring(cls, min_size=0):
 
         @staticmethod
         def backward(ctx, grad_output):
-            print("check", grad_output.shape)
             a, b = ctx.saved_tensors
             with torch.enable_grad():
                 q = cls.matmul(a, b)
@@ -43,7 +42,6 @@ def CheckpointSemiring(cls, min_size=0):
 
         @staticmethod
         def backward(ctx, grad_output):
-            print("check_sparse", grad_output.shape)
             a, b, bands = ctx.saved_tensors
             a_lu, a_ld, b_lu, b_ld = bands.tolist()
             with torch.enable_grad():

@@ -365,6 +365,8 @@ def test_alignment(data):
     print(alpha, count)
     print(mx[0].nonzero())
     # assert torch.isclose(count, alpha).all()
+    struct = model(semiring, max_gap=1)
+    alpha = struct.sum(vals)
 
 
 def test_hmm():

@@ -14,10 +14,13 @@ Open, Close = 0, 1
 
 
 class Alignment(_Struct):
-    def __init__(self, semiring=LogSemiring, sparse_rounds=3, local=False):
+    def __init__(
+        self, semiring=LogSemiring, sparse_rounds=3, max_gap=None, local=False
+    ):
         self.semiring = semiring
         self.sparse_rounds = sparse_rounds
         self.local = local
+        self.max_gap = max_gap
 
     def _check_potentials(self, edge, lengths=None):
         batch, N_1, M_1, x = edge.shape
@@ -171,6 +174,9 @@ class Alignment(_Struct):
 
         for n in range(2, log_MN + 1):
             chart = merge(chart)
+            center = (chart.shape[-1] - 1) // 2
+            if self.max_gap is not None and center > self.max_gap:
+                chart = chart[..., center - self.max_gap : center + self.max_gap + 1]
 
         if self.local:
             v = semiring.sum(semiring.sum(chart[..., 0, Close, Close, Mid, :, :]))
