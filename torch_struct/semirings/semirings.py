@@ -1,4 +1,16 @@
 import torch
+import genbmm
+
+
+def matmul(cls, a, b):
+    dims = 1
+    act_on = -(dims + 1)
+    a = a.unsqueeze(-1)
+    b = b.unsqueeze(act_on - 1)
+    c = cls.times(a, b)
+    for d in range(act_on, -1, 1):
+        c = cls.sum(c.transpose(-2, -1))
+    return c
 
 
 class Semiring:
@@ -14,14 +26,7 @@ class Semiring:
     @classmethod
     def matmul(cls, a, b):
         "Generalized tensordot. Classes should override."
-        dims = 1
-        act_on = -(dims + 1)
-        a = a.unsqueeze(-1)
-        b = b.unsqueeze(act_on - 1)
-        c = cls.times(a, b)
-        for d in range(act_on, -1, 1):
-            c = cls.sum(c.transpose(-2, -1))
-        return c
+        return matmul(cls, a, b)
 
     @classmethod
     def size(cls):
@@ -74,6 +79,8 @@ class Semiring:
 
 
 class _Base(Semiring):
+    zero = 0
+
     @staticmethod
     def mul(a, b):
         return torch.mul(a, b)
@@ -92,6 +99,12 @@ class _Base(Semiring):
 
 
 class _BaseLog(Semiring):
+    zero = -1e9
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        return torch.logsumexp(xs, dim=dim)
+
     @staticmethod
     def mul(a, b):
         return a + b
@@ -107,6 +120,10 @@ class _BaseLog(Semiring):
     @staticmethod
     def prod(a, dim=-1):
         return torch.sum(a, dim=dim)
+
+    # @classmethod
+    # def matmul(cls, a, b):
+    #     return super(cls).matmul(a, b)
 
 
 class StdSemiring(_Base):
@@ -125,7 +142,11 @@ class StdSemiring(_Base):
 
         (Faster than calling sum and times.)
         """
-        return torch.matmul(a, b)
+
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply(a.transpose())
+        else:
+            return torch.matmul(a, b)
 
 
 class LogSemiring(_BaseLog):
@@ -135,9 +156,12 @@ class LogSemiring(_BaseLog):
     Gradients give marginals.
     """
 
-    @staticmethod
-    def sum(xs, dim=-1):
-        return torch.logsumexp(xs, dim=dim)
+    @classmethod
+    def matmul(cls, a, b):
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_log(a.transpose())
+        else:
+            return _BaseLog.matmul(a, b)
 
 
 class MaxSemiring(_BaseLog):
@@ -146,6 +170,13 @@ class MaxSemiring(_BaseLog):
 
     Gradients give argmax.
     """
+
+    @classmethod
+    def matmul(cls, a, b):
+        if isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_max(a.transpose())
+        else:
+            return matmul(cls, a, b)
 
     @staticmethod
     def sum(xs, dim=-1):
