@@ -58,7 +58,7 @@ class LinearChain(_Struct):
 
         # Init
         if lengths is None:
-            end = N
+            end = N - 1
             semiring.one_(chart[:, :, end:].diagonal(0, 2, 3))
             chart[:, :, :end] = log_potentials[:, :, :end]
         else:
