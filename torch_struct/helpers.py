@@ -9,7 +9,7 @@ class Get(torch.autograd.Function):
     def forward(ctx, chart, grad_chart, indices):
         ctx.save_for_backward(grad_chart)
         out = chart[indices]
-        # ctx.indices = indices
+        ctx.indices = indices
         return out
 
     @staticmethod
@@ -23,7 +23,7 @@ class Set(torch.autograd.Function):
     @staticmethod
     def forward(ctx, chart, indices, vals):
         chart[indices] = vals
-        # ctx.indices = indices
+        ctx.indices = indices
         return chart
 
     @staticmethod
