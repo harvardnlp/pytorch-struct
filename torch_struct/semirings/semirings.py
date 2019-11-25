@@ -3,10 +3,10 @@ import torch
 has_genbmm = False
 try:
     import genbmm
+
     has_genbmm = True
 except ImportError:
     pass
-
 
 
 def matmul(cls, a, b):
