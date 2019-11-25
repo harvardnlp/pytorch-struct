@@ -61,7 +61,9 @@ class LinearChain(_Struct):
         semiring.one_(chart[:, :, m-1:].diagonal(0, 3, 4))
 
         # Setup
-        big = torch.zeros(log_potentials.shape[0], batch, bin_N, C, C)
+        big = torch.zeros(log_potentials.shape[0], batch, bin_N, C, C,
+                          dtype=log_potentials.dtype,
+                          device=log_potentials.device)
         big[:, :, :N-1] = log_potentials
         c = chart[:, :, :].view(chart.shape[0], (batch * bin_N), C, C)
         lp = big[:, :, :].view(chart.shape[0], batch * bin_N, C, C)
