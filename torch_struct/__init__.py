@@ -35,7 +35,7 @@ from .semirings import (
 )
 
 
-version = "0.3"
+version = "0.4"
 
 # For flake8 compatibility.
 __all__ = [
