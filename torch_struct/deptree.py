@@ -48,50 +48,52 @@ class DepTree(_Struct):
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False):
         semiring = self.semiring
-        # arc_scores = _convert(arc_scores_in)
-        arc_scores = arc_scores_in
+        arc_scores = _convert(arc_scores_in)
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         arc_scores.requires_grad_(True)
         DIRS = 2
         alpha = [
-            [Chart((batch, DIRS, N, N), arc_scores, semiring) for _ in range(2)]
-            for _ in range(2)
+            [[Chart((batch, N, N), arc_scores, semiring) for _ in range(2)]
+            for _ in range(2)]             for _ in range(2)
         ]
-        semiring.one_(alpha[A][C].data[:, :, :, :, 0].data)
-        semiring.one_(alpha[B][C].data[:, :, :, :, -1].data)
-
-        def stack(a, b=None):
-            if b is None:
-                return torch.stack([a, a], dim=2)
-            else:
-                return torch.stack([a, b], dim=2)
+        semiring.one_(alpha[A][C][L].data[ :, :, :, 0].data)
+        semiring.one_(alpha[A][C][R].data[ :, :, :, 0].data)
+        semiring.one_(alpha[B][C][L].data[ :, :, :, -1].data)
+        semiring.one_(alpha[B][C][R].data[ :, :, :, -1].data)
 
         for k in range(1, N):
             f = torch.arange(N - k), torch.arange(k, N)
-            AC = alpha[A][C][:, : N - k, :k]
-            ACL, ACR = AC.unbind(2)
+            ACL = alpha[A][C][L][: N - k, :k]
+            ACR = alpha[A][C][R][: N - k, :k]
 
-            BC = alpha[B][C][:, k:, N - k :]
-            BCL, BCR = BC.unbind(2)
-            arcs = semiring.dot(
-                semiring.times(stack(ACR), stack(BCL)),
-                stack(
-                    arc_scores[:, :, f[1], f[0]], arc_scores[:, :, f[0], f[1]]
-                ).unsqueeze(-1),
-            )
-            alpha[A][I][:, : N - k, k] = arcs
-            alpha[B][I][:, k:N, N - k - 1] = arcs
+            BCL = alpha[B][C][L][k:, N - k :]
+            BCR = alpha[B][C][R][k:, N - k :]
+            x = semiring.dot(ACR, BCL)
 
-            AIR = alpha[A][I][R, : N - k, 1 : k + 1]
-            BIL = alpha[B][I][L, k:, N - k - 1 : N - 1]
-            new = semiring.dot(stack(ACL, AIR), stack(BIL, BCR))
-            alpha[A][C][:, : N - k, k] = new
-            alpha[B][C][:, k:N, N - k - 1] = new
+            arcs_l = semiring.times(
+                x, arc_scores[:, :, f[1], f[0]])
 
-        final = alpha[A][C][R, 0]
-        # v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
-        # v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
-        v = final[:, :, N-1] #torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
+            alpha[A][I][L][: N - k, k] = arcs_l
+            alpha[B][I][L][k:N, N - k - 1] = arcs_l
+
+            arcs_r = semiring.times(
+                x , arc_scores[:, :, f[0], f[1]])
+            alpha[A][I][R][: N - k, k] = arcs_r
+            alpha[B][I][R][k:N, N - k - 1] = arcs_r
+
+            AIR = alpha[A][I][R][: N - k, 1 : k + 1]
+            BIL = alpha[B][I][L][ k:, N - k - 1 : N - 1]
+
+            new = semiring.dot(ACL, BIL)
+            alpha[A][C][L][ : N - k, k] = new
+            alpha[B][C][L][ k:N, N - k - 1] = new
+
+            new = semiring.dot(AIR, BCR)
+            alpha[A][C][R][ : N - k, k] = new
+            alpha[B][C][R][ k:N, N - k - 1] = new
+
+        final = alpha[A][C][R][(0,)]
+        v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
         return v, [arc_scores], alpha
 
     def _check_potentials(self, arc_scores, lengths=None):
