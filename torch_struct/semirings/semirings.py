@@ -1,5 +1,12 @@
 import torch
-import genbmm
+
+has_genbmm = False
+try:
+    import genbmm
+    has_genbmm = True
+except ImportError:
+    pass
+
 
 
 def matmul(cls, a, b):
@@ -143,7 +150,7 @@ class StdSemiring(_Base):
         (Faster than calling sum and times.)
         """
 
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply(a.transpose())
         else:
             return torch.matmul(a, b)
@@ -158,7 +165,7 @@ class LogSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b):
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply_log(a.transpose())
         else:
             return _BaseLog.matmul(a, b)
@@ -173,7 +180,7 @@ class MaxSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b):
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply_max(a.transpose())
         else:
             return matmul(cls, a, b)
