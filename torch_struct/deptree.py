@@ -48,7 +48,8 @@ class DepTree(_Struct):
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False):
         semiring = self.semiring
-        arc_scores = _convert(arc_scores_in)
+        # arc_scores = _convert(arc_scores_in)
+        arc_scores = arc_scores_in
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         arc_scores.requires_grad_(True)
         DIRS = 2
@@ -88,7 +89,9 @@ class DepTree(_Struct):
             alpha[B][C][:, k:N, N - k - 1] = new
 
         final = alpha[A][C][R, 0]
-        v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
+        # v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
+        # v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
+        v = final[:, :, N-1] #torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
         return v, [arc_scores], alpha
 
     def _check_potentials(self, arc_scores, lengths=None):

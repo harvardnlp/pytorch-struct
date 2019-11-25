@@ -60,7 +60,7 @@ class LinearChain(_Struct):
         m = torch.min(lengths)
         semiring.one_(chart[:, :, m-1:].diagonal(0, 3, 4))
 
-        # Setup
+        # Length mask
         big = torch.zeros(log_potentials.shape[0], batch, bin_N, C, C,
                           dtype=log_potentials.dtype,
                           device=log_potentials.device)
