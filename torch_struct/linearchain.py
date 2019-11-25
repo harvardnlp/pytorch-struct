@@ -76,7 +76,8 @@ class LinearChain(_Struct):
 
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
         mask = mask < (lengths - 1).view(batch, 1)
-        c[:, mask.view(-1)] = lp[:, mask.view(-1)]
+        # c[:, mask.view(-1)] = lp[:, mask.view(-1)]
+        c[:, :] = lp[:, :]
 
         # Scan
         for n in range(1, log_N + 1):
