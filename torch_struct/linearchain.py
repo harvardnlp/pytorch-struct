@@ -71,13 +71,13 @@ class LinearChain(_Struct):
             device=log_potentials.device,
         )
         big[:, :, : N - 1] = log_potentials
-        c = chart[:, :, :].view(chart.shape[0], (batch * bin_N), C, C)
+        c = chart[:, :, :].view(chart.shape[0], batch * bin_N, C, C)
         lp = big[:, :, :].view(chart.shape[0], batch * bin_N, C, C)
 
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
         mask = mask < (lengths - 1).view(batch, 1)
-        # c[:, mask.view(-1)] = lp[:, mask.view(-1)]
-        c[:, :] = lp[:, :]
+        c[:, mask.view(-1)] = lp[:, mask.view(-1)]
+        # c[:, :] = lp[:, :]
 
         # Scan
         for n in range(1, log_N + 1):
