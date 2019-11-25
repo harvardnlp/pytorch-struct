@@ -35,8 +35,8 @@ class LinearChain(_Struct):
         N = N_1 + 1
 
         if lengths is None:
-            # lengths = torch.LongTensor([N] * batch)
-            pass
+            lengths = torch.LongTensor([N] * batch)
+            # pass
         else:
             assert max(lengths) <= N, "Length longer than edge scores"
             assert max(lengths) == N, "One length must be at least N"
@@ -57,15 +57,18 @@ class LinearChain(_Struct):
         chart = self._chart((batch, bin_N, C, C), log_potentials, force_grad)
 
         # Init
-        if lengths is None:
-            end = N - 1
-            semiring.one_(chart[:, :, end:].diagonal(0, 2, 3))
-            chart[:, :, :end] = log_potentials[:, :, :end]
-        else:
-            for b in range(lengths.shape[0]):
-                end = lengths[b] - 1
-                semiring.one_(chart[:, b, end:].diagonal(0, 2, 3))
-                chart[:, b, :end] = log_potentials[:, b, :end]
+        m = torch.min(lengths)
+        semiring.one_(chart[:, :, m-1:].diagonal(0, 3, 4))
+
+        # Setup
+        big = torch.zeros(log_potentials.shape[0], batch, bin_N, C, C)
+        big[:, :, :N-1] = log_potentials
+        c = chart[:, :, :].view(chart.shape[0], (batch * bin_N), C, C)
+        lp = big[:, :, :].view(chart.shape[0], batch * bin_N, C, C)
+
+        mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
+        mask = mask < (lengths -1).view(batch, 1)
+        c[:, mask.view(-1)] = lp[:, mask.view(-1)]
 
         # Scan
         for n in range(1, log_N + 1):
