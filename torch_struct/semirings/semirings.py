@@ -79,6 +79,7 @@ class Semiring:
         xs[0].masked_fill_(mask, cls.zero)
         # print(mask.shape, xs.shape)
         # assert False
+
     @staticmethod
     def one_(xs):
         "Fill *ssize x ...* tensor with multiplicative identity."
@@ -322,8 +323,8 @@ class EntropySemiring(Semiring):
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        xs[0, mask] = -1e5
-        xs[1, mask] = 0
+        xs[0].masked_fill_(mask, -1e5)
+        xs[1].masked_fill_(mask, 0)
 
     @staticmethod
     def zero_(xs):
