@@ -56,11 +56,12 @@ class SemiMarkov(_Struct):
         semiring.zero_mask_(lp.data, mask.view(-1))
         semiring.zero_mask_(c.data, (~mask).view(-1))
         c[:, :, : K - 1, 0] = semiring.sum(
-            torch.stack([c[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
+            torch.stack([c.data[:, :, : K - 1, 0],
+                         lp[:, :, 1:K]], dim=-1)
         )
         end = torch.min(lengths) - 1
         for k in range(1, K - 1):
-            semiring.one_(init[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
+            semiring.one_(init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
 
         K_1 = K - 1
 
