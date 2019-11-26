@@ -61,8 +61,8 @@ class SemiMarkov(_Struct):
                          lp[:, :, 1:K]], dim=-1)
         )
         end = torch.min(lengths) - 1
-        for k in range(1, K - 1):
-            semiring.one_(init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
+        # for k in range(1, K - 1):
+        #     semiring.one_(init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
 
         K_1 = K - 1
 
