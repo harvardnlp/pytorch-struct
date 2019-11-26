@@ -84,7 +84,7 @@ class LinearChain(_Struct):
         # Scan
         for n in range(1, log_N + 1):
             chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
-        v = semiring.sum(semiring.sum(chart[:, :, 0]))
+        v = semiring.sum(semiring.sum(chart[:, :, 0].contiguous()))
         return v, [log_potentials], None
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):
