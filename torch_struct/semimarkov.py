@@ -37,16 +37,16 @@ class SemiMarkov(_Struct):
         # semiring.one_(init.data[:, :, :, 0, 0].diagonal(0, -2, -1))
 
         # Length mask
-        big = torch.zeros(
-            ssize,
-            batch,
-            bin_N,
-            K,
-            C,
-            C,
-            dtype=log_potentials.dtype,
-            device=log_potentials.device,
-        )
+        # big = torch.zeros(
+        #     ssize,
+        #     batch,
+        #     bin_N,
+        #     K,
+        #     C,
+        #     C,
+        #     dtype=log_potentials.dtype,
+        #     device=log_potentials.device,
+        # )
         # big[:, :, : N - 1] = log_potentials
         # c = init[:, :, :].view(ssize, batch * bin_N, K - 1, K - 1, C, C)
         # lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
@@ -64,7 +64,7 @@ class SemiMarkov(_Struct):
         # for k in range(1, K - 1):
         #     semiring.one_(init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
 
-        K_1 = K - 1
+        # K_1 = K - 1
 
         # Order n, n-1
         chart = (
@@ -73,8 +73,8 @@ class SemiMarkov(_Struct):
             .view(-1, batch, bin_N, K_1 * C, K_1 * C)
         )
 
-        for n in range(1, log_N + 1):
-            chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
+        # for n in range(1, log_N + 1):
+        #     chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
 
         final = chart.view(-1, batch, 1, K_1, C, K_1, C)
         v = semiring.sum(semiring.sum(final[:, :, 0, 0, :, 0, :]))
