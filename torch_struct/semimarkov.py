@@ -52,14 +52,15 @@ class SemiMarkov(_Struct):
         lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
         mask = mask >= (lengths - 1).view(batch, 1)
-        lp.data[:, mask.view(-1)] = semiring.zero
-        c.data[:, (~mask).view(-1)] = semiring.zero
+
+        semiring.zero_mask_(lp.data, mask.view(-1))
+        semiring.zero_mask_(c.data, (~mask).view(-1))
         c[:, :, : K - 1, 0] = semiring.sum(
             torch.stack([c[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
         )
-
+        end = torch.min(lengths) - 1
         for k in range(1, K - 1):
-            semiring.one_(init[:, :, : (k - 1), k - 1, k].diagonal(0, -2, -1))
+            semiring.one_(init[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
 
         K_1 = K - 1
 

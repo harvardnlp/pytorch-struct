@@ -143,7 +143,8 @@ def test_cky(data):
 def test_generic_a(data):
     model = data.draw(
         sampled_from(
-            [SemiMarkov, Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+            [SemiMarkov]
+        )  # , Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)

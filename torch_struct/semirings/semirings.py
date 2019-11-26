@@ -70,6 +70,11 @@ class Semiring:
         "Fill *ssize x ...* tensor with additive identity."
         raise NotImplementedError()
 
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[:, mask] = cls.zero
+
     @staticmethod
     def one_(xs):
         "Fill *ssize x ...* tensor with multiplicative identity."
@@ -275,6 +280,7 @@ class EntropySemiring(Semiring):
     * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
     * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
     """
+
     zero = 0
 
     @staticmethod
@@ -308,6 +314,12 @@ class EntropySemiring(Semiring):
     @classmethod
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[0, mask] = -1e5
+        xs[1, mask] = 0
 
     @staticmethod
     def zero_(xs):
