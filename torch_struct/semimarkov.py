@@ -54,8 +54,8 @@ class SemiMarkov(_Struct):
                     .view(1, bin_N).expand(batch, bin_N)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
-        semiring.zero_mask_(lp.data, mask.view(-1))
-        semiring.zero_mask_(c.data, (~mask).view(-1))
+        semiring.zero_mask_(lp.data, mask)
+        semiring.zero_mask_(c.data[:, :, :, 0], (~mask))
         c[:, :, : K - 1, 0] = semiring.sum(
             torch.stack([c.data[:, :, : K - 1, 0],
                          lp[:, :, 1:K]], dim=-1)
