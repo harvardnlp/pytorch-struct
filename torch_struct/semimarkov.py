@@ -12,7 +12,7 @@ class SemiMarkov(_Struct):
         edge = self.semiring.convert(edge)
         N = N_1 + 1
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch, device=edge.device)
+            lengths = torch.LongTensor([N] * batch)
         assert max(lengths) <= N, "Length longer than edge scores"
         assert max(lengths) == N, "At least one in batch must be length N"
         assert C == C2, "Transition shape doesn't match"
@@ -50,10 +50,10 @@ class SemiMarkov(_Struct):
         big[:, :, : N - 1] = log_potentials
         c = init[:, :, :].view(ssize, batch * bin_N, K - 1, K - 1, C, C)
         lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
-        mask = torch.arange(bin_N, device=lp.device) \
+        mask = torch.arange(bin_N) \
                     .view(1, bin_N).expand(batch, bin_N)
         mask = mask >= (lengths - 1).view(batch, 1)
-
+        mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
         semiring.zero_mask_(lp.data, mask.view(-1))
         semiring.zero_mask_(c.data, (~mask).view(-1))
         c[:, :, : K - 1, 0] = semiring.sum(

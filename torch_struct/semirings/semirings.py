@@ -3,7 +3,6 @@ import torch
 has_genbmm = False
 try:
     import genbmm
-
     has_genbmm = True
 except ImportError:
     pass
@@ -73,7 +72,10 @@ class Semiring:
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        xs[:, mask] = cls.zero
+        # xs.masked_fill_(mask[0], cls.zero)
+        #xs.masked_fill_(mask[0], cls.zero)
+        xs[0, mask] = cls.zero
+        # xs.masked_fill_(mask[0], cls.zero)
 
     @staticmethod
     def one_(xs):
