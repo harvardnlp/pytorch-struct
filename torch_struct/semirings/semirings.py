@@ -1,5 +1,11 @@
 import torch
-import genbmm
+
+has_genbmm = False
+try:
+    import genbmm
+    has_genbmm = True
+except ImportError:
+    pass
 
 
 def matmul(cls, a, b):
@@ -62,6 +68,11 @@ class Semiring:
     def zero_(xs):
         "Fill *ssize x ...* tensor with additive identity."
         raise NotImplementedError()
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs.masked_fill_(mask.unsqueeze(0), cls.zero)
 
     @staticmethod
     def one_(xs):
@@ -143,7 +154,7 @@ class StdSemiring(_Base):
         (Faster than calling sum and times.)
         """
 
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply(a.transpose())
         else:
             return torch.matmul(a, b)
@@ -158,7 +169,7 @@ class LogSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b):
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply_log(a.transpose())
         else:
             return _BaseLog.matmul(a, b)
@@ -173,7 +184,7 @@ class MaxSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b):
-        if isinstance(a, genbmm.BandedMatrix):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply_max(a.transpose())
         else:
             return matmul(cls, a, b)
@@ -269,6 +280,8 @@ class EntropySemiring(Semiring):
     * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
     """
 
+    zero = 0
+
     @staticmethod
     def size():
         return 2
@@ -300,6 +313,12 @@ class EntropySemiring(Semiring):
     @classmethod
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[0].masked_fill_(mask, -1e5)
+        xs[1].masked_fill_(mask, 0)
 
     @staticmethod
     def zero_(xs):

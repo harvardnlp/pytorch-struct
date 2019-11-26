@@ -23,6 +23,7 @@ class SemiMarkov(_Struct):
 
         # Setup
         semiring = self.semiring
+        ssize = semiring.size()
         log_potentials.requires_grad_(True)
         log_potentials, batch, N, K, C, lengths = self._check_potentials(
             log_potentials, lengths
@@ -33,12 +34,36 @@ class SemiMarkov(_Struct):
         )
 
         # Init.
-        for b in range(lengths.shape[0]):
-            end = lengths[b] - 1
-            semiring.one_(init[:, b, end:, 0, 0].diagonal(0, 2, 3))
-            init[:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
-            for k in range(1, K - 1):
-                semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3))
+        semiring.one_(init.data[:, :, :, 0, 0].diagonal(0, -2, -1))
+
+        # Length mask
+        big = torch.zeros(
+            ssize,
+            batch,
+            bin_N,
+            K,
+            C,
+            C,
+            dtype=log_potentials.dtype,
+            device=log_potentials.device,
+        )
+        big[:, :, : N - 1] = log_potentials
+        c = init[:, :, :].view(ssize, batch * bin_N, K - 1, K - 1, C, C)
+        lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
+        mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
+        mask = mask >= (lengths - 1).view(batch, 1)
+        mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
+        semiring.zero_mask_(lp.data, mask)
+        semiring.zero_mask_(c.data[:, :, :, 0], (~mask))
+        c[:, :, : K - 1, 0] = semiring.sum(
+            torch.stack([c.data[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
+        )
+        end = torch.min(lengths) - 1
+        for k in range(1, K - 1):
+            semiring.one_(
+                init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1)
+            )
+
         K_1 = K - 1
 
         # Order n, n-1
@@ -51,8 +76,8 @@ class SemiMarkov(_Struct):
         for n in range(1, log_N + 1):
             chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
 
-        final = chart.view(-1, batch, 1, K_1, C, K_1, C)
-        v = semiring.sum(semiring.sum(final[:, :, 0, 0, :, 0, :]))
+        final = chart.view(-1, batch, K_1, C, K_1, C)
+        v = semiring.sum(semiring.sum(final[:, :, 0, :, 0, :].contiguous()))
         return v, [log_potentials], None
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):
