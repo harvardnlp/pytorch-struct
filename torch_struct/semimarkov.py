@@ -33,12 +33,15 @@ class SemiMarkov(_Struct):
         )
 
         # Init.
-        for b in range(lengths.shape[0]):
-            end = lengths[b] - 1
-            semiring.one_(init[:, b, end:, 0, 0].diagonal(0, 2, 3))
-            init[:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
-            for k in range(1, K - 1):
-                semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3))
+
+        init[:, :, :N-1, : (K - 1), 0] = log_potentials[:, :, :N-1, 1:K]
+
+        # for b in range(lengths.shape[0]):
+        #     end = lengths[b] - 1
+        #     semiring.one_(init[:, b, end:, 0, 0].diagonal(0, 2, 3))
+        #     init[:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
+        #     for k in range(1, K - 1):
+        #         semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3))
         K_1 = K - 1
 
         # Order n, n-1
