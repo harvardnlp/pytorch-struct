@@ -76,7 +76,7 @@ class LinearChain(_Struct):
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
         mask = mask >= (lengths - 1).view(batch, 1)
         lp.data[:, mask.view(-1)] = semiring.zero
-        c.data[:, (1- mask).view(-1)] = semiring.zero
+        c.data[:, (~mask).view(-1)] = semiring.zero
         c[:] = semiring.sum(torch.stack([c, lp], dim=-1))
 
 
