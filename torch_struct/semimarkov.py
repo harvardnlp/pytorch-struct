@@ -77,7 +77,7 @@ class SemiMarkov(_Struct):
             chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
 
         final = chart.view(-1, batch, 1, K_1, C, K_1, C)
-        v = semiring.sum(semiring.sum(final[:, :, 0, 0, :, 0, :]))
+        v = semiring.sum(semiring.sum(final[:, :, :, 0, :, 0, :].contiguous()))
         return v, [log_potentials], None
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):
