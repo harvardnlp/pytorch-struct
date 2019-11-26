@@ -72,13 +72,7 @@ class Semiring:
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        # xs.masked_fill_(mask[0], cls.zero)
-        # print(mask
-        # xs.masked_fill_(mask[0], cls.zero)
-        # xs[0, mask] = cls.zero
-        xs[0].masked_fill_(mask, cls.zero)
-        # print(mask.shape, xs.shape)
-        # assert False
+        xs.masked_fill_(mask.unsqueeze(0), cls.zero)
 
     @staticmethod
     def one_(xs):

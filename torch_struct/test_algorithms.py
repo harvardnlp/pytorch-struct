@@ -143,18 +143,15 @@ def test_cky(data):
 def test_generic_a(data):
     model = data.draw(
         sampled_from(
-            [SemiMarkov])#, Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+            [SemiMarkov]
+        )  # , Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
 
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
-
-    with torch.autograd.profiler.profile(use_cuda=False) as prof:
-
-        alpha = struct.sum(vals)
-        count = struct.enumerate(vals)[0]
-    print(prof.key_averages().table(sort_by="cuda_time_total"))
+    alpha = struct.sum(vals)
+    count = struct.enumerate(vals)[0]
     # assert(False)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
