@@ -50,7 +50,7 @@ class LinearChain(_Struct):
         "Compute forward pass by linear scan"
         # Setup
         semiring = self.semiring
-        ssize = semiring.size()
+        ssize = semiring.shape[0]
         log_potentials, batch, N, C, lengths = self._check_potentials(
             log_potentials, lengths
         )
