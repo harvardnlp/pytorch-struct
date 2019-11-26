@@ -2,10 +2,11 @@ import torch
 from .helpers import _Struct
 import math
 
-# from .sparse import *
-import genbmm
+try:
+    import genbmm
+except ImportError:
+    pass
 
-# from pytorch_memlab import MemReporter
 from .semirings import LogSemiring
 from .semirings.fast_semirings import broadcast
 
@@ -15,7 +16,7 @@ Open, Close = 0, 1
 
 class Alignment(_Struct):
     def __init__(
-        self, semiring=LogSemiring, sparse_rounds=3, max_gap=None, local=False
+            self, semiring=LogSemiring, sparse_rounds=3, max_gap=None, local=False
     ):
         self.semiring = semiring
         self.sparse_rounds = sparse_rounds
