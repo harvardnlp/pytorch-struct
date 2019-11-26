@@ -79,7 +79,6 @@ class LinearChain(_Struct):
         c.data[:, (~mask).view(-1)] = semiring.zero
         c[:] = semiring.sum(torch.stack([c, lp], dim=-1))
 
-
         # Scan
         for n in range(1, log_N + 1):
             chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])

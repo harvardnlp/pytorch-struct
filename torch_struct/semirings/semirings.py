@@ -275,6 +275,7 @@ class EntropySemiring(Semiring):
     * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
     * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
     """
+    zero = 0
 
     @staticmethod
     def size():

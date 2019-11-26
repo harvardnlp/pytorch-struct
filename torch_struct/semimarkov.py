@@ -35,8 +35,6 @@ class SemiMarkov(_Struct):
 
         # Init.
         semiring.one_(init.data[:, :, :, 0, 0].diagonal(0, -2, -1))
-        # for k in range(1, K - 1):
-        #     semiring.one_(init[:, :, : , k - 1, k].diagonal(0, -2, -1))
 
         # Length mask
         big = torch.zeros(
@@ -50,33 +48,19 @@ class SemiMarkov(_Struct):
             device=log_potentials.device,
         )
         big[:, :, : N - 1] = log_potentials
-        c = init[:, :, :].view(ssize, batch * bin_N, K -1, K-1, C, C)
+        c = init[:, :, :].view(ssize, batch * bin_N, K - 1, K - 1, C, C)
         lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
         mask = mask >= (lengths - 1).view(batch, 1)
         lp.data[:, mask.view(-1)] = semiring.zero
         c.data[:, (~mask).view(-1)] = semiring.zero
-        c[:, :,  :K-1, 0] = semiring.sum(torch.stack([c[:, :,  :K-1, 0],
-                                                      lp[:, :,  1:K]], dim=-1))
+        c[:, :, : K - 1, 0] = semiring.sum(
+            torch.stack([c[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
+        )
 
-        # for b in range(lengths.shape[0]):
-        #     end = lengths[b] - 1
-        #     for k in range(1, K - 1):
-        #         semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, -2, -1))
-
-        # ks = torch.arange(1, K - 1)
         for k in range(1, K - 1):
             semiring.one_(init[:, :, : (k - 1), k - 1, k].diagonal(0, -2, -1))
 
-        # init[:, :, :end, : (K - 1), 0] = log_potentials[:, :, :end, 1:K]
-
-        # init[:, :, :N-1, : (K - 1), 0] = log_potentials[:, :, :N-1, 1:K]
-        # for b in range(lengths.shape[0]):
-        #     end = lengths[b] - 1
-        #     semiring.one_(init[:, b, end:, 0, 0].diagonal(0, 2, 3))
-        #     init[:, b, :end, : (K - 1), 0] = log_potentials[:, b, :end, 1:K]
-        #     for k in range(1, K - 1):
-        #         semiring.one_(init[:, b, : end - (k - 1), k - 1, k].diagonal(0, 2, 3))
         K_1 = K - 1
 
         # Order n, n-1
