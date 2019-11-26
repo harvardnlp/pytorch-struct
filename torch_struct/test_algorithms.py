@@ -142,14 +142,17 @@ def test_cky(data):
 @settings(max_examples=50, deadline=None)
 def test_generic_a(data):
     model = data.draw(
-        sampled_from([Alignment])  # , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
+        sampled_from(
+            [SemiMarkov]
+        )  # , Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
     )
+
     semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
     struct = model(semiring)
     vals, (batch, N) = model._rand()
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
-
+    # assert(False)
     assert alpha.shape[0] == batch
     assert count.shape[0] == batch
     assert alpha.shape == count.shape
