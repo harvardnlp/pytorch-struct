@@ -152,7 +152,13 @@
             
   <h1>Source code for torch_struct.semirings.semirings</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">genbmm</span>
+
+<span class="n">has_genbmm</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">genbmm</span>
+    <span class="n">has_genbmm</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
 
 
 <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
@@ -215,6 +221,11 @@
     <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
         <span class="s2">&quot;Fill *ssize x ...* tensor with additive identity.&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">zero_mask_</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="s2">&quot;Fill *ssize x ...* tensor with additive identity.&quot;</span>
+        <span class="n">xs</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="bp">cls</span><span class="o">.</span><span class="n">zero</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">one_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
@@ -296,7 +307,7 @@
 <span class="sd">        (Faster than calling sum and times.)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">has_genbmm</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
@@ -311,7 +322,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">has_genbmm</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply_log</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_BaseLog</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
@@ -326,7 +337,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">has_genbmm</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">genbmm</span><span class="o">.</span><span class="n">BandedMatrix</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">b</span><span class="o">.</span><span class="n">multiply_max</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">matmul</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
@@ -422,6 +433,8 @@
 <span class="sd">    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">zero</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">size</span><span class="p">():</span>
         <span class="k">return</span> <span class="mi">2</span>
@@ -453,6 +466,12 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">prod</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">xs</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">zero_mask_</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">xs</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+        <span class="s2">&quot;Fill *ssize x ...* tensor with additive identity.&quot;</span>
+        <span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e5</span><span class="p">)</span>
+        <span class="n">xs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">zero_</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>

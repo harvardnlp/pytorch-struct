@@ -152,15 +152,15 @@
             
   <h1>Source code for torch_struct.distributions</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch.distributions.distribution</span> <span class="k">import</span> <span class="n">Distribution</span>
-<span class="kn">from</span> <span class="nn">torch.distributions.utils</span> <span class="k">import</span> <span class="n">lazy_property</span>
-<span class="kn">from</span> <span class="nn">.linearchain</span> <span class="k">import</span> <span class="n">LinearChain</span>
-<span class="kn">from</span> <span class="nn">.cky</span> <span class="k">import</span> <span class="n">CKY</span>
-<span class="kn">from</span> <span class="nn">.semimarkov</span> <span class="k">import</span> <span class="n">SemiMarkov</span>
-<span class="kn">from</span> <span class="nn">.alignment</span> <span class="k">import</span> <span class="n">Alignment</span>
-<span class="kn">from</span> <span class="nn">.deptree</span> <span class="k">import</span> <span class="n">DepTree</span><span class="p">,</span> <span class="n">deptree_nonproj</span><span class="p">,</span> <span class="n">deptree_part</span>
-<span class="kn">from</span> <span class="nn">.cky_crf</span> <span class="k">import</span> <span class="n">CKY_CRF</span>
-<span class="kn">from</span> <span class="nn">.semirings</span> <span class="k">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.distribution</span> <span class="kn">import</span> <span class="n">Distribution</span>
+<span class="kn">from</span> <span class="nn">torch.distributions.utils</span> <span class="kn">import</span> <span class="n">lazy_property</span>
+<span class="kn">from</span> <span class="nn">.linearchain</span> <span class="kn">import</span> <span class="n">LinearChain</span>
+<span class="kn">from</span> <span class="nn">.cky</span> <span class="kn">import</span> <span class="n">CKY</span>
+<span class="kn">from</span> <span class="nn">.semimarkov</span> <span class="kn">import</span> <span class="n">SemiMarkov</span>
+<span class="kn">from</span> <span class="nn">.alignment</span> <span class="kn">import</span> <span class="n">Alignment</span>
+<span class="kn">from</span> <span class="nn">.deptree</span> <span class="kn">import</span> <span class="n">DepTree</span><span class="p">,</span> <span class="n">deptree_nonproj</span><span class="p">,</span> <span class="n">deptree_part</span>
+<span class="kn">from</span> <span class="nn">.cky_crf</span> <span class="kn">import</span> <span class="n">CKY_CRF</span>
+<span class="kn">from</span> <span class="nn">.semirings</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">LogSemiring</span><span class="p">,</span>
     <span class="n">MaxSemiring</span><span class="p">,</span>
     <span class="n">EntropySemiring</span><span class="p">,</span>
@@ -188,7 +188,7 @@
 
     <span class="n">has_enumerate_support</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">event_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span> <span class="o">=</span> <span class="n">log_potentials</span>
@@ -386,7 +386,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">struct</span> <span class="o">=</span> <span class="n">Alignment</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_gap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">local</span> <span class="o">=</span> <span class="n">local</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_gap</span> <span class="o">=</span> <span class="n">max_gap</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
@@ -414,7 +414,7 @@
 <span class="sd">    Implemented as a special case of linear chain CRF.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">log_potentials</span> <span class="o">=</span> <span class="n">HMM</span><span class="o">.</span><span class="n">struct</span><span class="o">.</span><span class="n">hmm</span><span class="p">(</span><span class="n">transition</span><span class="p">,</span> <span class="n">emission</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">observations</span><span class="p">)</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
 
@@ -523,7 +523,7 @@
 
     <span class="n">struct</span> <span class="o">=</span> <span class="n">CKY</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">event_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span> <span class="o">=</span> <span class="n">log_potentials</span>
