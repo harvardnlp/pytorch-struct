@@ -86,7 +86,12 @@ class Autoregressive(Distribution):
             sample, batch_shape, n_length = value.shape
 
         value = torch.cat(
-            [torch.zeros(sample, batch_shape, 1).fill_(self.start_class).long(), value],
+            [
+                torch.zeros(sample, batch_shape, 1, device=value.device)
+                     .fill_(self.start_class)
+                     .long(),
+                value,
+            ],
             dim=2,
         )
         value = unwrap(value)
