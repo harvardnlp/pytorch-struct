@@ -330,6 +330,26 @@ def test_params(data, seed):
 @settings(max_examples=50, deadline=None)
 def test_alignment(data):
 
+    # log_potentials = torch.ones(2, 2, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+    # print("FINAL", v)
+    # log_potentials = torch.ones(2, 3, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+    # print("FINAL", v)
+
+    # log_potentials = torch.ones(2, 6, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+    # print("FINAL", v)
+
+    # log_potentials = torch.ones(2, 7, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+    # print("FINAL", v)
+
+    # log_potentials = torch.ones(2, 8, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+    # print("FINAL", v)
+    # assert False
+
     # model = data.draw(sampled_from([Alignment]))
     # semiring = data.draw(sampled_from([StdSemiring]))
     # struct = model(semiring)
@@ -355,6 +375,20 @@ def test_alignment(data):
     alpha = struct.sum(vals)
     count = struct.enumerate(vals)[0]
     assert torch.isclose(count, alpha).all()
+
+    # model = data.draw(sampled_from([Alignment]))
+    # semiring = data.draw(sampled_from([MaxSemiring]))
+    # struct = model(semiring)
+    # log_potentials = torch.ones(2, 2, 2, 3)
+    # v = Alignment(StdSemiring).sum(log_potentials)
+
+    log_potentials = torch.ones(2, 2, 8, 3)
+    v = Alignment(MaxSemiring).sum(log_potentials)
+    # print(v)
+    # assert False
+    m = Alignment(MaxSemiring).marginals(log_potentials)
+    score = Alignment(MaxSemiring).score(log_potentials, m)
+    assert torch.isclose(v, score).all()
 
     semiring = data.draw(sampled_from([MaxSemiring]))
     struct = model(semiring, local=True)
