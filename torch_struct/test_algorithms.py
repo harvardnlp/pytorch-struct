@@ -2,6 +2,7 @@ from .cky import CKY
 from .cky_crf import CKY_CRF
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .linearchain import LinearChain
+from .factorial_hmm import FactorialHMM
 from .semimarkov import SemiMarkov
 from .alignment import Alignment
 from .semirings import (
@@ -325,6 +326,15 @@ def test_params(data, seed):
         c = vals.grad.detach()
         assert torch.isclose(b, c).all()
 
+def test_factorial_hmm():
+    model = FactorialHMM
+    semiring = StdSemiring
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    alpha = struct.sum(vals)
+    print(alpha)
+    assert False
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)
@@ -414,6 +424,7 @@ def test_hmm():
     observations = torch.randint(0, V, (batch, N))
     out = LinearChain.hmm(transition, emission, init, observations)
     LinearChain().sum(out)
+
 
 
 @given(data())

@@ -14,6 +14,7 @@ from .autoregressive import Autoregressive, AutoregressiveModel
 from .cky_crf import CKY_CRF
 from .deptree import DepTree
 from .linearchain import LinearChain
+from .factorial_hmm import FactorialHMM
 from .semimarkov import SemiMarkov
 from .alignment import Alignment
 from .rl import SelfCritical
@@ -43,6 +44,7 @@ __all__ = [
     CKY_CRF,
     DepTree,
     LinearChain,
+    FactorialHMM,
     SemiMarkov,
     LogSemiring,
     StdSemiring,
