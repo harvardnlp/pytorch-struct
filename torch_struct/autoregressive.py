@@ -64,6 +64,7 @@ class Autoregressive(Distribution):
         self.normalize = normalize
         event_shape = (n_length, n_classes)
         batch_shape = initial_state[0].shape[:1]
+        self.device = initial_state[0].device
         super().__init__(batch_shape=batch_shape, event_shape=event_shape)
 
     def log_prob(self, value, sparse=False):
@@ -116,7 +117,7 @@ class Autoregressive(Distribution):
         return wrap(scores, sample)
 
     def _beam_search(self, semiring, gumbel=False):
-        beam = semiring.one_(torch.zeros((semiring.size(),) + self.batch_shape))
+        beam = semiring.one_(torch.zeros((semiring.size(),) + self.batch_shape, device=self.device))
         ssize = semiring.size()
 
         def take(state, indices):
@@ -125,7 +126,7 @@ class Autoregressive(Distribution):
                     s.contiguous()[
                         (
                             indices * self.batch_shape[0]
-                            + torch.arange(self.batch_shape[0]).unsqueeze(0)
+                            + torch.arange(self.batch_shape[0], device=self.device).unsqueeze(0)
                         )
                         .contiguous()
                         .view(-1)
