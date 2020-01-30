@@ -168,9 +168,11 @@
 ./genindex.html
 ./index.html
 ./model.html
+./model.ipynb
 ./networks.html
 ./objects.inv
 ./refs.html
 ./search.html
 ./searchindex.js
 ./semiring.html
+./semiring.ipynb
