@@ -1,4 +1,4 @@
-# Structured Prediction Library (PyTorch-Struct)
+# Structured Prediction Library (Torch-Struct)
 
 [![Build Status](https://travis-ci.org/harvardnlp/pytorch-struct.svg?branch=master)](https://travis-ci.org/harvardnlp/pytorch-struct)
 [![Coverage Status](https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master)](https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master)
@@ -168,6 +168,7 @@ Everything implemented through semiring dynamic programming.
 
 ## Citation
 
+```
 @misc{alex2020torchstruct,
     title={Torch-Struct: Deep Structured Prediction Library},
     author={Alexander M. Rush},
@@ -176,3 +177,4 @@ Everything implemented through semiring dynamic programming.
     archivePrefix={arXiv},
     primaryClass={cs.CL}
 }
+```
