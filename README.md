@@ -18,6 +18,8 @@ A library of tested, GPU implementations of core structured prediction algorithm
 
 Designed to be used as efficient batched layers in other PyTorch code. 
 
+(Tutorial paper)[https://arxiv.org/abs/2002.00876] describing methodology.
+
 ## Getting Started
 
 
