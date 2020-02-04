@@ -165,3 +165,14 @@ Everything implemented through semiring dynamic programming.
 * <a href="https://github.com/harvardnlp/pytorch-struct/blob/master/examples/tree.py">Structured VAE </a>
 
 <img src="https://media.giphy.com/media/IdxKpsWBHa5PpjuhHM/giphy.gif">
+
+## Citation
+
+@misc{alex2020torchstruct,
+    title={Torch-Struct: Deep Structured Prediction Library},
+    author={Alexander M. Rush},
+    year={2020},
+    eprint={2002.00876},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL}
+}
