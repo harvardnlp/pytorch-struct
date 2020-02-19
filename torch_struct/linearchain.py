@@ -73,7 +73,7 @@ class LinearChain(_Struct):
         big[:, :, : N - 1] = log_potentials
         c = chart[:, :, :].view(ssize, batch * bin_N, C, C)
         lp = big[:, :, :].view(ssize, batch * bin_N, C, C)
-        mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
+        mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N).type_as(c)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1).to(lp.device)
         semiring.zero_mask_(lp.data, mask)
