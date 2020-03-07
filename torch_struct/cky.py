@@ -26,7 +26,9 @@ class CKY(_Struct):
             lengths = torch.LongTensor([N] * batch)
 
         # Charts
-        beta = [Chart((batch, N, N, NT), rules, semiring, cache=cache) for _ in range(2)]
+        beta = [
+            Chart((batch, N, N, NT), rules, semiring, cache=cache) for _ in range(2)
+        ]
         span = [None for _ in range(N)]
         v = (ssize, batch)
         term_use = terms + 0.0
@@ -302,5 +304,3 @@ class CKY(_Struct):
         rules = torch.rand(batch, NT, (NT + T), (NT + T))
         roots = torch.rand(batch, NT)
         return (terms, rules, roots), (batch.item(), N.item())
-
-
