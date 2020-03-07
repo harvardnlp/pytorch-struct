@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False, cache=False):
+    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
 
         semiring = self.semiring
 
@@ -75,7 +75,6 @@ class CKY(_Struct):
 
         final = beta[A][0, :, NTs]
         top = torch.stack([final[:, i, l - 1] for i, l in enumerate(lengths)], dim=1)
-        #top = torch.stack([span[l - 1][:, i, 0, :] for i, l in enumerate(lengths)], dim=1)
         log_Z = semiring.dot(top, roots)
         return log_Z, (term_use, rules, roots, span[1:]), beta
 
@@ -101,9 +100,7 @@ class CKY(_Struct):
             scores, lengths=lengths, force_grad=True, cache=not _raw
         )
 
-        inputs = tuple(spans)
-
-        def marginal(obj, inputs, pre_margs=None):
+        def marginal(obj, inputs):
             obj = self.semiring.unconvert(obj).sum(dim=0)
             marg = torch.autograd.grad(
                 obj, inputs, create_graph=True, only_inputs=True, allow_unused=False,
@@ -112,41 +109,33 @@ class CKY(_Struct):
             spans_marg = torch.zeros(
                 batch, N, N, NT, dtype=scores[1].dtype, device=scores[1].device
             )
-            span_ls = marg
+            span_ls = marg[3:]
             for w in range(len(span_ls)):
-                x = span_ls[w]
-                print('span_grads:\n', x, x.size()) 
-                if pre_margs is not None:
-                    pre_marg = torch.clamp(pre_margs[w], max=1.)
-                    cur_marg = torch.clamp(span_ls[w], max=2.) 
-                    x = (cur_marg - pre_marg).clamp_(min=0.) 
-                    #x = (span_ls[w] - pre_marg[w]).clamp_(min=0.) 
-                    print('pre: ', pre_marg)
-                    print('xxx: ', cur_marg)
-                x = x.sum(dim=0, keepdim=True)
-                print('ret: ', x)
+                x = span_ls[w].sum(dim=0, keepdim=True)
                 spans_marg[:, w, : N - w - 1] = self.semiring.unconvert(x)
 
-            return (None, None, None, spans_marg), span_ls
+            rule_marg = self.semiring.unconvert(marg[0]).squeeze(1)
+            root_marg = self.semiring.unconvert(marg[1])
+            term_marg = self.semiring.unconvert(marg[2])
 
+            assert term_marg.shape == (batch, N, T)
+            assert root_marg.shape == (batch, NT)
+            assert rule_marg.shape == (batch, NT, NT + T, NT + T)
+            return (term_marg, rule_marg, root_marg, spans_marg)
+
+        inputs = (rule_use, root_use, term_use) + tuple(spans)
         if _raw:
             paths = []
-            print('\n\n\n------------COMPUTE\n')
-            print('spans:\n', spans[0], spans[0].size())
-            
-            print('\n\n\n---------xx-COMPUTE\n')
-            pre_marg = None
-            for k in reversed(range(v.shape[0])):
+            for k in range(v.shape[0]):
                 obj = v[k : k + 1]
-                print('obj {}: '.format(k), obj)
-                marg, pre_marg = marginal(obj, inputs, None)
+                marg = marginal(obj, inputs)
                 paths.append(marg[-1])
             paths = torch.stack(paths, 0)
             obj = v.sum(dim=0, keepdim=True)
-            (term_marg, rule_marg, root_marg, _), _ = marginal(obj, inputs, None)
+            term_marg, rule_marg, root_marg, _ = marginal(obj, inputs)
             return term_marg, rule_marg, root_marg, paths
         else:
-            return marginal(v, inputs, None)[0]
+            return marginal(v, inputs)
 
     def score(self, potentials, parts):
         terms, rules, roots = potentials[:3]
@@ -314,31 +303,4 @@ class CKY(_Struct):
         roots = torch.rand(batch, NT)
         return (terms, rules, roots), (batch.item(), N.item())
 
-
-        """
-        inputs = (rule_use, root_use, term_use) + tuple(spans)
-
-        def marginal(obj, inputs):
-            obj = self.semiring.unconvert(v).sum(dim=0)
-            marg = torch.autograd.grad(
-                obj, inputs, create_graph=True, only_inputs=True, allow_unused=False,
-            )
-
-            spans_marg = torch.zeros(
-                batch, N, N, NT, dtype=scores[1].dtype, device=scores[1].device
-            )
-            span_ls = marg[3:]
-            for w in range(len(span_ls)):
-                print('span_grads:\n', span_ls[w], span_ls[w].size()) 
-                spans_marg[:, w, : N - w - 1] = self.semiring.unconvert(span_ls[w])
-
-            rule_marg = self.semiring.unconvert(marg[0]).squeeze(1)
-            root_marg = self.semiring.unconvert(marg[1])
-            term_marg = self.semiring.unconvert(marg[2])
-
-            assert term_marg.shape == (batch, N, T)
-            assert root_marg.shape == (batch, NT)
-            assert rule_marg.shape == (batch, NT, NT + T, NT + T)
-            return (term_marg, rule_marg, root_marg, spans_marg)
-        """
 
