@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False):
+    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
 
         semiring = self.semiring
 
@@ -26,7 +26,9 @@ class CKY(_Struct):
             lengths = torch.LongTensor([N] * batch)
 
         # Charts
-        beta = [Chart((batch, N, N, NT), rules, semiring) for _ in range(2)]
+        beta = [
+            Chart((batch, N, N, NT), rules, semiring, cache=cache) for _ in range(2)
+        ]
         span = [None for _ in range(N)]
         v = (ssize, batch)
         term_use = terms + 0.0
@@ -97,12 +99,11 @@ class CKY(_Struct):
         _, NT, _, _ = rules.shape
 
         v, (term_use, rule_use, root_use, spans), alpha = self._dp(
-            scores, lengths=lengths, force_grad=True
+            scores, lengths=lengths, force_grad=True, cache=not _raw
         )
-        inputs = (rule_use, root_use, term_use) + tuple(spans)
 
         def marginal(obj, inputs):
-            obj = self.semiring.unconvert(v).sum(dim=0)
+            obj = self.semiring.unconvert(obj).sum(dim=0)
             marg = torch.autograd.grad(
                 obj, inputs, create_graph=True, only_inputs=True, allow_unused=False,
             )
@@ -112,7 +113,8 @@ class CKY(_Struct):
             )
             span_ls = marg[3:]
             for w in range(len(span_ls)):
-                spans_marg[:, w, : N - w - 1] = self.semiring.unconvert(span_ls[w])
+                x = span_ls[w].sum(dim=0, keepdim=True)
+                spans_marg[:, w, : N - w - 1] = self.semiring.unconvert(x)
 
             rule_marg = self.semiring.unconvert(marg[0]).squeeze(1)
             root_marg = self.semiring.unconvert(marg[1])
@@ -123,6 +125,7 @@ class CKY(_Struct):
             assert rule_marg.shape == (batch, NT, NT + T, NT + T)
             return (term_marg, rule_marg, root_marg, spans_marg)
 
+        inputs = (rule_use, root_use, term_use) + tuple(spans)
         if _raw:
             paths = []
             for k in range(v.shape[0]):
