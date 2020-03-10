@@ -93,9 +93,10 @@ class StructDistribution(Distribution):
         Returns:
             kmax (*k x batch_shape x event_shape*)
         """
-        return self._struct(KMaxSemiring(k)).marginals(
-            self.log_potentials, self.lengths, _raw=True
-        )
+        with torch.enable_grad():
+            return self._struct(KMaxSemiring(k)).marginals(
+                self.log_potentials, self.lengths, _raw=True
+            )
 
     @lazy_property
     def mode(self):
