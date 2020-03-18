@@ -95,7 +95,7 @@ class StructDistribution(Distribution):
             argmax (*batch_shape x event_shape*)
         """
         return self._struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
-    
+
     def topk(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
