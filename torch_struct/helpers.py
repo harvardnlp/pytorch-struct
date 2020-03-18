@@ -14,7 +14,7 @@ class Get(torch.autograd.Function):
 
     @staticmethod
     def backward(ctx, grad_output):
-        grad_chart, = ctx.saved_tensors
+        (grad_chart,) = ctx.saved_tensors
         grad_chart[ctx.indices] += grad_output
         return grad_chart, None, None
 
@@ -152,7 +152,9 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
+            v, edges, _ = self._dp(
+                edge, lengths=lengths, force_grad=True, cache=not _raw
+            )
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):

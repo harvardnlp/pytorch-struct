@@ -66,7 +66,7 @@ def test_autoregressive(data, seed):
     class Model(torch.nn.Module):
         def forward(self, inputs, state):
             if inputs.shape[1] == 1:
-                state, = state
+                (state,) = state
                 in_batch, hidden = state.shape
                 t = state[0, 0]
                 batch = values.shape[0]

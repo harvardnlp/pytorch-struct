@@ -4,33 +4,6 @@ from .helpers import _Struct, Chart
 A, B = 0, 1
 
 
-# class Get(torch.autograd.Function):
-#     @staticmethod
-#     def forward(ctx, chart, grad_chart, indices):
-#         out = chart[indices]
-#         ctx.save_for_backward(grad_chart)
-#         ctx.indices = indices
-#         return out
-
-#     @staticmethod
-#     def backward(ctx, grad_output):
-#         grad_chart, = ctx.saved_tensors
-#         grad_chart[ctx.indices] += grad_output
-#         return grad_chart, None, None
-
-# class Set(torch.autograd.Function):
-#     @staticmethod
-#     def forward(ctx, chart, indices, vals):
-#         chart[indices] = vals
-#         ctx.indices = indices
-#         return chart
-
-#     @staticmethod
-#     def backward(ctx, grad_output):
-#         z = grad_output[ctx.indices]
-#         return None, None, z
-
-
 class CKY_CRF(_Struct):
     def _check_potentials(self, edge, lengths=None):
         batch, N, _, NT = edge.shape
@@ -41,11 +14,11 @@ class CKY_CRF(_Struct):
 
         return edge, batch, N, NT, lengths
 
-    def _dp(self, scores, lengths=None, force_grad=False):
+    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
-        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
+        beta = [Chart((batch, N, N), scores, semiring, cache=cache) for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize
