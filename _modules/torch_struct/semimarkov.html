@@ -171,7 +171,7 @@
         <span class="k">assert</span> <span class="n">C</span> <span class="o">==</span> <span class="n">C2</span><span class="p">,</span> <span class="s2">&quot;Transition shape doesn&#39;t match&quot;</span>
         <span class="k">return</span> <span class="n">edge</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">lengths</span>
 
-    <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="s2">&quot;Compute forward pass by linear scan&quot;</span>
 
         <span class="c1"># Setup</span>

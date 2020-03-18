@@ -199,14 +199,17 @@
 <span class="sd">    arc_scores : b x N x N arc scores with root scores on diagonal.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="n">semiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span>
         <span class="n">arc_scores</span> <span class="o">=</span> <span class="n">_convert</span><span class="p">(</span><span class="n">arc_scores_in</span><span class="p">)</span>
         <span class="n">arc_scores</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_potentials</span><span class="p">(</span><span class="n">arc_scores</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
         <span class="n">arc_scores</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">[</span>
-                <span class="p">[</span><span class="n">Chart</span><span class="p">((</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">arc_scores</span><span class="p">,</span> <span class="n">semiring</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)]</span>
+                <span class="p">[</span>
+                    <span class="n">Chart</span><span class="p">((</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">arc_scores</span><span class="p">,</span> <span class="n">semiring</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                <span class="p">]</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
             <span class="p">]</span>
             <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
@@ -455,105 +458,6 @@
                 <span class="p">):</span>
                     <span class="k">return</span> <span class="kc">False</span>
     <span class="k">return</span> <span class="kc">True</span>
-
-    <span class="c1"># def _dp_backward(self, arc_scores, lengths, alpha_in, v=None, force_grad=False):</span>
-
-    <span class="c1">#     # This function is super complicated and was just too slow to include</span>
-    <span class="c1">#     semiring = self.semiring</span>
-    <span class="c1">#     arc_scores = _convert(arc_scores)</span>
-    <span class="c1">#     batch, N, lengths = self._check_potentials(arc_scores, lengths)</span>
-    <span class="c1">#     DIRS = 2</span>
-
-    <span class="c1">#     alpha = [</span>
-    <span class="c1">#         self._make_chart(2, (DIRS, batch, N, N), arc_scores, force_grad)</span>
-    <span class="c1">#         for _ in range(2)</span>
-    <span class="c1">#     ]</span>
-
-    <span class="c1">#     def stack(a, b, dim=-1):</span>
-    <span class="c1">#         return torch.stack([a, b], dim=dim)</span>
-
-    <span class="c1">#     def sstack(a):</span>
-    <span class="c1">#         return torch.stack([a, a], dim=-1)</span>
-
-    <span class="c1">#     for k in range(N - 1, -1, -1):</span>
-    <span class="c1">#         # Initialize</span>
-    <span class="c1">#         if N - k - 1 &gt; 0:</span>
-    <span class="c1">#             # R completes</span>
-    <span class="c1">#             # I -&gt; C* C</span>
-    <span class="c1">#             # I -&gt; C* C</span>
-    <span class="c1">#             # C -&gt; I C*</span>
-    <span class="c1">#             a = semiring.sum(</span>
-    <span class="c1">#                 semiring.times(</span>
-    <span class="c1">#                     *roll2(</span>
-    <span class="c1">#                         stack(</span>
-    <span class="c1">#                             stack(alpha[A][I][R], alpha[A][I][L]),</span>
-    <span class="c1">#                             sstack(alpha_in[B][C][R]),</span>
-    <span class="c1">#                             dim=0,</span>
-    <span class="c1">#                         ),</span>
-    <span class="c1">#                         stack(</span>
-    <span class="c1">#                             sstack(alpha_in[A][C][L]),</span>
-    <span class="c1">#                             stack(alpha[B][I][L], alpha[B][I][R]),</span>
-    <span class="c1">#                             dim=0,</span>
-    <span class="c1">#                         ),</span>
-    <span class="c1">#                         N,</span>
-    <span class="c1">#                         k,</span>
-    <span class="c1">#                         1,</span>
-    <span class="c1">#                     )</span>
-    <span class="c1">#                 ).view(2, batch, N - k - 1, -1),</span>
-    <span class="c1">#                 dim=-1,</span>
-    <span class="c1">#             )</span>
-    <span class="c1">#             alpha[A][C][L, :, 1 : N - k, k] = a[1]</span>
-    <span class="c1">#             alpha[A][C][R, :, : N - k - 1, k] = a[0]</span>
-
-    <span class="c1">#         for b, l in enumerate(lengths):</span>
-    <span class="c1">#             if l == k:</span>
-    <span class="c1">#                 alpha[A][C][R, b, 0, l] = semiring.one()</span>
-    <span class="c1">#                 alpha[B][C][R, b, l, N - l - 1] = semiring.one()</span>
-
-    <span class="c1">#         c = semiring.sum(</span>
-    <span class="c1">#             semiring.times(</span>
-    <span class="c1">#                 *roll2(</span>
-    <span class="c1">#                     stack(alpha[A][C][L], alpha_in[B][I][R], dim=0),</span>
-    <span class="c1">#                     stack(alpha_in[A][I][L], alpha[B][C][R], dim=0),</span>
-    <span class="c1">#                     N,</span>
-    <span class="c1">#                     k,</span>
-    <span class="c1">#                     0,</span>
-    <span class="c1">#                 )</span>
-    <span class="c1">#             )</span>
-    <span class="c1">#         )</span>
-    <span class="c1">#         alpha[A][C][:, :, : N - k, k] = semiring.plus(</span>
-    <span class="c1">#             alpha[A][C][:, :, : N - k, k], c</span>
-    <span class="c1">#         )</span>
-
-    <span class="c1">#         # Compute reverses.</span>
-    <span class="c1">#         alpha[B][C][:, :, k:N, N - k - 1] = alpha[A][C][:, :, : N - k, k]</span>
-
-    <span class="c1">#         if k &gt; 0:</span>
-    <span class="c1">#             f = torch.arange(N - k), torch.arange(k, N)</span>
-    <span class="c1">#             alpha[A][I][:, :, : N - k, k] = semiring.dot(</span>
-    <span class="c1">#                 stack(</span>
-    <span class="c1">#                     arc_scores[:, f[1], f[0]], arc_scores[:, f[0], f[1]], dim=0</span>
-    <span class="c1">#                 ).unsqueeze(-1),</span>
-    <span class="c1">#                 *roll2(</span>
-    <span class="c1">#                     stack(alpha_in[B][C][L], alpha[A][C][R], dim=0),</span>
-    <span class="c1">#                     stack(alpha[B][C][L], alpha_in[A][C][R], dim=0),</span>
-    <span class="c1">#                     N,</span>
-    <span class="c1">#                     k,</span>
-    <span class="c1">#                 )</span>
-    <span class="c1">#             )</span>
-    <span class="c1">#             alpha[B][I][:, :, k:N, N - k - 1] = alpha[A][I][:, :, : N - k, k]</span>
-
-    <span class="c1">#     v = alpha[A][C][R, :, 0, 0]</span>
-    <span class="c1">#     left = semiring.times(alpha[A][I][L, :, :, :], alpha_in[A][I][L, :, :, :])</span>
-    <span class="c1">#     right = semiring.times(alpha[A][I][R, :, :, :], alpha_in[A][I][R, :, :, :])</span>
-    <span class="c1">#     ret = torch.zeros(batch, N, N, dtype=left.dtype)</span>
-    <span class="c1">#     for k in torch.arange(N):</span>
-    <span class="c1">#         f = torch.arange(N - k), torch.arange(k, N)</span>
-    <span class="c1">#         ret[:, f[1], k] = left[:, k, f[0]]</span>
-    <span class="c1">#         ret[:, k, f[1]] = right[:, k, f[0]]</span>
-
-    <span class="c1">#     ret = semiring.div_exp(ret - arc_scores, v.view(batch, 1, 1))</span>
-    <span class="c1">#     return _unconvert(ret)</span>
 </pre></div>
 
            </div>
