@@ -152,7 +152,8 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
+            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True,
+                                   cache=not _raw)
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):

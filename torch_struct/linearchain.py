@@ -43,7 +43,7 @@ class LinearChain(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, C, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False):
+    def _dp(self, log_potentials, lengths=None, force_grad=False, cache=True):
         return self._dp_scan(log_potentials, lengths, force_grad)
 
     def _dp_scan(self, log_potentials, lengths=None, force_grad=False):
@@ -87,34 +87,6 @@ class LinearChain(_Struct):
         v = semiring.sum(semiring.sum(chart[:, :, 0].contiguous()))
         return v, [log_potentials], None
 
-    # def _dp_standard(self, edge, lengths=None, force_grad=False):
-    #     semiring = self.semiring
-    #     ssize = semiring.size()
-    #     edge, batch, N, C, lengths = self._check_potentials(edge, lengths)
-
-    #     alpha = self._make_chart(N, (batch, C), edge, force_grad)
-    #     edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
-
-    #     semiring.one_(alpha[0].data)
-
-    #     for n in range(1, N):
-    #         edge_store[n - 1][:] = semiring.times(
-    #             alpha[n - 1].view(ssize, batch, 1, C),
-    #             edge[:, :, n - 1].view(ssize, batch, C, C),
-    #         )
-    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
-
-    #     for n in range(1, N):
-    #         edge_store[n - 1][:] = semiring.times(
-    #             alpha[n - 1].view(ssize, batch, 1, C),
-    #             edge[:, :, n - 1].view(ssize, batch, C, C),
-    #         )
-    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
-
-    #     ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
-    #     ret = torch.stack(ret, dim=1)
-    #     v = semiring.sum(ret)
-    #     return v, edge_store, alpha
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
@@ -241,30 +213,39 @@ class LinearChain(_Struct):
             enum_lengths,
         )
 
-        # def parent(x, size):
-        # return x[:, :, :size]
 
-        # # Scan downward
-        # print("a",  v)
-        # semiring.zero_(root(chart2[-1][:]))
-        # chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)] = semiring.one_(
-        #     chart2[-1][:, :, 0, torch.arange(C), torch.arange(C)]
-        # )
+    ## For reference
+    #
+    # def _dp_standard(self, edge, lengths=None, force_grad=False):
+    #     semiring = self.semiring
+    #     ssize = semiring.size()
+    #     edge, batch, N, C, lengths = self._check_potentials(edge, lengths)
 
-        # size = 1
-        # for n in range(log_N - 1, -1, -1):
-        #     left(chart2[n], size)[:] = parent(chart2[n + 1], size)
-        #     right(chart2[n], size)[:] = merge(
-        #         parent(chart2[n + 1], size), left(chart[n], size), size
-        #     )
-        #     size = size * 2
+    #     alpha = self._make_chart(N, (batch, C), edge, force_grad)
+    #     edge_store = self._make_chart(N - 1, (batch, C, C), edge, force_grad)
 
-        # final = merge(chart2[0], chart[0], size)
-        # ret = [final[:, i, lengths[i] - 2] for i in range(batch)]
-        # ret = torch.stack(ret, dim=1)
-        # v2 = semiring.sum(semiring.sum(ret))
-        # print("b", v2)
+    #     semiring.one_(alpha[0].data)
 
+    #     for n in range(1, N):
+    #         edge_store[n - 1][:] = semiring.times(
+    #             alpha[n - 1].view(ssize, batch, 1, C),
+    #             edge[:, :, n - 1].view(ssize, batch, C, C),
+    #         )
+    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
+
+    #     for n in range(1, N):
+    #         edge_store[n - 1][:] = semiring.times(
+    #             alpha[n - 1].view(ssize, batch, 1, C),
+    #             edge[:, :, n - 1].view(ssize, batch, C, C),
+    #         )
+    #         alpha[n][:] = semiring.sum(edge_store[n - 1])
+
+    #     ret = [alpha[lengths[i] - 1][:, i] for i in range(batch)]
+    #     ret = torch.stack(ret, dim=1)
+    #     v = semiring.sum(ret)
+    #     return v, edge_store, alpha
+
+        
     # def _dp_backward(self, edge, lengths, alpha_in, v=None):
     #     semiring = self.semiring
     #     batch, N, C, lengths = self._check_potentials(edge, lengths)

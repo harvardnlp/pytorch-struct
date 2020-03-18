@@ -18,7 +18,7 @@ class SemiMarkov(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, K, C, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False):
+    def _dp(self, log_potentials, lengths=None, force_grad=False, cache=True):
         "Compute forward pass by linear scan"
 
         # Setup
