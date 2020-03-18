@@ -53,7 +53,10 @@ class DepTree(_Struct):
         arc_scores.requires_grad_(True)
         alpha = [
             [
-                [Chart((batch, N, N), arc_scores, semiring, cache=cache) for _ in range(2)]
+                [
+                    Chart((batch, N, N), arc_scores, semiring, cache=cache)
+                    for _ in range(2)
+                ]
                 for _ in range(2)
             ]
             for _ in range(2)
@@ -302,5 +305,3 @@ def _is_projective(parse):
                 ):
                     return False
     return True
-
-

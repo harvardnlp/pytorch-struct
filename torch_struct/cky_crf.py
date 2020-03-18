@@ -4,7 +4,6 @@ from .helpers import _Struct, Chart
 A, B = 0, 1
 
 
-
 class CKY_CRF(_Struct):
     def _check_potentials(self, edge, lengths=None):
         batch, N, _, NT = edge.shape

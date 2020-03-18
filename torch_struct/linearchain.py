@@ -87,7 +87,6 @@ class LinearChain(_Struct):
         v = semiring.sum(semiring.sum(chart[:, :, 0].contiguous()))
         return v, [log_potentials], None
 
-
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
         """
@@ -213,7 +212,6 @@ class LinearChain(_Struct):
             enum_lengths,
         )
 
-
     ## For reference
     #
     # def _dp_standard(self, edge, lengths=None, force_grad=False):
@@ -245,7 +243,6 @@ class LinearChain(_Struct):
     #     v = semiring.sum(ret)
     #     return v, edge_store, alpha
 
-        
     # def _dp_backward(self, edge, lengths, alpha_in, v=None):
     #     semiring = self.semiring
     #     batch, N, C, lengths = self._check_potentials(edge, lengths)
