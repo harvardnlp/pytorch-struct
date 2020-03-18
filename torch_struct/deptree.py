@@ -46,14 +46,14 @@ class DepTree(_Struct):
     arc_scores : b x N x N arc scores with root scores on diagonal.
     """
 
-    def _dp(self, arc_scores_in, lengths=None, force_grad=False):
+    def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
         semiring = self.semiring
         arc_scores = _convert(arc_scores_in)
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         arc_scores.requires_grad_(True)
         alpha = [
             [
-                [Chart((batch, N, N), arc_scores, semiring) for _ in range(2)]
+                [Chart((batch, N, N), arc_scores, semiring, cache=cache) for _ in range(2)]
                 for _ in range(2)
             ]
             for _ in range(2)
