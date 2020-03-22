@@ -13,7 +13,7 @@ def _convert(logits):
 
     N = logits.size(1)
     new_logits[:, 0, 1:] = logits[:, torch.arange(N), torch.arange(N)]
-    new_logits[:, torch.arange(1, N), torch.arange(1, N)] = -1e9
+    new_logits[:, torch.arange(1, N+1), torch.arange(1, N+1)] = -1e9
     return new_logits
 
 
