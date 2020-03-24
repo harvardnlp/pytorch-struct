@@ -193,7 +193,7 @@ def deptree_part(arc_scores, eps=1e-5):
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
     lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
-    return lap.det().log()
+    return lap.logdet()
 
 
 def deptree_nonproj(arc_scores, eps=1e-5):
