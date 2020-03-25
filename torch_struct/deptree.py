@@ -5,9 +5,10 @@ from .helpers import _Struct, Chart
 
 def _convert(logits):
     "move root arcs from diagonal"
-    new_logits = torch.zeros(
-        logits.size(0), logits.size(1) + 1, logits.size(2) + 1
-    ).type_as(logits.data)
+    new_shape = list(logits.shape)
+    new_shape[1] += 1
+    new_shape[2] += 1
+    new_logits = torch.zeros(new_shape).type_as(logits.data)
     new_logits.fill_(-1e9)
     new_logits[:, 1:, 1:] = logits
 
@@ -47,10 +48,13 @@ class DepTree(_Struct):
     """
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
+        if arc_scores_in.dim() == 3:
+            arc_scores_in = arc_scores_in.unsqueeze(3)
         semiring = self.semiring
         arc_scores = _convert(arc_scores_in)
         arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
         arc_scores.requires_grad_(True)
+        arc_scores = semiring.sum(arc_scores)
         alpha = [
             [
                 [
@@ -101,7 +105,7 @@ class DepTree(_Struct):
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
-        batch, N, N2 = arc_scores.shape
+        batch, N, N2 = arc_scores.shape[:3]
         assert N == N2, "Non-square potentials"
         if lengths is None:
             lengths = torch.LongTensor([N - 1] * batch)

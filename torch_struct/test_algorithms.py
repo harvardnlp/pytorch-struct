@@ -169,6 +169,18 @@ def test_generic_a(data):
 
 @given(data())
 @settings(max_examples=50, deadline=None)
+def test_labeled_proj_deptree(data):
+    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
+    struct = DepTree(semiring)
+    arc_scores = torch.rand(3, 5, 5, 7)
+    count = struct.enumerate(semiring.sum(arc_scores))[0]
+    alpha = struct.sum(arc_scores)
+
+    assert torch.isclose(count, alpha).all()
+
+
+@given(data())
+@settings(max_examples=50, deadline=None)
 def test_non_proj(data):
     model = data.draw(sampled_from([DepTree]))
     semiring = data.draw(sampled_from([LogSemiring]))
