@@ -313,9 +313,9 @@ class DependencyCRF(StructDistribution):
     Event shape is of the form:
 
     Parameters:
-       log_potentials (tensor) : event shape (*N x N*) head, child  with
-                                 arc scores with root scores on diagonal e.g.
-                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).
+       log_potentials (tensor) : event shape (*N x N*) head, child or (*N x N x L*) head,
+                                 child, labels with arc scores with root scores on diagonal
+                                 e.g. :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).
        lengths (long tensor) : batch shape integers for length masking.
 
 
