@@ -41,7 +41,8 @@ class DepTree(_Struct):
     A projective dependency CRF.
 
     Parameters:
-    arc_scores : b x N x N arc scores with root scores on diagonal.
+        arc_scores_in: Arc scores of shape (B, N, N) or (B, N, N, L) with root scores on
+        diagonal.
     """
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
