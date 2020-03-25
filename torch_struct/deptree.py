@@ -20,13 +20,10 @@ def _convert(logits):
 
 def _unconvert(logits):
     "Move root arcs to diagonal"
-    new_logits = torch.zeros(
-        logits.size(0),
-        logits.size(1) - 1,
-        logits.size(2) - 1,
-        dtype=logits.dtype,
-        device=logits.device,
-    )
+    new_shape = list(logits.shape)
+    new_shape[1] -= 1
+    new_shape[2] -= 1
+    new_logits = torch.zeros(new_shape, dtype=logits.dtype, device=logits.device)
 
     new_logits.fill_(-1e9)
     new_logits[:, :, :] = logits[:, 1:, 1:]
