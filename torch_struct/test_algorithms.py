@@ -178,6 +178,11 @@ def test_labeled_proj_deptree(data):
 
     assert torch.isclose(count, alpha).all()
 
+    struct = DepTree(MaxSemiring)
+    max_score = struct.sum(arc_scores)
+    argmax = struct.marginals(arc_scores)
+    assert torch.isclose(max_score, struct.score(arc_scores, argmax)).all()
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)

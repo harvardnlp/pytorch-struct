@@ -45,13 +45,15 @@ class DepTree(_Struct):
     """
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
-        if arc_scores_in.dim() == 3:
-            arc_scores_in = arc_scores_in.unsqueeze(3)
+        if arc_scores_in.dim() not in (3, 4):
+            raise ValueError('potentials must have dim of 3 (unlabeled) or 4 (labeled)')
+
+        labeled = arc_scores_in.dim() == 4
         semiring = self.semiring
-        arc_scores = _convert(arc_scores_in)
-        arc_scores, batch, N, lengths = self._check_potentials(arc_scores, lengths)
-        arc_scores.requires_grad_(True)
-        arc_scores = semiring.sum(arc_scores)
+        arc_scores_in = _convert(arc_scores_in)
+        arc_scores_in, batch, N, lengths = self._check_potentials(arc_scores_in, lengths)
+        arc_scores_in.requires_grad_(True)
+        arc_scores = semiring.sum(arc_scores_in) if labeled else arc_scores_in
         alpha = [
             [
                 [
@@ -98,7 +100,7 @@ class DepTree(_Struct):
 
         final = alpha[A][C][R][(0,)]
         v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
-        return v, [arc_scores], alpha
+        return v, [arc_scores_in], alpha
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
