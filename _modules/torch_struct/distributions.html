@@ -466,9 +466,9 @@
 <span class="sd">    Event shape is of the form:</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">       log_potentials (tensor) : event shape (*N x N*) head, child  with</span>
-<span class="sd">                                 arc scores with root scores on diagonal e.g.</span>
-<span class="sd">                                 :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).</span>
+<span class="sd">       log_potentials (tensor) : event shape (*N x N*) head, child or (*N x N x L*) head,</span>
+<span class="sd">                                 child, labels with arc scores with root scores on diagonal</span>
+<span class="sd">                                 e.g. :math:`\phi(i, j)` where :math:`\phi(i, i)` is (root, i).</span>
 <span class="sd">       lengths (long tensor) : batch shape integers for length masking.</span>
 
 

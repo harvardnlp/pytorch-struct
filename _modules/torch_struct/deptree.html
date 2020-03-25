@@ -158,9 +158,10 @@
 
 <span class="k">def</span> <span class="nf">_convert</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
     <span class="s2">&quot;move root arcs from diagonal&quot;</span>
-    <span class="n">new_logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">new_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">new_logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span><span class="o">.</span><span class="n">type_as</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
     <span class="n">new_logits</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">1e9</span><span class="p">)</span>
     <span class="n">new_logits</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">logits</span>
 
@@ -172,13 +173,10 @@
 
 <span class="k">def</span> <span class="nf">_unconvert</span><span class="p">(</span><span class="n">logits</span><span class="p">):</span>
     <span class="s2">&quot;Move root arcs to diagonal&quot;</span>
-    <span class="n">new_logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-        <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">logits</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
-        <span class="n">device</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">new_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">new_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">new_logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">new_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
     <span class="n">new_logits</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="o">-</span><span class="mf">1e9</span><span class="p">)</span>
     <span class="n">new_logits</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:,</span> <span class="mi">1</span><span class="p">:]</span>
@@ -196,14 +194,20 @@
 <span class="sd">    A projective dependency CRF.</span>
 
 <span class="sd">    Parameters:</span>
-<span class="sd">    arc_scores : b x N x N arc scores with root scores on diagonal.</span>
+<span class="sd">        arc_scores_in: Arc scores of shape (B, N, N) or (B, N, N, L) with root scores on</span>
+<span class="sd">        diagonal.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">arc_scores_in</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;potentials must have dim of 3 (unlabeled) or 4 (labeled)&#39;</span><span class="p">)</span>
+
+        <span class="n">labeled</span> <span class="o">=</span> <span class="n">arc_scores_in</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">==</span> <span class="mi">4</span>
         <span class="n">semiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span>
-        <span class="n">arc_scores</span> <span class="o">=</span> <span class="n">_convert</span><span class="p">(</span><span class="n">arc_scores_in</span><span class="p">)</span>
-        <span class="n">arc_scores</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_potentials</span><span class="p">(</span><span class="n">arc_scores</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
-        <span class="n">arc_scores</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">arc_scores_in</span> <span class="o">=</span> <span class="n">_convert</span><span class="p">(</span><span class="n">arc_scores_in</span><span class="p">)</span>
+        <span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">lengths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_potentials</span><span class="p">(</span><span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">lengths</span><span class="p">)</span>
+        <span class="n">arc_scores_in</span><span class="o">.</span><span class="n">requires_grad_</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">arc_scores</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">arc_scores_in</span><span class="p">)</span> <span class="k">if</span> <span class="n">labeled</span> <span class="k">else</span> <span class="n">arc_scores_in</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">[</span>
                 <span class="p">[</span>
@@ -250,11 +254,11 @@
 
         <span class="n">final</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][(</span><span class="mi">0</span><span class="p">,)]</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">final</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lengths</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="p">[</span><span class="n">arc_scores</span><span class="p">],</span> <span class="n">alpha</span>
+        <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="p">[</span><span class="n">arc_scores_in</span><span class="p">],</span> <span class="n">alpha</span>
 
     <span class="k">def</span> <span class="nf">_check_potentials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_scores</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">semiring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">semiring</span>
-        <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N2</span> <span class="o">=</span> <span class="n">arc_scores</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N2</span> <span class="o">=</span> <span class="n">arc_scores</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
         <span class="k">assert</span> <span class="n">N</span> <span class="o">==</span> <span class="n">N2</span><span class="p">,</span> <span class="s2">&quot;Non-square potentials&quot;</span>
         <span class="k">if</span> <span class="n">lengths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">lengths</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">([</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">batch</span><span class="p">)</span>

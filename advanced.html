@@ -256,8 +256,14 @@ and anything with chain-like dynamics.</p>
 <dt id="torch_struct.DepTree">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DepTree</code><span class="sig-paren">(</span><em class="sig-param">semiring=&lt;class 'torch_struct.semirings.semirings.LogSemiring'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/deptree.html#DepTree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DepTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>A projective dependency CRF.</p>
-<p>Parameters:
-arc_scores : b x N x N arc scores with root scores on diagonal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>arc_scores_in</strong> – Arc scores of shape (B, N, N) or (B, N, N, L) with root scores on</p></li>
+<li><p><strong>diagonal.</strong> – </p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="class">

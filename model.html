@@ -733,9 +733,9 @@ div.rendered_html tbody tr:hover {
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child  with
-arc scores with root scores on diagonal e.g.
-<span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p></li>
+<li><p><strong>log_potentials</strong> (<em>tensor</em>) – event shape (<em>N x N</em>) head, child or (<em>N x N x L</em>) head,
+child, labels with arc scores with root scores on diagonal
+e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <span class="math notranslate nohighlight">\(\phi(i, i)\)</span> is (root, i).</p></li>
 <li><p><strong>lengths</strong> (<em>long tensor</em>) – batch shape integers for length masking.</p></li>
 </ul>
 </dd>
