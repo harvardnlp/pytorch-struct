@@ -47,12 +47,14 @@ class DepTree(_Struct):
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
         if arc_scores_in.dim() not in (3, 4):
-            raise ValueError('potentials must have dim of 3 (unlabeled) or 4 (labeled)')
+            raise ValueError("potentials must have dim of 3 (unlabeled) or 4 (labeled)")
 
         labeled = arc_scores_in.dim() == 4
         semiring = self.semiring
         arc_scores_in = _convert(arc_scores_in)
-        arc_scores_in, batch, N, lengths = self._check_potentials(arc_scores_in, lengths)
+        arc_scores_in, batch, N, lengths = self._check_potentials(
+            arc_scores_in, lengths
+        )
         arc_scores_in.requires_grad_(True)
         arc_scores = semiring.sum(arc_scores_in) if labeled else arc_scores_in
         alpha = [
