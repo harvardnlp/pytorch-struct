@@ -295,7 +295,8 @@
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the log-partition function.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">StdSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+        <span class="p">)</span></div>
 
     <span class="c1"># @constraints.dependent_property</span>
     <span class="c1"># def support(self):</span>
