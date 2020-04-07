@@ -435,9 +435,9 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Chain">
 <h2>Chain<a class="headerlink" href="#Chain" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.LinearChainCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LinearChainCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents structured linear-chain CRFs with C classes.</p>
 <p>For reference see:</p>
 <ul class="simple">
@@ -524,9 +524,9 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Hidden-Markov-Model">
 <h2>Hidden Markov Model<a class="headerlink" href="#Hidden-Markov-Model" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.HMM">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">HMM</code><span class="sig-paren">(</span><em class="sig-param">transition</em>, <em class="sig-param">emission</em>, <em class="sig-param">init</em>, <em class="sig-param">observations</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#HMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.HMM" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">HMM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transition</span></em>, <em class="sig-param"><span class="n">emission</span></em>, <em class="sig-param"><span class="n">init</span></em>, <em class="sig-param"><span class="n">observations</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#HMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.HMM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents hidden-markov smoothing with C hidden states.</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -570,9 +570,9 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Semi-Markov">
 <h2>Semi-Markov<a class="headerlink" href="#Semi-Markov" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.SemiMarkovCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SemiMarkovCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a semi-markov or segmental CRF with C classes of max width K</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -653,9 +653,9 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Alignment">
 <h2>Alignment<a class="headerlink" href="#Alignment" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.AlignmentCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AlignmentCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">local=False</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">max_gap=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AlignmentCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">local</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">max_gap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents basic alignment algorithm, i.e. dynamic-time warping, Needleman-Wunsch, and Smith-Waterman.</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -721,9 +721,9 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="section" id="Dependency-Tree">
 <h2>Dependency Tree<a class="headerlink" href="#Dependency-Tree" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.DependencyCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">DependencyCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a projective dependency CRF.</p>
 <p>Reference:</p>
 <ul class="simple">
@@ -807,9 +807,9 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 </div>
 <div class="section" id="Non-Projective-Dependency-Tree">
 <h2>Non-Projective Dependency Tree<a class="headerlink" href="#Non-Projective-Dependency-Tree" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.NonProjectiveDependencyCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">NonProjectiveDependencyCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a non-projective dependency CRF.</p>
 <p>For references see:</p>
 <ul class="simple">
@@ -854,9 +854,9 @@ arc scores with root scores on diagonal e.g.
 <div class="section" id="Binary-Labeled-Tree">
 <h2>Binary Labeled Tree<a class="headerlink" href="#Binary-Labeled-Tree" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="class">
+<div><dl class="py class">
 <dt id="torch_struct.TreeCRF">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">TreeCRF</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a 0th-order span parser with NT nonterminals. Implemented using a
 fast CKY algorithm.</p>
 <p>For example usage see:</p>
@@ -927,9 +927,9 @@ fast CKY algorithm.</p>
 <div class="section" id="Probabilistic-Context-Free-Grammar">
 <h2>Probabilistic Context-Free Grammar<a class="headerlink" href="#Probabilistic-Context-Free-Grammar" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="class">
+<div><dl class="py class">
 <dt id="torch_struct.SentCFG">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SentCFG</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SentCFG</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a full generative context-free grammar with
 non-terminals NT and terminals T.</p>
 <p>Event shape is of the form:</p>
@@ -1021,9 +1021,9 @@ root  (<em>NT</em>)</p></li>
 <div class="section" id="Autoregressive-/-Beam-Search">
 <h2>Autoregressive / Beam Search<a class="headerlink" href="#Autoregressive-/-Beam-Search" title="Permalink to this headline">¶</a></h2>
 <blockquote>
-<div><dl class="class">
+<div><dl class="py class">
 <dt id="torch_struct.Autoregressive">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">Autoregressive</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">initial_state</em>, <em class="sig-param">n_classes</em>, <em class="sig-param">n_length</em>, <em class="sig-param">normalize=True</em>, <em class="sig-param">start_class=0</em>, <em class="sig-param">end_class=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">Autoregressive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">initial_state</span></em>, <em class="sig-param"><span class="n">n_classes</span></em>, <em class="sig-param"><span class="n">n_length</span></em>, <em class="sig-param"><span class="n">normalize</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">start_class</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">end_class</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Autoregressive sequence model utilizing beam search.</p>
 <ul class="simple">
 <li><p>batch_shape -&gt; Given by initializer</p></li>
@@ -1039,9 +1039,9 @@ root  (<em>NT</em>)</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.Autoregressive.beam_topk">
-<code class="sig-name descname">beam_topk</code><span class="sig-paren">(</span><em class="sig-param">K</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.beam_topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.beam_topk" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">beam_topk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.beam_topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.beam_topk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute “top-k” using beam search</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1050,7 +1050,7 @@ root  (<em>NT</em>)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.Autoregressive.greedy_max">
 <code class="sig-name descname">greedy_max</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.greedy_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.greedy_max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute “argmax” using greedy search.</p>
@@ -1063,9 +1063,9 @@ logits (<em>batch x N x C</em>)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.Autoregressive.greedy_tempmax">
-<code class="sig-name descname">greedy_tempmax</code><span class="sig-paren">(</span><em class="sig-param">alpha</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.greedy_tempmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.greedy_tempmax" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">greedy_tempmax</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.greedy_tempmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.greedy_tempmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute differentiable scheduled sampling using greedy search.</p>
 <p>Based on:</p>
 <ul class="simple">
@@ -1080,9 +1080,9 @@ logits (<em>batch x N x C</em>)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.Autoregressive.sample">
-<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_shape</span><span class="o">=</span><span class="default_value">torch.Size([])</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1094,9 +1094,9 @@ logits (<em>batch x N x C</em>)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.Autoregressive.sample_without_replacement">
-<code class="sig-name descname">sample_without_replacement</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample_without_replacement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample_without_replacement" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample_without_replacement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_shape</span><span class="o">=</span><span class="default_value">torch.Size([])</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.sample_without_replacement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.sample_without_replacement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute sampling without replacement using Gumbel trick.</p>
 <p>Based on:</p>
 <ul class="simple">
@@ -1118,7 +1118,7 @@ logits (<em>batch x N x C</em>)</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.AutoregressiveModel">
 <em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">AutoregressiveModel</code><a class="reference internal" href="_modules/torch_struct/autoregressive.html#AutoregressiveModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.AutoregressiveModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>User should implement as their favorite RNN / Transformer / etc.</p>
@@ -1338,9 +1338,9 @@ torch.Size([5, 10, 4])
 </div>
 <div class="section" id="Base-Class">
 <h2>Base Class<a class="headerlink" href="#Base-Class" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
+<dl class="py class">
 <dt id="torch_struct.StructDistribution">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param">log_potentials</em>, <em class="sig-param">lengths=None</em>, <em class="sig-param">args={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StructDistribution</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_potentials</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">args</span><span class="o">=</span><span class="default_value">{}</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base structured distribution class.</p>
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
@@ -1357,9 +1357,9 @@ torch.Size([5, 10, 4])
 </ul>
 </dd>
 </dl>
-<dl class="attribute">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.argmax">
-<code class="sig-name descname">argmax</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">argmax</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.argmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\arg\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1368,9 +1368,9 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.entropy">
-<code class="sig-name descname">entropy</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">entropy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute entropy for distribution <span class="math notranslate nohighlight">\(H[z]\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1379,9 +1379,9 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.enumerate_support">
-<code class="sig-name descname">enumerate_support</code><span class="sig-paren">(</span><em class="sig-param">expand=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.enumerate_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.enumerate_support" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">enumerate_support</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">expand</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.enumerate_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.enumerate_support" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the full exponential enumeration set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1390,15 +1390,22 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.from_event">
-<code class="sig-name descname">from_event</code><span class="sig-paren">(</span><em class="sig-param">event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.from_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.from_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.from_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.from_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert event to simple representation.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
+<dt id="torch_struct.StructDistribution.kmax">
+<code class="sig-name descname">kmax</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.kmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.kmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.
+:returns: kmax (<em>k x batch_shape</em>)</p>
+</dd></dl>
+
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.log_prob">
-<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.log_prob" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">log_prob</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.log_prob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.log_prob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute log probability over values <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1410,9 +1417,9 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.marginals">
-<code class="sig-name descname">marginals</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.marginals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">marginals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.marginals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute marginals for distribution <span class="math notranslate nohighlight">\(p(z_t)\)</span>.</p>
 <p>Can be used in higher-order calculations, i.e.</p>
 <ul class="simple">
@@ -1425,9 +1432,9 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.max">
-<code class="sig-name descname">max</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.max" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">max</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute an max for distribution <span class="math notranslate nohighlight">\(\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1436,15 +1443,15 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.partition">
-<code class="sig-name descname">partition</code><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">partition</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.partition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the partition function.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.sample">
-<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param">sample_shape=torch.Size([])</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.sample" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample_shape</span><span class="o">=</span><span class="default_value">torch.Size([])</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute structured samples from the distribution <span class="math notranslate nohighlight">\(z \sim p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1456,16 +1463,16 @@ torch.Size([5, 10, 4])
 </dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.to_event">
-<code class="sig-name descname">to_event</code><span class="sig-paren">(</span><em class="sig-param">sequence</em>, <em class="sig-param">extra</em>, <em class="sig-param">lengths=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.to_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.to_event" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sequence</span></em>, <em class="sig-param"><span class="n">extra</span></em>, <em class="sig-param"><span class="n">lengths</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.to_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.to_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert simple representation to event.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="torch_struct.StructDistribution.topk">
-<code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param">k</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
+<code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the k-argmax for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
