@@ -96,9 +96,20 @@ class StructDistribution(Distribution):
         """
         return self._struct(MaxSemiring).marginals(self.log_potentials, self.lengths)
 
-    def topk(self, k):
+    def kmax(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
+        Returns:
+            kmax (*k x batch_shape*)
+        """
+        with torch.enable_grad():
+            return self._struct(KMaxSemiring(k)).sum(
+                self.log_potentials, self.lengths, _raw=True
+            )
+
+    def topk(self, k):
+        r"""
+        Compute the k-argmax for distribution :math:`k\max p(z)`.
 
         Returns:
             kmax (*k x batch_shape x event_shape*)
