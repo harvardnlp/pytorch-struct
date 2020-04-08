@@ -142,7 +142,7 @@ class StructDistribution(Distribution):
     def count(self):
         "Compute the log-partition function."
         return self._struct(StdSemiring).sum(
-            self.log_potentials.ones_like(self.log_potentials), self.lengths
+            torch.ones_like(self.log_potentials), self.lengths
         )
 
     # @constraints.dependent_property

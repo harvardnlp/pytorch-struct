@@ -46,6 +46,9 @@ def test_simple(data, seed):
     marginals = dist.marginals
     assert ((samples.mean(0) - marginals).abs() < 0.2).all()
 
+    kmax = dist.kmax(5)
+    count = dist.count
+
 
 @given(data(), integers(min_value=1, max_value=20))
 @settings(max_examples=50, deadline=None)
