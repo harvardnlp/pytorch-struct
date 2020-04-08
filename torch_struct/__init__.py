@@ -20,6 +20,7 @@ from .rl import SelfCritical
 from .semirings import (
     LogSemiring,
     FastLogSemiring,
+    GumbelSoftmaxSemiring,
     TempMax,
     FastMaxSemiring,
     FastSampleSemiring,
@@ -56,6 +57,7 @@ __all__ = [
     EntropySemiring,
     MultiSampledSemiring,
     SelfCritical,
+    GumbelSoftmaxSemiring,
     StructDistribution,
     Autoregressive,
     AutoregressiveModel,
