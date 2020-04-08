@@ -89,6 +89,44 @@ def GumbelSoftmaxSemiring(temp):
     return _GumbelSoftmaxSemiring
 
 
+def GumbelMaxSemiring(temp):
+    class _GumbelMaxLogSumExp(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, input, dim):
+            ctx.save_for_backward(input, torch.tensor(dim))
+            return torch.logsumexp(input, dim=dim)
+
+        @staticmethod
+        def backward(ctx, grad_output):
+            pre_shape = ls.shape
+            logits, dim = ctx.saved_tensors
+            grad_input = None
+            if ctx.needs_input_grad[0]:
+                def sample(ls):
+                    update = (ls + torch.distributions.Gumbel(0, 1).sample((ls.shape[-1],))) / temp
+                    return torch.nn.functional.one_hot(update.max(-1)[1], pre_shape[-1])
+
+                if dim == -1:
+                    s = sample(logits)
+                else:
+                    dim = dim if dim >= 0 else logits.dim() + dim
+                    perm = [i for i in range(logits.dim()) if i != dim] + [dim]
+                    rev_perm = [a for a, b in sorted(enumerate(perm), key=lambda a: a[1])]
+                    s = sample(logits.permute(perm)).permute(rev_perm)
+
+                grad_input = grad_output.unsqueeze(dim).mul(s)
+            return grad_input, None
+
+    class _GumbelMaxSemiring(_BaseLog):
+        @staticmethod
+        def sum(xs, dim=-1):
+            return _GumbelMaxLogSumExp.apply(xs, dim)
+
+    return _GumbelMaxSemiring
+
+
+
+
 
 bits = torch.tensor([pow(2, i) for i in range(1, 18)])
 
