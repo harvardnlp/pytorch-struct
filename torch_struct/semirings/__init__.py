@@ -23,6 +23,7 @@ __all__ = [
     FastMaxSemiring,
     FastSampleSemiring,
     GumbelSoftmaxSemiring,
+    GumbelMaxSemiring,
     LogSemiring,
     StdSemiring,
     SampledSemiring,
