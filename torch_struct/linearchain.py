@@ -35,7 +35,7 @@ class LinearChain(_Struct):
         N = N_1 + 1
 
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(edge.device)
             # pass
         else:
             assert max(lengths) <= N, "Length longer than edge scores"
