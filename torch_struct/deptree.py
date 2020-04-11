@@ -110,7 +110,7 @@ class DepTree(_Struct):
         batch, N, N2 = arc_scores.shape[:3]
         assert N == N2, "Non-square potentials"
         if lengths is None:
-            lengths = torch.LongTensor([N - 1] * batch)
+            lengths = torch.LongTensor([N - 1] * batch).to(arc_scores.device)
         assert max(lengths) <= N, "Length longer than N"
         arc_scores = semiring.convert(arc_scores)
         for b in range(batch):
