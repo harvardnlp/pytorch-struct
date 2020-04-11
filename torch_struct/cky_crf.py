@@ -10,7 +10,7 @@ class CKY_CRF(_Struct):
         edge.requires_grad_(True)
         edge = self.semiring.convert(edge)
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(edge.device)
 
         return edge, batch, N, NT, lengths
 
