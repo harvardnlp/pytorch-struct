@@ -39,7 +39,7 @@ class Alignment(_Struct):
         assert M >= N
 
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(edge.device)
 
         assert max(lengths) <= N, "Length longer than edge scores"
         assert max(lengths) == N, "One length must be at least N"
