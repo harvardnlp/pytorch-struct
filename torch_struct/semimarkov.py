@@ -51,6 +51,7 @@ class SemiMarkov(_Struct):
         c = init[:, :, :].view(ssize, batch * bin_N, K - 1, K - 1, C, C)
         lp = big[:, :, :].view(ssize, batch * bin_N, K, C, C)
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N)
+        mask = mask.to(log_potentials.device)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
         semiring.zero_mask_(lp.data, mask)
