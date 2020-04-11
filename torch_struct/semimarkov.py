@@ -12,7 +12,7 @@ class SemiMarkov(_Struct):
         edge = self.semiring.convert(edge)
         N = N_1 + 1
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(edge.device)
         assert max(lengths) <= N, "Length longer than edge scores"
         assert max(lengths) == N, "At least one in batch must be length N"
         assert C == C2, "Transition shape doesn't match"
