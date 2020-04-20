@@ -141,8 +141,10 @@ class StructDistribution(Distribution):
     @lazy_property
     def count(self):
         "Compute the log-partition function."
+        ones = torch.ones_like(self.log_potentials)
+        ones[self.log_potentials.eq(-float('inf'))] = 0
         return self._struct(StdSemiring).sum(
-            torch.ones_like(self.log_potentials), self.lengths
+            ones, self.lengths
         )
 
     # @constraints.dependent_property
