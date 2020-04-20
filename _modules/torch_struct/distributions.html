@@ -294,8 +294,10 @@
 <div class="viewcode-block" id="StructDistribution.count"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.count">[docs]</a>    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the log-partition function.&quot;</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">)</span>
+        <span class="n">ones</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">StdSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+            <span class="n">ones</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
         <span class="p">)</span></div>
 
     <span class="c1"># @constraints.dependent_property</span>
