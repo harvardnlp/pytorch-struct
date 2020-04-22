@@ -136,7 +136,7 @@ class LinearChain(_Struct):
     @staticmethod
     def hmm(transition, emission, init, observations):
         """
-        Convert HMM to a linear chain.
+        Convert HMM log-probs to a linear chain.
 
         Parameters:
             transition: C X C
@@ -149,12 +149,12 @@ class LinearChain(_Struct):
         """
         V, C = emission.shape
         batch, N = observations.shape
-        scores = torch.ones(batch, N - 1, C, C).type_as(emission)
-        scores[:, :, :, :] *= transition.view(1, 1, C, C)
-        scores[:, 0, :, :] *= init.view(1, 1, C)
+        scores = torch.zeros(batch, N - 1, C, C).type_as(emission)
+        scores[:, :, :, :] += transition.view(1, 1, C, C)
+        scores[:, 0, :, :] += init.view(1, 1, C)
         obs = emission[observations.view(batch * N), :]
-        scores[:, :, :, :] *= obs.view(batch, N, C, 1)[:, 1:]
-        scores[:, 0, :, :] *= obs.view(batch, N, 1, C)[:, 0]
+        scores[:, :, :, :] += obs.view(batch, N, C, 1)[:, 1:]
+        scores[:, 0, :, :] += obs.view(batch, N, 1, C)[:, 0]
         return scores
 
     @staticmethod
