@@ -46,7 +46,7 @@ class DepTree(_Struct):
     """
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
-        multiroot = getattr(self, "multiroot")
+        multiroot = getattr(self, "multiroot", True)
         if arc_scores_in.dim() not in (3, 4):
             raise ValueError("potentials must have dim of 3 (unlabeled) or 4 (labeled)")
 
