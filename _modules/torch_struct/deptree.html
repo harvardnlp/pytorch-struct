@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,12 +11,18 @@
   
 
   
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
   
   
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -26,16 +31,12 @@
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
@@ -51,7 +52,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> pytorch-struct
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> pytorch-struct
           
 
           
@@ -74,6 +75,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -93,6 +95,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -131,7 +134,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
@@ -199,6 +202,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_dp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arc_scores_in</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">force_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">multiroot</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;multiroot&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">arc_scores_in</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;potentials must have dim of 3 (unlabeled) or 4 (labeled)&quot;</span><span class="p">)</span>
 
@@ -225,34 +229,39 @@
         <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="n">semiring</span><span class="o">.</span><span class="n">one_</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-            <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
-            <span class="n">ACL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
-            <span class="n">ACR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">multiroot</span><span class="p">:</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start_idx</span> <span class="o">=</span> <span class="mi">1</span>
 
-            <span class="n">BCL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="p">:]</span>
-            <span class="n">BCR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="p">:]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">-</span><span class="n">start_idx</span><span class="p">):</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="n">ACL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">ACR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">BCL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="p">:]</span>
+            <span class="n">BCR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="p">:]</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ACR</span><span class="p">,</span> <span class="n">BCL</span><span class="p">)</span>
-
             <span class="n">arcs_l</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">arc_scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
-
-            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_l</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_l</span>
-
+            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_l</span>
+            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_l</span>
             <span class="n">arcs_r</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">arc_scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_r</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_r</span>
-
-            <span class="n">AIR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">BIL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
+            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_r</span>
+            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">arcs_r</span>
+            <span class="n">AIR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">BIL</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">I</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
             <span class="n">new</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ACL</span><span class="p">,</span> <span class="n">BIL</span><span class="p">)</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
-
+            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
             <span class="n">new</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">AIR</span><span class="p">,</span> <span class="n">BCR</span><span class="p">)</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
-            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+            <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">start_idx</span><span class="p">:</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+            <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="o">+</span><span class="n">start_idx</span><span class="p">:</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiroot</span><span class="p">:</span>
+            <span class="n">root_incomplete_span</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">L</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">arc_scores</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">:])</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">N</span><span class="p">):</span>
+                <span class="n">AIR</span> <span class="o">=</span> <span class="n">root_incomplete_span</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+                <span class="n">BCR</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">B</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="n">k</span><span class="p">,</span> <span class="n">N</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+                <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">semiring</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">AIR</span><span class="p">,</span> <span class="n">BCR</span><span class="p">)</span>
 
         <span class="n">final</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">[</span><span class="n">A</span><span class="p">][</span><span class="n">C</span><span class="p">][</span><span class="n">R</span><span class="p">][(</span><span class="mi">0</span><span class="p">,)]</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">final</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lengths</span><span class="p">)],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -476,11 +485,19 @@
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2019, Sasha Rush
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -491,7 +508,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {
