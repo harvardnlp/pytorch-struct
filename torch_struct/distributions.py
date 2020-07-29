@@ -349,7 +349,10 @@ class DependencyCRF(StructDistribution):
 
     """
 
-    struct = DepTree
+    def __init__(self, log_potentials, lengths=None, args={}, multiroot=True):
+        super(DependencyCRF, self).__init__(log_potentials, lengths, args)
+        self.struct = DepTree
+        setattr(self.struct, "multiroot", multiroot)
 
 
 class TreeCRF(StructDistribution):
