@@ -269,6 +269,150 @@ def KMaxSemiring(k):
     return KMaxSemiring
 
 
+class KLDivergenceSemiring(Semiring):
+    """
+    Implements an KL-divergence semiring.
+
+    Computes both the log-values of two distributions and the running KL divergence between two distributions.
+
+    Based on descriptions in:
+
+    * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
+    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
+    """
+    zero = 0
+    @staticmethod
+    def size():
+        return 3
+
+    @staticmethod
+    def convert(xs):
+        values = torch.zeros((3,) + xs[0].shape).type_as(xs[0])
+        values[0] = xs[0]
+        values[1] = xs[1]
+        values[2] = 0
+        return values
+
+    @staticmethod
+    def unconvert(xs):
+        return xs[-1]
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        assert dim != 0
+        d = dim - 1 if dim > 0 else dim
+        part_p = torch.logsumexp(xs[0], dim=d)
+        part_q = torch.logsumexp(xs[1], dim=d)
+        log_sm_p = xs[0] - part_p.unsqueeze(d)
+        log_sm_q = xs[1] - part_q.unsqueeze(d)
+        sm_p = log_sm_p.exp()
+        return torch.stack((part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p) + log_sm_p.mul(sm_p), dim=d)))
+
+    @staticmethod
+    def mul(a, b):
+        return torch.stack((a[0] + b[0], a[1] + b[1], a[2] + b[2]))
+
+    @classmethod
+    def prod(cls, xs, dim=-1):
+        return xs.sum(dim)
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[0].masked_fill_(mask, -1e5)
+        xs[1].masked_fill_(mask, -1e5)
+        xs[2].masked_fill_(mask, 0)
+
+    @staticmethod
+    def zero_(xs):
+        xs[0].fill_(-1e5)
+        xs[1].fill_(-1e5)
+        xs[2].fill_(0)
+        return xs
+
+    @staticmethod
+    def one_(xs):
+        xs[0].fill_(0)
+        xs[1].fill_(0)
+        xs[2].fill_(0)
+        return xs
+
+class CrossEntropySemiring(Semiring):
+    """
+    Implements an cross-entropy expectation semiring.
+
+    Computes both the log-values of two distributions and the running cross entropy between two distributions.
+
+    Based on descriptions in:
+
+    * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
+    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
+    """
+
+    zero = 0
+
+    @staticmethod
+    def size():
+        return 3
+
+    @staticmethod
+    def convert(xs):
+        values = torch.zeros((3,) + xs[0].shape).type_as(xs[0])
+        values[0] = xs[0]
+        values[1] = xs[1]
+        values[2] = 0
+        return values
+
+    @staticmethod
+    def unconvert(xs):
+        return xs[-1]
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        assert dim != 0
+        d = dim - 1 if dim > 0 else dim
+        part_p = torch.logsumexp(xs[0], dim=d)
+        part_q = torch.logsumexp(xs[1], dim=d)
+        log_sm_p = xs[0] - part_p.unsqueeze(d)
+        log_sm_q = xs[1] - part_q.unsqueeze(d)
+        sm_p = log_sm_p.exp()
+        return torch.stack((part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p), dim=d)))
+
+    @staticmethod
+    def mul(a, b):
+        return torch.stack((a[0] + b[0], a[1] + b[1], a[2] + b[2]))
+
+    @classmethod
+    def prod(cls, xs, dim=-1):
+        return xs.sum(dim)
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[0].masked_fill_(mask, -1e5)
+        xs[1].masked_fill_(mask, -1e5)
+        xs[2].masked_fill_(mask, 0)
+
+    @staticmethod
+    def zero_(xs):
+        xs[0].fill_(-1e5)
+        xs[1].fill_(-1e5)
+        xs[2].fill_(0)
+        return xs
+
+    @staticmethod
+    def one_(xs):
+        xs[0].fill_(0)
+        xs[1].fill_(0)
+        xs[2].fill_(0)
+        return xs
+
+
+
+
+
 class EntropySemiring(Semiring):
     """
     Implements an entropy expectation semiring.
@@ -279,6 +423,7 @@ class EntropySemiring(Semiring):
 
     * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
     * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
     zero = 0

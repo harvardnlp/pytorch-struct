@@ -43,6 +43,8 @@ class DepTree(_Struct):
     Parameters:
         arc_scores_in: Arc scores of shape (B, N, N) or (B, N, N, L) with root scores on
         diagonal.
+
+    Note: For single-root case, do not set cache=True for now.
     """
 
     def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
@@ -61,7 +63,7 @@ class DepTree(_Struct):
         alpha = [
             [
                 [
-                    Chart((batch, N, N), arc_scores, semiring, cache=cache)
+                    Chart((batch, N, N), arc_scores, semiring, cache=multiroot)
                     for _ in range(2)
                 ]
                 for _ in range(2)
@@ -113,7 +115,7 @@ class DepTree(_Struct):
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
-        batch, N, N2 = arc_scores.shape[:3]
+        batch, N, N2, *_ = self._get_dimension(arc_scores)
         assert N == N2, "Non-square potentials"
         if lengths is None:
             lengths = torch.LongTensor([N - 1] * batch).to(arc_scores.device)

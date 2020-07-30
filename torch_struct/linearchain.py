@@ -28,10 +28,8 @@ class LinearChain(_Struct):
     """
 
     def _check_potentials(self, edge, lengths=None):
-        batch, N_1, C, C2 = edge.shape
-        edge.requires_grad_(True)
+        batch, N_1, C, C2 = self._get_dimension(edge)
         edge = self.semiring.convert(edge)
-
         N = N_1 + 1
 
         if lengths is None:
