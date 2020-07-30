@@ -8,7 +8,7 @@ class SemiMarkov(_Struct):
     """
 
     def _check_potentials(self, edge, lengths=None):
-        batch, N_1, K, C, C2 = edge.shape
+        batch, N_1, K, C, C2 = self._get_dimension(edge)
         edge = self.semiring.convert(edge)
         N = N_1 + 1
         if lengths is None:

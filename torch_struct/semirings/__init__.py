@@ -4,6 +4,8 @@ from .semirings import (
     KMaxSemiring,
     MaxSemiring,
     EntropySemiring,
+    CrossEntropySemiring,
+    KLDivergenceSemiring,
     TempMax,
 )
 
@@ -29,6 +31,8 @@ __all__ = [
     SparseMaxSemiring,
     KMaxSemiring,
     EntropySemiring,
+    CrossEntropySemiring,
+    KLDivergenceSemiring,
     MultiSampledSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,

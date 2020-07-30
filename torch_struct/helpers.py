@@ -79,6 +79,15 @@ class _Struct:
         bin_N = int(math.pow(2, log_N))
         return log_N, bin_N
 
+    def _get_dimension(self, edge):
+        if isinstance(edge, list):
+            for t in edge:
+                t.requires_grad_(True)
+            return edge[0].shape
+        else:
+            edge.requires_grad_(True)
+            return edge.shape
+
     def _chart(self, size, potentials, force_grad):
         return self._make_chart(1, size, potentials, force_grad)[0]
 

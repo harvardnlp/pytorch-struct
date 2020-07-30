@@ -11,10 +11,13 @@ from .semirings import (
     LogSemiring,
     MaxSemiring,
     EntropySemiring,
+    CrossEntropySemiring,
+    KLDivergenceSemiring,
     MultiSampledSemiring,
     KMaxSemiring,
     StdSemiring,
 )
+
 
 
 class StructDistribution(Distribution):
@@ -65,6 +68,8 @@ class StructDistribution(Distribution):
             value.type_as(self.log_potentials),
             batch_dims=batch_dims,
         )
+
+
         return v - self.partition
 
     @lazy_property
@@ -75,13 +80,32 @@ class StructDistribution(Distribution):
         Returns:
             entropy (*batch_shape*)
         """
+
         return self._struct(EntropySemiring).sum(self.log_potentials, self.lengths)
+
+    def cross_entropy(self, other):
+        """
+        Compute cross-entropy for distribution p(self) and q(other) :math:`H[p, q]`.
+
+        Returns:
+            cross entropy (*batch_shape*)
+        """
+
+        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+
+    def kl(self, other):
+        """
+        Compute KL-divergence for distribution p(self) and q(other) :math:`KL[p || q] = H[p, q] - H[p]`.
+
+        Returns:
+            cross entropy (*batch_shape*)
+        """
+        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
 
     @lazy_property
     def max(self):
         r"""
         Compute an max for distribution :math:`\max p(z)`.
-
         Returns:
             max (*batch_shape*)
         """
@@ -353,6 +377,7 @@ class DependencyCRF(StructDistribution):
         super(DependencyCRF, self).__init__(log_potentials, lengths, args)
         self.struct = DepTree
         setattr(self.struct, "multiroot", multiroot)
+
 
 
 class TreeCRF(StructDistribution):
