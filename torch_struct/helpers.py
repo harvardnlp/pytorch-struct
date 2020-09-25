@@ -6,11 +6,7 @@ from .semirings import LogSemiring
 class Chart:
     def __init__(self, size, potentials, semiring):
         self.data = semiring.zero_(
-            torch.zeros(
-                *((semiring.size(),) + size),
-                dtype=potentials.dtype,
-                device=potentials.device
-            )
+            torch.zeros(*((semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
         )
         self.grad = self.data.detach().clone().fill_(0.0)
 
@@ -24,15 +20,45 @@ class Chart:
 
 
 class _Struct:
+    """`_Struct` is base class used to represent the graphical structure of a model.
+
+    Subclasses should implement a `_dp` method which computes the partition function (under the standard `_BaseSemiring`).
+    Different `StructDistribution` methods will instantiate the `_Struct` subclasses
+    """
+
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
 
+    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
+        """Implement computation equivalent to the computing partition constant Z (if self.semiring == `_BaseSemiring`).
+
+        Params:
+          scores: torch.FloatTensor, log potential scores for each factor of the model. Shape (* x batch size x *event_shape )
+          lengths: torch.LongTensor = None, lengths of batch padded examples. Shape = ( * x batch size )
+          force_grad: bool = False
+          cache: bool = True
+
+        Returns:
+          v: torch.Tensor, the resulting output of the dynammic program
+          edges: List[torch.Tensor], the log edge potentials of the model.
+                 When `scores` is already in a log_potential format for the distribution (typical), this will be
+                 [scores], as in `Alignment`, `LinearChain`, `SemiMarkov`, `CKY_CRF`.
+                 An exceptional case is the `CKY` struct, which takes log potential parameters from production rules
+                 for a PCFG, which are by definition independent of position in the sequence.
+          charts: Optional[List[Chart]] = None, the charts used in computing the dp. They are needed if we want to run the
+                  "backward" dynamic program and compute things like marginals w/o autograd.
+
+        """
+        raise NotImplementedError
+
     def score(self, potentials, parts, batch_dims=[0]):
-        score = torch.mul(potentials, parts)
+        """Score for entire structure is product of potentials for all activated "parts"."""
+        score = torch.mul(potentials, parts)  # mask potentials by activated "parts"
         batch = tuple((score.shape[b] for b in batch_dims))
-        return self.semiring.prod(score.view(batch + (-1,)))
+        return self.semiring.prod(score.view(batch + (-1,)))  # product of all potentialsa
 
     def _bin_length(self, length):
+        """Find least upper bound for lengths that is a power of 2. Used in parallel scans."""
         log_N = int(math.ceil(math.log(length, 2)))
         bin_N = int(math.pow(2, log_N))
         return log_N, bin_N
@@ -53,11 +79,7 @@ class _Struct:
         return [
             (
                 self.semiring.zero_(
-                    torch.zeros(
-                        *((self.semiring.size(),) + size),
-                        dtype=potentials.dtype,
-                        device=potentials.device
-                    )
+                    torch.zeros(*((self.semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
                 ).requires_grad_(force_grad and not potentials.requires_grad)
             )
             for _ in range(N)
@@ -109,9 +131,7 @@ class _Struct:
             return torch.stack(all_m, dim=0)
         else:
             obj = self.semiring.unconvert(v).sum(dim=0)
-            marg = torch.autograd.grad(
-                obj, edges, create_graph=True, only_inputs=True, allow_unused=False
-            )
+            marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
             a_m = self._arrange_marginals(marg)
             return self.semiring.unconvert(a_m)
 
@@ -125,3 +145,12 @@ class _Struct:
 
     def _arrange_marginals(self, marg):
         return marg[0]
+
+    # For Testing
+    def _rand(self, *args, **kwargs):
+        """TODO:"""
+        raise NotImplementedError
+
+    def enumerate(self, edge, lengths=None):
+        """TODO:"""
+        raise NotImplementedError
