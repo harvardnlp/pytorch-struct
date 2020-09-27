@@ -91,7 +91,8 @@ class Semiring:
 
 
 class _Base(Semiring):
-    zero = 0
+    zero = 0.0
+    one = 1.0
 
     @staticmethod
     def mul(a, b):
@@ -112,6 +113,7 @@ class _Base(Semiring):
 
 class _BaseLog(Semiring):
     zero = -1e9
+    one = 1.0
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -308,9 +310,7 @@ class KLDivergenceSemiring(Semiring):
             (
                 part_p,
                 part_q,
-                torch.sum(
-                    xs[2].mul(sm_p) - log_sm_q.mul(sm_p) + log_sm_p.mul(sm_p), dim=d
-                ),
+                torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p) + log_sm_p.mul(sm_p), dim=d),
             )
         )
 
@@ -384,9 +384,7 @@ class CrossEntropySemiring(Semiring):
         log_sm_p = xs[0] - part_p.unsqueeze(d)
         log_sm_q = xs[1] - part_q.unsqueeze(d)
         sm_p = log_sm_p.exp()
-        return torch.stack(
-            (part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p), dim=d))
-        )
+        return torch.stack((part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p), dim=d)))
 
     @staticmethod
     def mul(a, b):
