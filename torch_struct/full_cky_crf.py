@@ -1,5 +1,6 @@
 import torch
 from .helpers import _Struct, Chart
+from tqdm import tqdm
 
 A, B = 0, 1
 
@@ -18,6 +19,9 @@ class Full_CKY_CRF(_Struct):
         return edge, semiring_shape, batch, N, NT, lengths
 
     def _dp(self, scores, lengths=None, force_grad=False, cache=True):
+        DEBUG = False
+        if DEBUG:
+            print("FullCKYCRF DP starting")
         sr = self.semiring
         # torch.autograd.set_detect_anomaly(True)
 
@@ -67,7 +71,9 @@ class Full_CKY_CRF(_Struct):
         alphas = [[alpha_left], [alpha_right]]
 
         # Run vectorized inside alg
-        for w in range(1, N):
+
+        ws = tqdm(range(1, N), "Calculating marginals at width", N - 1) if DEBUG else range(1, N)
+        for w in ws:
             # print("\nw", w, "N-w", N - w)
             # Scores
             # What we want is a tensor with:
@@ -142,6 +148,8 @@ class Full_CKY_CRF(_Struct):
         log_Z = final[:, torch.arange(batch), lengths - 1]
         # log_Z.exp().sum().backward()
         # print("Z", log_Z.exp())
+        # if DEBUG:
+        #     print("Using autograd to get marginals")
         return log_Z, [scores], beta
 
     # For testing
