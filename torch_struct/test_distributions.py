@@ -21,18 +21,28 @@ def test_simple(data, seed):
     lengths = torch.tensor(
         [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
     )
-
     dist = model(vals, lengths)
     edges, enum_lengths = dist.enumerate_support()
-    print(edges.shape)
     log_probs = dist.log_prob(edges)
     for b in range(lengths.shape[0]):
         log_probs[enum_lengths[b] :, b] = -1e9
-
     assert torch.isclose(log_probs.exp().sum(0), torch.tensor(1.0)).all()
-
     entropy = dist.entropy
     assert torch.isclose(entropy, -log_probs.exp().mul(log_probs).sum(0)).all()
+
+    vals2 = torch.rand(*vals.shape)
+    dist2 = model(vals2, lengths)
+
+    cross_entropy = dist.cross_entropy(other=dist2)
+    kl = dist.kl(other=dist2)
+
+    edges2, enum_lengths2 = dist2.enumerate_support()
+    log_probs2 = dist2.log_prob(edges2)
+    for b in range(lengths.shape[0]):
+        log_probs2[enum_lengths2[b] :, b] = -1e9
+
+    assert torch.isclose(cross_entropy, -log_probs.exp().mul(log_probs2).sum(0)).all()
+    assert torch.isclose(kl, -log_probs.exp().mul(log_probs2-log_probs).sum(0)).all()
 
     argmax = dist.argmax
     _, max_indices = log_probs.max(0)
@@ -46,8 +56,8 @@ def test_simple(data, seed):
     marginals = dist.marginals
     assert ((samples.mean(0) - marginals).abs() < 0.2).all()
 
-    kmax = dist.kmax(5)
-    count = dist.count
+    dist.kmax(5)
+    dist.count
 
 
 @given(data(), integers(min_value=1, max_value=20))

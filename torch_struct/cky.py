@@ -23,7 +23,7 @@ class CKY(_Struct):
             semiring.convert(roots).requires_grad_(True),
         )
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(terms.device)
 
         # Charts
         beta = [

@@ -5,6 +5,8 @@ from .semirings import (
     MaxSemiring,
     EntropySemiring,
     TempMax
+    CrossEntropySemiring,
+    KLDivergenceSemiring,
 )
 
 from .fast_semirings import FastLogSemiring, FastMaxSemiring, FastSampleSemiring
@@ -31,6 +33,8 @@ __all__ = [
     SparseMaxSemiring,
     KMaxSemiring,
     EntropySemiring,
+    CrossEntropySemiring,
+    KLDivergenceSemiring,
     MultiSampledSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,

@@ -6,11 +6,10 @@ A, B = 0, 1
 
 class CKY_CRF(_Struct):
     def _check_potentials(self, edge, lengths=None):
-        batch, N, _, NT = edge.shape
-        edge.requires_grad_(True)
+        batch, N, _, NT = self._get_dimension(edge)
         edge = self.semiring.convert(edge)
         if lengths is None:
-            lengths = torch.LongTensor([N] * batch)
+            lengths = torch.LongTensor([N] * batch).to(edge.device)
 
         return edge, batch, N, NT, lengths
 
