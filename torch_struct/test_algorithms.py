@@ -522,6 +522,7 @@ def test_gumbel(data):
     print(alpha.shape)
     print(alpha[0])
     print(alpha[1])
+    assert(False)
     # assert (alpha[0] == max1).all()
     # assert (alpha[1] <= max1).all()
 

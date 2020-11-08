@@ -66,6 +66,9 @@ def GumbelCRFSemiring(temp):
             grad_input = None
             hard = grad_output[0]
             soft = grad_output[1]
+            print(hard.shape, logits[0].shape)
+            new_logits = hard.unsqueeze(dim).mul(logits[0])
+            
             if ctx.needs_input_grad[0]:
                 def sample(ls):
                     pre_shape = ls.shape
@@ -74,7 +77,7 @@ def GumbelCRFSemiring(temp):
                     soft = update.softmax(-1)
                     return hard, soft
 
-                sample_hard, sample_soft = sample(logits[0])
+                sample_hard, sample_soft = sample(new_logits)
                 grad_input = torch.stack(
                     [hard.unsqueeze(dim).mul(sample_hard),
                      soft.unsqueeze(dim).mul(sample_soft)], dim=0)
