@@ -16,7 +16,7 @@ from .checkpoint import CheckpointSemiring, CheckpointShardSemiring
 
 from .sparse_max import SparseMaxSemiring
 
-from .sample import MultiSampledSemiring, SampledSemiring, GumbelSoftmaxSemiring, GumbelMaxSemiring,     GumbelCRFSemiring
+from .sample import MultiSampledSemiring, SampledSemiring, GumbelMaxSemiring, GumbelCRFSemiring
 
 
 # For flake8 compatibility.
@@ -24,7 +24,6 @@ __all__ = [
     FastLogSemiring,
     FastMaxSemiring,
     FastSampleSemiring,
-    GumbelSoftmaxSemiring,
     GumbelCRFSemiring,
     GumbelMaxSemiring,
     LogSemiring,

@@ -175,16 +175,11 @@ class StructDistribution(Distribution):
 
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
-            gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
-                self.log_potentials, self.lengths, _combine=True
+            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
+                self.log_potentials, self.lengths
             )
-            return gumbel[0], gumbel[1]
-        
-
-    def st_gumbel_crf(self, temperature=1.0):
-        one_hot, gumbel = self.gumbel_crf(self, temperature)
-        return StraightThrough.apply(one_hot, gumbel)
-        
+            return st_gumbel
+                
     # @constraints.dependent_property
     # def support(self):
     #     pass

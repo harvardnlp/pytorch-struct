@@ -277,10 +277,14 @@ class KLDivergenceSemiring(Semiring):
 
     Based on descriptions in:
 
-    * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
-    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    * Parameter estimation for probabilistic finite-state 
+      transducers :cite:`eisner2002parameter`
+    * First-and second-order expectation semirings with applications to 
+      minimumrisk training on translation forests :cite:`li2009first`
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
+
     """
+    
     zero = 0
     @staticmethod
     def size():
