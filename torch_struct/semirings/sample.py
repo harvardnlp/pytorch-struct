@@ -102,7 +102,7 @@ def GumbelCRFSemiring(temp):
         @staticmethod
         def backward(ctx, grad_output):
             logits, = ctx.saved_tensors
-            return logits.softmax(-1), None
+            return logits.softmax(-1) * grad_output, None
 
     class _GumbelCRFLogSumExp(torch.autograd.Function):
         @staticmethod
