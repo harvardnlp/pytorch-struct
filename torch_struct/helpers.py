@@ -145,7 +145,7 @@ class _Struct:
 
             return DPManual.apply(edge)
 
-    def marginals(self, edge, lengths=None, _autograd=True, _raw=False):
+    def marginals(self, edge, lengths=None, _autograd=True, _raw=False, _combine=False):
         """
         Compute the marginals of a structured model.
 
@@ -178,6 +178,13 @@ class _Struct:
                     )
                     all_m.append(self.semiring.unconvert(self._arrange_marginals(marg)))
                 return torch.stack(all_m, dim=0)
+            elif _combine:
+                obj = v.sum(dim=0).sum(dim=0)
+                marg = torch.autograd.grad(
+                    obj, edges, create_graph=True, only_inputs=True, allow_unused=False
+                )
+                a_m = self._arrange_marginals(marg)
+                return a_m
             else:
                 obj = self.semiring.unconvert(v).sum(dim=0)
                 marg = torch.autograd.grad(

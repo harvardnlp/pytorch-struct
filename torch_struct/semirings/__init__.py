@@ -4,7 +4,7 @@ from .semirings import (
     KMaxSemiring,
     MaxSemiring,
     EntropySemiring,
-    TempMax
+    TempMax,
     CrossEntropySemiring,
     KLDivergenceSemiring,
 )
@@ -16,7 +16,7 @@ from .checkpoint import CheckpointSemiring, CheckpointShardSemiring
 
 from .sparse_max import SparseMaxSemiring
 
-from .sample import MultiSampledSemiring, SampledSemiring, GumbelSoftmaxSemiring, GumbelMaxSemiring
+from .sample import MultiSampledSemiring, SampledSemiring, GumbelSoftmaxSemiring, GumbelMaxSemiring,     GumbelCRFSemiring
 
 
 # For flake8 compatibility.
@@ -25,6 +25,7 @@ __all__ = [
     FastMaxSemiring,
     FastSampleSemiring,
     GumbelSoftmaxSemiring,
+    GumbelCRFSemiring,
     GumbelMaxSemiring,
     LogSemiring,
     StdSemiring,

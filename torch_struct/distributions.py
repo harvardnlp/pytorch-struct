@@ -16,6 +16,7 @@ from .semirings import (
     MultiSampledSemiring,
     KMaxSemiring,
     StdSemiring,
+    GumbelCRFSemiring
 )
 
 
@@ -171,6 +172,19 @@ class StructDistribution(Distribution):
             ones, self.lengths
         )
 
+
+    def gumbel_crf(self, temperature=1.0):
+        with torch.enable_grad():
+            gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
+                self.log_potentials, self.lengths, _combine=True
+            )
+            return gumbel[0], gumbel[1]
+        
+
+    def st_gumbel_crf(self, temperature=1.0):
+        one_hot, gumbel = self.gumbel_crf(self, temperature)
+        return StraightThrough.apply(one_hot, gumbel)
+        
     # @constraints.dependent_property
     # def support(self):
     #     pass
@@ -233,6 +247,16 @@ class StructDistribution(Distribution):
         return self.struct(sr if sr is not None else LogSemiring)
 
 
+class StraightThrough(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, hard, soft):
+        ctx.save_for_backward(soft)
+        return hard
+
+    def backward(ctx, grad_output):
+        soft = ctx.saved_tensors
+        return soft.mul(grad_output)
+    
 class LinearChainCRF(StructDistribution):
     r"""
     Represents structured linear-chain CRFs with C classes.

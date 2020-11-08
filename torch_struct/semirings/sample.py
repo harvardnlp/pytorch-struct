@@ -53,6 +53,74 @@ class SampledSemiring(_BaseLog):
         return _SampledLogSumExp.apply(xs, dim)
 
 
+def GumbelCRFSemiring(temp):
+    class _GumbelCRF_LSE(torch.autograd.Function):
+        @staticmethod
+        def forward(ctx, input, dim):
+            ctx.save_for_backward(input, torch.tensor(dim))
+            return torch.logsumexp(input, dim=dim)
+
+        @staticmethod
+        def backward(ctx, grad_output):
+            logits, dim = ctx.saved_tensors
+            grad_input = None
+            hard = grad_output[0]
+            soft = grad_output[1]
+            if ctx.needs_input_grad[0]:
+                def sample(ls):
+                    pre_shape = ls.shape
+                    update = (ls + torch.distributions.Gumbel(0, 1).sample((pre_shape[-1],))) / temp
+                    hard = torch.nn.functional.one_hot(update.max(-1)[1], pre_shape[-1])
+                    soft = update.softmax(-1)
+                    return hard, soft
+
+                sample_hard, sample_soft = sample(logits[0])
+                grad_input = torch.stack(
+                    [hard.unsqueeze(dim).mul(sample_hard),
+                     soft.unsqueeze(dim).mul(sample_soft)], dim=0)
+            return grad_input, None
+
+    class GumbelCRFSemiring(_BaseLog):
+        @staticmethod
+        def size():
+            return 2
+
+        @classmethod
+        def convert(cls, orig_potentials):
+            potentials = torch.zeros(
+                (2,) + orig_potentials.shape,
+                dtype=orig_potentials.dtype,
+                device=orig_potentials.device,
+            )
+            cls.zero_(potentials)
+            potentials[0] = orig_potentials
+            potentials[1] = orig_potentials
+            return potentials
+
+        @classmethod
+        def one_(cls, xs):
+            cls.zero_(xs)
+            xs.fill_(0)
+            return xs
+
+        @staticmethod
+        def unconvert(potentials):
+            return potentials[0]
+
+        @staticmethod
+        def sum(xs, dim=-1):
+            if dim == -1:
+                return _GumbelCRF_LSE.apply(xs, dim)
+            assert False
+
+        @staticmethod
+        def mul(a, b):
+            return a + b
+
+    return GumbelCRFSemiring
+
+    
+
 def GumbelSoftmaxSemiring(temp):
     class _GumbelLogSumExp(torch.autograd.Function):
         @staticmethod

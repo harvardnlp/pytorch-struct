@@ -8,6 +8,7 @@ from .semirings import (
     LogSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
+    GumbelCRFSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
@@ -509,3 +510,30 @@ def test_lc_custom():
     # s2 = struct.sum(vals)
     # assert torch.isclose(s, s2).all()
     # assert torch.isclose(marginals, marginals2).all()
+
+@given(data())
+def test_gumbel(data):
+    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree]))
+    K = 2
+    semiring = GumbelCRFSemiring(1.0)
+    struct = model(semiring)
+    vals, (batch, N) = model._rand()
+    alpha = struct.marginals(vals, _combine=True)
+    print(alpha.shape)
+    print(alpha[0])
+    print(alpha[1])
+    # assert (alpha[0] == max1).all()
+    # assert (alpha[1] <= max1).all()
+
+    # topk = struct.marginals(vals, _raw=True)
+    # argmax = model(MaxSemiring).marginals(vals)
+    # assert (topk[0] == argmax).all()
+    # print(topk[0].nonzero(), topk[1].nonzero())
+    # assert (topk[1] != topk[0]).any()
+
+    # if model != DepTree:
+    #     log_probs = model(MaxSemiring).enumerate(vals)[1]
+    #     tops = torch.topk(torch.cat(log_probs, dim=0), 5, 0)[0]
+    #     assert torch.isclose(struct.score(topk[1], vals), alpha[1]).all()
+    #     for k in range(K):
+    #         assert (torch.isclose(alpha[k], tops[k])).all()
