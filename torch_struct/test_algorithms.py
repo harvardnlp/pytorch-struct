@@ -523,19 +523,3 @@ def test_gumbel(data):
     print(alpha[0])
     print(torch.autograd.grad(alpha, vals, alpha.detach())[0][0])
     
-    assert(False)
-    # assert (alpha[0] == max1).all()
-    # assert (alpha[1] <= max1).all()
-
-    # topk = struct.marginals(vals, _raw=True)
-    # argmax = model(MaxSemiring).marginals(vals)
-    # assert (topk[0] == argmax).all()
-    # print(topk[0].nonzero(), topk[1].nonzero())
-    # assert (topk[1] != topk[0]).any()
-
-    # if model != DepTree:
-    #     log_probs = model(MaxSemiring).enumerate(vals)[1]
-    #     tops = torch.topk(torch.cat(log_probs, dim=0), 5, 0)[0]
-    #     assert torch.isclose(struct.score(topk[1], vals), alpha[1]).all()
-    #     for k in range(K):
-    #         assert (torch.isclose(alpha[k], tops[k])).all()

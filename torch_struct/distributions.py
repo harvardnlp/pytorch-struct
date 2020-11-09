@@ -241,16 +241,6 @@ class StructDistribution(Distribution):
     def _struct(self, sr=None):
         return self.struct(sr if sr is not None else LogSemiring)
 
-
-class StraightThrough(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, hard, soft):
-        ctx.save_for_backward(soft)
-        return hard
-
-    def backward(ctx, grad_output):
-        soft = ctx.saved_tensors
-        return soft.mul(grad_output)
     
 class LinearChainCRF(StructDistribution):
     r"""
