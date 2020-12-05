@@ -7,6 +7,7 @@ from .semimarkov import SemiMarkov
 from .alignment import Alignment
 from .deptree import DepTree, deptree_nonproj, deptree_part
 from .cky_crf import CKY_CRF
+from .full_cky_crf import Full_CKY_CRF
 from .semirings import (
     LogSemiring,
     MaxSemiring,
@@ -17,7 +18,6 @@ from .semirings import (
     KMaxSemiring,
     StdSemiring,
 )
-
 
 
 class StructDistribution(Distribution):
@@ -68,7 +68,6 @@ class StructDistribution(Distribution):
             value.type_as(self.log_potentials),
             batch_dims=batch_dims,
         )
-
 
         return v - self.partition
 
@@ -128,9 +127,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).sum(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).sum(self.log_potentials, self.lengths, _raw=True)
 
     def topk(self, k):
         r"""
@@ -140,9 +137,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape x event_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).marginals(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).marginals(self.log_potentials, self.lengths, _raw=True)
 
     @lazy_property
     def mode(self):
@@ -166,10 +161,8 @@ class StructDistribution(Distribution):
     def count(self):
         "Compute the log-partition function."
         ones = torch.ones_like(self.log_potentials)
-        ones[self.log_potentials.eq(-float('inf'))] = 0
-        return self._struct(StdSemiring).sum(
-            ones, self.lengths
-        )
+        ones[self.log_potentials.eq(-float("inf"))] = 0
+        return self._struct(StdSemiring).sum(ones, self.lengths)
 
     # @constraints.dependent_property
     # def support(self):
@@ -199,9 +192,7 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % 10 == 0:
-                sample = self._struct(MultiSampledSemiring).marginals(
-                    self.log_potentials, lengths=self.lengths
-                )
+                sample = self._struct(MultiSampledSemiring).marginals(self.log_potentials, lengths=self.lengths)
                 sample = sample.detach()
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % 10) + 1)
             samples.append(tmp_sample)
@@ -222,9 +213,7 @@ class StructDistribution(Distribution):
         Returns:
             (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
         """
-        _, _, edges, enum_lengths = self._struct().enumerate(
-            self.log_potentials, self.lengths
-        )
+        _, _, edges, enum_lengths = self._struct().enumerate(self.log_potentials, self.lengths)
         # if expand:
         #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
         return edges, enum_lengths
@@ -295,9 +284,7 @@ class AlignmentCRF(StructDistribution):
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(
-            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
-        )
+        return self.struct(sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap)
 
 
 class HMM(StructDistribution):
@@ -379,7 +366,6 @@ class DependencyCRF(StructDistribution):
         setattr(self.struct, "multiroot", multiroot)
 
 
-
 class TreeCRF(StructDistribution):
     r"""
     Represents a 0th-order span parser with NT nonterminals. Implemented using a
@@ -404,6 +390,22 @@ class TreeCRF(StructDistribution):
     Compact representation:  *N x N x NT* long tensor (Same)
     """
     struct = CKY_CRF
+
+
+class FullTreeCRF(StructDistribution):
+    r"""
+    Represents a 1st-order span parser with NT nonterminals. Implemented using a vectorized inside algorithm.
+    For a mathematical description see:
+    * Inside-Outside Algorithm, by Michael Collins: http://www.cs.columbia.edu/~mcollins/io.pdf
+
+    Parameters:
+        log_potentials (tensor) : event_shape (*N x N x N x NT x NT x NT*), e.g.
+                                    :math:`\phi(i, j, k, A_i^j \rightarrow B_i^k C_{k+1}^j)`
+        lengths (long tensor) : batch shape integers for length masking.
+
+    Compact representation:  *N x N x N xNT x NT x NT* long tensor (Same)
+    """
+    struct = Full_CKY_CRF
 
 
 class SentCFG(StructDistribution):
@@ -435,9 +437,7 @@ class SentCFG(StructDistribution):
         event_shape = log_potentials[0].shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
-        super(StructDistribution, self).__init__(
-            batch_shape=batch_shape, event_shape=event_shape
-        )
+        super(StructDistribution, self).__init__(batch_shape=batch_shape, event_shape=event_shape)
 
 
 class NonProjectiveDependencyCRF(StructDistribution):
