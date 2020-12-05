@@ -35,7 +35,11 @@ class Set(torch.autograd.Function):
 class Chart:
     def __init__(self, size, potentials, semiring, cache=True):
         self.data = semiring.zero_(
-            torch.zeros(*((semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
+            torch.zeros(
+                *((semiring.size(),) + size),
+                dtype=potentials.dtype,
+                device=potentials.device
+            )
         )
         self.grad = self.data.detach().clone().fill_(0.0)
         self.cache = cache
@@ -91,7 +95,11 @@ class _Struct:
         return [
             (
                 self.semiring.zero_(
-                    torch.zeros(*((self.semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
+                    torch.zeros(
+                        *((self.semiring.size(),) + size),
+                        dtype=potentials.dtype,
+                        device=potentials.device
+                    )
                 ).requires_grad_(force_grad and not potentials.requires_grad)
             )
             for _ in range(N)
@@ -109,7 +117,11 @@ class _Struct:
             v: b tensor of total sum
         """
 
-        if _autograd or self.semiring is not LogSemiring or not hasattr(self, "_dp_backward"):
+        if (
+            _autograd
+            or self.semiring is not LogSemiring
+            or not hasattr(self, "_dp_backward")
+        ):
 
             v = self._dp(edge, lengths)[0]
             if _raw:
@@ -127,7 +139,9 @@ class _Struct:
                 @staticmethod
                 def backward(ctx, grad_v):
                     marginals = self._dp_backward(edge, lengths, alpha)
-                    return marginals.mul(grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim())))
+                    return marginals.mul(
+                        grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim()))
+                    )
 
             return DPManual.apply(edge)
 
@@ -142,9 +156,15 @@ class _Struct:
             marginals: b x (N-1) x C x C table
 
         """
-        if _autograd or self.semiring is not LogSemiring or not hasattr(self, "_dp_backward"):
+        if (
+            _autograd
+            or self.semiring is not LogSemiring
+            or not hasattr(self, "_dp_backward")
+        ):
             with torch.enable_grad():  # allows marginals even when input tensors don't need grad
-                v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True, cache=not _raw)
+                v, edges, _ = self._dp(
+                    edge, lengths=lengths, force_grad=True, cache=not _raw
+                )
                 if _raw:
                     all_m = []
                     for k in range(v.shape[0]):
@@ -161,7 +181,9 @@ class _Struct:
                     return torch.stack(all_m, dim=0)
                 else:
                     obj = self.semiring.unconvert(v).sum(dim=0)
-                    marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
+                    marg = torch.autograd.grad(
+                        obj, edges, create_graph=True, only_inputs=True, allow_unused=False
+                    )
                     a_m = self._arrange_marginals(marg)
                     return self.semiring.unconvert(a_m)
         else:
