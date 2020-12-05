@@ -282,7 +282,7 @@ class StructDistribution(Distribution):
                     torch.distributions.Gumbel(0, 1)
                     .sample((sample_batch_size * B, *noise_shape))
                     .expand_as(s_log_potentials)
-                )
+                ).to(s_log_potentials.device)
                 noisy_potentials = (s_log_potentials + noise) / temp
 
                 r_sample = (

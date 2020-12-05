@@ -122,7 +122,7 @@ class LinearChain(_Struct):
         batch, N_1, C, _ = edge.shape
         N = N_1 + 1
         labels = torch.zeros(batch, N).long()
-        on = edge.nonzero()
+        on = edge.nonzero(as_tuple=False)
         for i in range(on.shape[0]):
             if on[i][1] == 0:
                 labels[on[i][0], on[i][1]] = on[i][3]
