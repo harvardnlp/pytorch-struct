@@ -200,17 +200,31 @@ class DepTree(_Struct):
         return semiring.sum(torch.stack(parses, dim=-1)), None
 
 
-def deptree_part(arc_scores, eps=1e-5):
+def deptree_part(arc_scores, multi_root, eps=1e-5):
     input = arc_scores
+    '''
+    if multi_root:
+        rss = torch.diagonal(input, 0, -2, -1) # root selection scores
+        input = torch.cat((rss.unsqueeze(1), input), dim=1) # expand row-wise
+        rss = torch.cat((torch.ones(rss.shape[0], 1), rss), dim=1) # add a dummy 1, will be masked
+        input = torch.cat((rss.unsqueeze(2), input), dim=2)  # expand col-wise
+    '''
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+    
+    if multi_root:
+        #lap = lap[:,1:,:][:,:,1:] # minor of lap
+        rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
+        lap = lap + torch.diag_embed(rss, offset=0, dim1=-2, dim2=-1)
+    else:
+        lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+    
     return lap.logdet()
-
-
-def deptree_nonproj(arc_scores, eps=1e-5):
+    
+    
+def deptree_nonproj(arc_scores, multi_root, eps=1e-5):
     """
     Compute the marginals of a non-projective dependency tree using the
     matrix-tree theorem.
@@ -227,28 +241,58 @@ def deptree_nonproj(arc_scores, eps=1e-5):
          arc_marginals : b x N x N.
     """
 
+    # use autograd to compute marginals
+    '''
+    arc_scores = arc_scores.double()
+    partition = deptree_part(arc_scores, multi_root)
+    import torch.autograd as autograd
+    probs, = autograd.grad(partition, arc_scores, torch.ones_like(partition))
+    return probs.float()
+    '''
+
     input = arc_scores
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
-    inv_laplacian = lap.inverse()
-    factor = (
-        torch.diagonal(inv_laplacian, 0, -2, -1)
-        .unsqueeze(2)
-        .expand_as(input)
-        .transpose(1, 2)
-    )
-    term1 = input.exp().mul(factor).clone()
-    term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
-    term1[:, :, 0] = 0
-    term2[:, 0] = 0
-    output = term1 - term2
-    roots_output = (
-        torch.diagonal(input, 0, -2, -1).exp().mul(inv_laplacian.transpose(1, 2)[:, 0])
-    )
+    if multi_root:
+        rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
+        lap = lap + torch.diag_embed(rss, offset=0, dim1=-2, dim2=-1)
+        inv_laplacian = lap.inverse()
+        factor = (
+            torch.diagonal(inv_laplacian, 0, -2, -1)
+            .unsqueeze(2)
+            .expand_as(input)
+            .transpose(1, 2)
+        )
+        term1 = input.exp().mul(factor).clone()
+        term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
+        output = term1 - term2
+        roots_output = (
+            torch.diagonal(input, 0, -2, -1).exp().mul(torch.diagonal(inv_laplacian.transpose(1, 2), 0, -2, -1))
+        )
+    else:
+        lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+        inv_laplacian = lap.inverse()
+        factor = (
+            torch.diagonal(inv_laplacian, 0, -2, -1)
+            .unsqueeze(2)
+            .expand_as(input)
+            .transpose(1, 2)
+        )
+        term1 = input.exp().mul(factor).clone()
+        term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
+        term1[:, :, 0] = 0
+        term2[:, 0] = 0
+        output = term1 - term2
+        roots_output = (
+            torch.diagonal(input, 0, -2, -1).exp().mul(inv_laplacian.transpose(1, 2)[:, 0])
+        )
     output = output + torch.diag_embed(roots_output, 0, -2, -1)
+    #print (output)
+    #print (probs)
+    #print (torch.all(torch.eq(output.float(), probs.float())))
+    
     return output
 
 
