@@ -476,7 +476,7 @@ class NonProjectiveDependencyCRF(StructDistribution):
         Returns:
             marginals (*batch_shape x event_shape*)
         """
-        return deptree_nonproj(self.log_potentials, self.multiroot)
+        return deptree_nonproj(self.log_potentials, self.multiroot, self.lengths)
 
     def sample(self, sample_shape=torch.Size()):
         raise NotImplementedError()
@@ -486,7 +486,7 @@ class NonProjectiveDependencyCRF(StructDistribution):
         """
         Compute the partition function.
         """
-        return deptree_part(self.log_potentials, self.multiroot)
+        return deptree_part(self.log_potentials, self.multiroot, self.lengths)
 
     @lazy_property
     def argmax(self):

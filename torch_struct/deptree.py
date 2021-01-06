@@ -200,13 +200,24 @@ class DepTree(_Struct):
         return semiring.sum(torch.stack(parses, dim=-1)), None
 
 
-def deptree_part(arc_scores, multi_root, eps=1e-5):
+def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
+    if lengths:
+        batch, N, N = arc_scores.shape
+        x = torch.arange(N).expand(batch, N)
+        length = torch.tensor(lengths).unsqueeze(1)
+        x = x < length
+        x = x.unsqueeze(2).expand(-1, -1, N)
+        mask = torch.transpose(x, 1, 2) * x
+        mask = mask.float()
+        mask[mask==0] = float('-inf')
+        arc_scores = arc_scores + mask
+    
     input = arc_scores
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    
+
     if multi_root:
         rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
         lap = lap + torch.diag_embed(rss, offset=0, dim1=-2, dim2=-1)
@@ -216,7 +227,7 @@ def deptree_part(arc_scores, multi_root, eps=1e-5):
     return lap.logdet()
     
     
-def deptree_nonproj(arc_scores, multi_root, eps=1e-5):
+def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
     """
     Compute the marginals of a non-projective dependency tree using the
     matrix-tree theorem.
@@ -232,6 +243,17 @@ def deptree_nonproj(arc_scores, multi_root, eps=1e-5):
     Returns:
          arc_marginals : b x N x N.
     """
+    if lengths:
+        batch, N, N = arc_scores.shape
+        x = torch.arange(N).expand(batch, N)
+        length = torch.tensor(lengths).unsqueeze(1)
+        x = x < length
+        x = x.unsqueeze(2).expand(-1, -1, N)
+        mask = torch.transpose(x, 1, 2) * x
+        mask = mask.float()
+        mask[mask==0] = float('-inf')
+        arc_scores = arc_scores + mask
+
     input = arc_scores
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
