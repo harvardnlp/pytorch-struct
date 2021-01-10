@@ -204,8 +204,10 @@ def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
     if lengths:
         batch, N, N = arc_scores.shape
         x = torch.arange(N).expand(batch, N)
-        length = torch.tensor(lengths).unsqueeze(1)
-        x = x < length
+        if not torch.is_tensor(lengths):
+            lengths = torch.tensor(lengths)
+        lengths = lengths.unsqueeze(1)
+        x = x < lengths
         x = x.unsqueeze(2).expand(-1, -1, N)
         mask = torch.transpose(x, 1, 2) * x
         mask = mask.float()
@@ -243,11 +245,13 @@ def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
     Returns:
          arc_marginals : b x N x N.
     """
-    if lengths:
+    if lengths is not None:
         batch, N, N = arc_scores.shape
         x = torch.arange(N).expand(batch, N)
-        length = torch.tensor(lengths).unsqueeze(1)
-        x = x < length
+        if not torch.is_tensor(lengths):
+            lengths = torch.tensor(lengths)
+        lengths = lengths.unsqueeze(1)
+        x = x < lengths
         x = x.unsqueeze(2).expand(-1, -1, N)
         mask = torch.transpose(x, 1, 2) * x
         mask = mask.float()
