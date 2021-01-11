@@ -203,9 +203,9 @@ class DepTree(_Struct):
 def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
     if lengths:
         batch, N, N = arc_scores.shape
-        x = torch.arange(N).expand(batch, N)
+        x = torch.arange(N, device=arc_scores.device).expand(batch, N)
         if not torch.is_tensor(lengths):
-            lengths = torch.tensor(lengths)
+            lengths = torch.tensor(lengths, device=arc_scores.device)
         lengths = lengths.unsqueeze(1)
         x = x < lengths
         x = x.unsqueeze(2).expand(-1, -1, N)
@@ -247,9 +247,9 @@ def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
     """
     if lengths is not None:
         batch, N, N = arc_scores.shape
-        x = torch.arange(N).expand(batch, N)
+        x = torch.arange(N, device=arc_scores.device).expand(batch, N)
         if not torch.is_tensor(lengths):
-            lengths = torch.tensor(lengths)
+            lengths = torch.tensor(lengths, device=arc_scores.device)
         lengths = lengths.unsqueeze(1)
         x = x < lengths
         x = x.unsqueeze(2).expand(-1, -1, N)
