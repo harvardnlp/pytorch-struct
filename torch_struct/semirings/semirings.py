@@ -277,13 +277,14 @@ class KLDivergenceSemiring(Semiring):
 
     Based on descriptions in:
 
-    * Parameter estimation for probabilistic finite-state 
+    * Parameter estimation for probabilistic finite-state
       transducers :cite:`eisner2002parameter`
-    * First-and second-order expectation semirings with applications to 
+    * First-and second-order expectation semirings with applications to
       minimumrisk training on translation forests :cite:`li2009first`
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
 
     """
+
     zero = 0
 
     @staticmethod

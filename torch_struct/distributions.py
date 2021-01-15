@@ -16,7 +16,7 @@ from .semirings import (
     MultiSampledSemiring,
     KMaxSemiring,
     StdSemiring,
-    GumbelCRFSemiring
+    GumbelCRFSemiring,
 )
 
 
@@ -184,14 +184,13 @@ class StructDistribution(Distribution):
         ones[self.log_potentials.eq(-float("inf"))] = 0
         return self._struct(StdSemiring).sum(ones, self.lengths)
 
-
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
             st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
                 self.log_potentials, self.lengths
             )
             return st_gumbel
-                
+
     # @constraints.dependent_property
     # def support(self):
     #     pass
@@ -239,7 +238,7 @@ class StructDistribution(Distribution):
     def _struct(self, sr=None):
         return self.struct(sr if sr is not None else LogSemiring)
 
-    
+
 class LinearChainCRF(StructDistribution):
     r"""
     Represents structured linear-chain CRFs with C classes.
