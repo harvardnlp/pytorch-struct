@@ -73,15 +73,16 @@ class DepTreeTest:
     def _rand():
         b = torch.randint(2, 4, (1,))
         N = torch.randint(2, 4, (1,))
-        return torch.rand(b, N, N, 1), (b.item(), N.item())
+        return torch.rand(b, N, N), (b.item(), N.item())
 
     def enumerate(self, arc_scores, non_proj=False, multi_root=True):
         semiring = self.semiring
         parses = []
         q = []
         arc_scores = torch_struct.convert(arc_scores)
-        batch, N, _, F = arc_scores.shape
-        arc_scores = arc_scores.sum(-1)
+        batch, N, _ = arc_scores.shape
+
+        # arc_scores = arc_scores.sum(-1)
         for mid in itertools.product(range(N + 1), repeat=N - 1):
             parse = [-1] + list(mid)
             if not _is_spanning(parse):

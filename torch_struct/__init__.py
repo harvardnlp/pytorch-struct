@@ -12,7 +12,7 @@ from .distributions import (
 )
 from .autoregressive import Autoregressive, AutoregressiveModel
 from .cky_crf import CKY_CRF
-from .deptree import DepTree
+from .deptree import DepTree, convert
 from .linearchain import LinearChain
 from .semimarkov import SemiMarkov
 from .alignment import Alignment
@@ -40,6 +40,7 @@ version = "0.4"
 # For flake8 compatibility.
 __all__ = [
     CKY,
+    convert,
     CKY_CRF,
     DepTree,
     LinearChain,

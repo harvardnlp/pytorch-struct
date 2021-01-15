@@ -41,39 +41,3 @@ class CKY_CRF(_Struct):
         final = beta[A][0, :]
         log_Z = final[:, torch.arange(batch), lengths - 1]
         return log_Z, [scores], beta
-
-    # For testing
-
-    def enumerate(self, scores):
-        semiring = self.semiring
-        batch, N, _, NT = scores.shape
-
-        def enumerate(x, start, end):
-            if start + 1 == end:
-                yield (scores[:, start, start, x], [(start, x)])
-            else:
-                for w in range(start + 1, end):
-                    for y in range(NT):
-                        for z in range(NT):
-                            for m1, y1 in enumerate(y, start, w):
-                                for m2, z1 in enumerate(z, w, end):
-                                    yield (
-                                        semiring.times(
-                                            m1, m2, scores[:, start, end - 1, x]
-                                        ),
-                                        [(x, start, w, end)] + y1 + z1,
-                                    )
-
-        ls = []
-        for nt in range(NT):
-            ls += [s for s, _ in enumerate(nt, 0, N)]
-
-        return semiring.sum(torch.stack(ls, dim=-1)), None
-
-    @staticmethod
-    def _rand():
-        batch = torch.randint(2, 5, (1,))
-        N = torch.randint(2, 5, (1,))
-        NT = torch.randint(2, 5, (1,))
-        scores = torch.rand(batch, N, N, NT)
-        return scores, (batch.item(), N.item())

@@ -3,7 +3,7 @@ import itertools
 from .helpers import _Struct, Chart
 
 
-def _convert(logits):
+def convert(logits):
     "move root arcs from diagonal"
     new_shape = list(logits.shape)
     new_shape[1] += 1
@@ -18,7 +18,7 @@ def _convert(logits):
     return new_logits
 
 
-def _unconvert(logits):
+def unconvert(logits):
     "Move root arcs to diagonal"
     new_shape = list(logits.shape)
     new_shape[1] -= 1
@@ -54,7 +54,7 @@ class DepTree(_Struct):
 
         labeled = arc_scores_in.dim() == 4
         semiring = self.semiring
-        arc_scores_in = _convert(arc_scores_in)
+        arc_scores_in = convert(arc_scores_in)
         arc_scores_in, batch, N, lengths = self._check_potentials(
             arc_scores_in, lengths
         )
@@ -130,7 +130,7 @@ class DepTree(_Struct):
         return arc_scores, batch, N, lengths
 
     def _arrange_marginals(self, grads):
-        return self.semiring.convert(_unconvert(self.semiring.unconvert(grads[0])))
+        return self.semiring.convert(unconvert(self.semiring.unconvert(grads[0])))
 
     @staticmethod
     def to_parts(sequence, extra=None, lengths=None):
@@ -151,7 +151,7 @@ class DepTree(_Struct):
         for b in range(batch):
             labels[b, lengths[b] + 1 :, :] = 0
             labels[b, :, lengths[b] + 1 :] = 0
-        return _unconvert(labels)
+        return unconvert(labels)
 
     @staticmethod
     def from_parts(arcs):
@@ -183,7 +183,7 @@ class DepTree(_Struct):
         semiring = self.semiring
         parses = []
         q = []
-        arc_scores = _convert(arc_scores)
+        arc_scores = convert(arc_scores)
         batch, N, _ = arc_scores.shape
         for mid in itertools.product(range(N + 1), repeat=N - 1):
             parse = [-1] + list(mid)
