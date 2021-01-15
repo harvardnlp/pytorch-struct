@@ -1,6 +1,7 @@
-name: Python package
+name: Python docs
 
 on: [push]
+
 
 jobs:
   build:
@@ -23,13 +24,6 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
         pip install .
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 --ignore "N801, E203, E266, E501, W503, F812, E741, N803, N802, N806" torch_struct/
-    - name: Test with pytest
-      run: |
-        pytest --cov=torch_struct --cov-report annotate:annotate --cov-report term-missing torch_struct/
     - name: build docs
       run: |
         pip install -r docs/requirements.txt
@@ -41,8 +35,3 @@ jobs:
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: docs/build/html/ # The folder the action should deploy.
           CLEAN: true
-    - name: Upload pytest test results
-      uses: actions/upload-artifact@v2
-      with:
-        name: pytest-coverage
-        path: annotate/*
