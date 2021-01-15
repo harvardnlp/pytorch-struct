@@ -1,4 +1,4 @@
-from torch_struct import ( CKY, CKY_CRF, DepTree, deptree_nonproj, deptree_part, LinearChain, SemiMarkov, Alignment )
+from torch_struct import CKY, CKY_CRF, DepTree, LinearChain, SemiMarkov, Alignment
 from torch_struct import (
     LogSemiring,
     CheckpointSemiring,
@@ -179,29 +179,29 @@ def test_labeled_proj_deptree(data):
     assert torch.isclose(max_score, struct.score(arc_scores, argmax)).all()
 
 
-@given(data())
-@settings(max_examples=50, deadline=None)
-def test_non_proj(data):
-    model = data.draw(sampled_from([DepTree]))
-    semiring = data.draw(sampled_from([LogSemiring]))
-    struct = model(semiring)
-    vals, (batch, N) = model._rand()
-    alpha = deptree_part(vals)
-    count = struct.enumerate(vals, non_proj=True, multi_root=False)[0]
+# @given(data())
+# @settings(max_examples=50, deadline=None)
+# def test_non_proj(data):
+#     model = data.draw(sampled_from([DepTree]))
+#     semiring = data.draw(sampled_from([LogSemiring]))
+#     struct = model(semiring)
+#     vals, (batch, N) = model._rand()
+#     alpha = deptree_part(vals)
+#     count = struct.enumerate(vals, non_proj=True, multi_root=False)[0]
 
-    assert alpha.shape[0] == batch
-    assert count.shape[0] == batch
-    assert alpha.shape == count.shape
-    assert torch.isclose(count[0], alpha[0])
+#     assert alpha.shape[0] == batch
+#     assert count.shape[0] == batch
+#     assert alpha.shape == count.shape
+#     assert torch.isclose(count[0], alpha[0])
 
-    marginals = deptree_nonproj(vals)
-    print(marginals.sum(1))
-    # assert(False)
-    # vals, _ = model._rand()
-    # struct = model(MaxSemiring)
-    # score = struct.sum(vals)
-    # marginals = struct.marginals(vals)
-    # assert torch.isclose(score, struct.score(vals, marginals)).all()
+#     marginals = deptree_nonproj(vals)
+#     print(marginals.sum(1))
+#     # assert(False)
+#     # vals, _ = model._rand()
+#     # struct = model(MaxSemiring)
+#     # score = struct.sum(vals)
+#     # marginals = struct.marginals(vals)
+#     # assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
 @given(data(), integers(min_value=1, max_value=20))
@@ -263,9 +263,7 @@ def test_parts_from_sequence(data, seed):
 @given(data(), integers(min_value=1, max_value=10))
 @settings(max_examples=50, deadline=None)
 def test_generic_lengths(data, seed):
-    model = data.draw(
-        sampled_from([CKY, LinearChain, SemiMarkov, CKY_CRF, DepTree])
-    )
+    model = data.draw(sampled_from([CKY, LinearChain, SemiMarkov, CKY_CRF, DepTree]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()
@@ -314,9 +312,7 @@ def test_generic_lengths(data, seed):
 @settings(max_examples=50, deadline=None)
 @given(data(), integers(min_value=1, max_value=10))
 def test_params(data, seed):
-    model = data.draw(
-        sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF])
-    )
+    model = data.draw(sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF]))
     struct = model()
     torch.manual_seed(seed)
     vals, (batch, N) = struct._rand()

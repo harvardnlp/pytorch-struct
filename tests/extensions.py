@@ -1,5 +1,4 @@
 import torch_struct
-import strux
 import torch
 from torch_struct import LogSemiring
 import itertools
@@ -8,7 +7,7 @@ import itertools
 class LinearChainTest:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
-    
+
     @staticmethod
     def _rand(min_n=2):
         b = torch.randint(2, 4, (1,))
@@ -65,6 +64,7 @@ class LinearChainTest:
             enum_lengths,
         )
 
+
 class DepTreeTest:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
@@ -97,6 +97,7 @@ class DepTreeTest:
                 semiring.times(*[arc_scores[:, parse[i], i] for i in range(1, N, 1)])
             )
         return semiring.sum(torch.stack(parses, dim=-1)), None
+
 
 class SemiMarkovTest:
     def __init__(self, semiring=LogSemiring):
@@ -292,6 +293,7 @@ class CKYTest:
         roots = torch.rand(batch, NT)
         return (terms, rules, roots), (batch.item(), N.item())
 
+
 class AlignmentTest:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
@@ -341,14 +343,12 @@ class AlignmentTest:
         all_val = torch.stack([x[1] for x in d[N - 1, M - 1]], dim=-1)
         return semiring.unconvert(semiring.sum(all_val)), None
 
-    
-test_lookup = {torch_struct.LinearChain: LinearChainTest,
-               
-               torch_struct.SemiMarkov: SemiMarkovTest,
-               torch_struct.DepTree: DepTreeTest,
-               torch_struct.CKY_CRF: CKY_CRFTest,
-               torch_struct.CKY: CKYTest,
-               torch_struct.Alignment: AlignmentTest
+
+test_lookup = {
+    torch_struct.LinearChain: LinearChainTest,
+    torch_struct.SemiMarkov: SemiMarkovTest,
+    torch_struct.DepTree: DepTreeTest,
+    torch_struct.CKY_CRF: CKY_CRFTest,
+    torch_struct.CKY: CKYTest,
+    torch_struct.Alignment: AlignmentTest,
 }
-
-
