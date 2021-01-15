@@ -220,7 +220,8 @@ def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap += det_offset
+    if lengths is not None:
+        lap += det_offset
 
     if multi_root:
         rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
@@ -266,7 +267,8 @@ def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap += det_offset
+    if lengths is not None:
+        lap += det_offset
 
     if multi_root:
         rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
