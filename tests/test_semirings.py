@@ -3,7 +3,7 @@ from hypothesis import given
 from hypothesis.strategies import integers
 
 
-from . import (
+from torch_struct import (
     LogSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,

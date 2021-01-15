@@ -1,13 +1,27 @@
-from .distributions import LinearChainCRF
-from .autoregressive import Autoregressive
-from .semirings import KMaxSemiring
+from torch_struct import LinearChainCRF, Autoregressive, KMaxSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
+from .extensions import test_lookup
 
 smint = integers(min_value=2, max_value=4)
 tint = integers(min_value=1, max_value=2)
 lint = integers(min_value=2, max_value=10)
+
+
+def enumerate_support(self, expand=True):
+    """
+    Compute the full exponential enumeration set.
+
+    Returns:
+        (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
+    """
+    _, _, edges, enum_lengths = test_lookup[self.struct]().enumerate(
+        self.log_potentials, self.lengths
+    )
+    # if expand:
+    #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
+    return edges, enum_lengths
 
 
 @given(data(), integers(min_value=1, max_value=20))
@@ -22,7 +36,7 @@ def test_simple(data, seed):
         [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
     )
     dist = model(vals, lengths)
-    edges, enum_lengths = dist.enumerate_support()
+    edges, enum_lengths = enumerate_support(dist)
     log_probs = dist.log_prob(edges)
     for b in range(lengths.shape[0]):
         log_probs[enum_lengths[b] :, b] = -1e9
@@ -36,7 +50,7 @@ def test_simple(data, seed):
     cross_entropy = dist.cross_entropy(other=dist2)
     kl = dist.kl(other=dist2)
 
-    edges2, enum_lengths2 = dist2.enumerate_support()
+    edges2, enum_lengths2 = enumerate_support(dist2)
     log_probs2 = dist2.log_prob(edges2)
     for b in range(lengths.shape[0]):
         log_probs2[enum_lengths2[b] :, b] = -1e9
@@ -112,7 +126,9 @@ def test_autoregressive(data, seed):
     print(auto.log_prob(v.unsqueeze(0)))
     print(crf.struct().score(crf.argmax, values2))
     assert (
-        torch.isclose(auto.log_prob(v.unsqueeze(0)), crf.struct().score(crf.argmax, values2))
+        torch.isclose(
+            auto.log_prob(v.unsqueeze(0)), crf.struct().score(crf.argmax, values2)
+        )
     ).all()
     assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
 

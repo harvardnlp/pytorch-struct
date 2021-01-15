@@ -1,74 +1,16 @@
-from .cky import CKY
-from .distributions import (
-    StructDistribution,
-    LinearChainCRF,
-    SemiMarkovCRF,
-    DependencyCRF,
-    NonProjectiveDependencyCRF,
-    TreeCRF,
-    SentCFG,
-    AlignmentCRF,
-    HMM,
-)
-from .autoregressive import Autoregressive, AutoregressiveModel
-from .cky_crf import CKY_CRF
-from .deptree import DepTree
-from .linearchain import LinearChain
-from .semimarkov import SemiMarkov
-from .alignment import Alignment
-from .rl import SelfCritical
-from .semirings import (
-    LogSemiring,
-    FastLogSemiring,
-    TempMax,
-    FastMaxSemiring,
-    FastSampleSemiring,
-    StdSemiring,
-    KMaxSemiring,
-    SparseMaxSemiring,
-    SampledSemiring,
-    MaxSemiring,
-    EntropySemiring,
-    MultiSampledSemiring,
-    CheckpointSemiring,
-    CheckpointShardSemiring,
-)
+# Models
+from .cky import *  # noqa: F401,F403
+from .cky_crf import *  # noqa: F401,F403
+from .deptree import *  # noqa: F401,F403
+from .linearchain import *  # noqa: F401,F403
+from .semimarkov import *  # noqa: F401,F403
+from .alignment import *  # noqa: F401,F403
 
+# Semirings
+from .semirings import *  # noqa: F401,F403
 
-version = "0.4"
+# Distributions
+from .distributions import *  # noqa: F401,F403
+from .autoregressive import *  # noqa: F401,F403
 
-# For flake8 compatibility.
-__all__ = [
-    CKY,
-    CKY_CRF,
-    DepTree,
-    LinearChain,
-    SemiMarkov,
-    LogSemiring,
-    StdSemiring,
-    SampledSemiring,
-    MaxSemiring,
-    SparseMaxSemiring,
-    KMaxSemiring,
-    FastLogSemiring,
-    FastMaxSemiring,
-    FastSampleSemiring,
-    EntropySemiring,
-    MultiSampledSemiring,
-    SelfCritical,
-    StructDistribution,
-    Autoregressive,
-    AutoregressiveModel,
-    LinearChainCRF,
-    SemiMarkovCRF,
-    DependencyCRF,
-    NonProjectiveDependencyCRF,
-    TreeCRF,
-    SentCFG,
-    HMM,
-    AlignmentCRF,
-    Alignment,
-    CheckpointSemiring,
-    CheckpointShardSemiring,
-    TempMax,
-]
+version = "0.5"

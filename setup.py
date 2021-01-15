@@ -2,13 +2,11 @@ from setuptools import setup
 
 setup(
     name="torch_struct",
-    version="0.4",
+    version="0.5",
     author="Alexander Rush",
     author_email="arush@cornell.edu",
     packages=[
         "torch_struct",
-        "torch_struct.data",
-        "torch_struct.networks",
         "torch_struct.semirings",
     ],
     package_data={"torch_struct": []},

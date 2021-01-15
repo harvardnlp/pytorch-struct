@@ -114,14 +114,6 @@ class SemiMarkov(_Struct):
     #     return v, [edge], beta
 
     @staticmethod
-    def _rand():
-        b = torch.randint(2, 4, (1,))
-        N = torch.randint(2, 4, (1,))
-        K = torch.randint(2, 4, (1,))
-        C = torch.randint(2, 4, (1,))
-        return torch.rand(b, N, K, C, C), (b.item(), (N + 1).item())
-
-    @staticmethod
     def to_parts(sequence, extra, lengths=None):
         """
         Convert a sequence representation to edges
@@ -177,32 +169,3 @@ class SemiMarkov(_Struct):
             labels[on[i][0], on[i][1] + on[i][2]] = on[i][3]
         # print(edge.nonzero(), labels)
         return labels, (C, K)
-
-    # Tests
-    def enumerate(self, edge):
-        semiring = self.semiring
-        ssize = semiring.size()
-        batch, N, K, C, _ = edge.shape
-        edge = semiring.convert(edge)
-        chains = {}
-        chains[0] = [
-            ([(c, 0)], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)
-        ]
-
-        for n in range(1, N + 1):
-            chains[n] = []
-            for k in range(1, K):
-                if n - k not in chains:
-                    continue
-                for chain, score in chains[n - k]:
-                    for c in range(C):
-                        chains[n].append(
-                            (
-                                chain + [(c, k)],
-                                semiring.mul(
-                                    score, edge[:, :, n - k, k, c, chain[-1][0]]
-                                ),
-                            )
-                        )
-        ls = [s for (_, s) in chains[N]]
-        return semiring.unconvert(semiring.sum(torch.stack(ls, dim=1), dim=1)), ls
