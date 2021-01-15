@@ -1,5 +1,7 @@
 # Torch-Struct: Structured Prediction Library 
 
+![Tests](https://github.com/harvardnlp/pytorch-struct/workflows/Tests/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master)](https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master)
 
 <p align="center">
   <img src="https://github.com/harvardnlp/pytorch-struct/raw/master/download.png">
