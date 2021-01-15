@@ -176,6 +176,7 @@
     <span class="n">MultiSampledSemiring</span><span class="p">,</span>
     <span class="n">KMaxSemiring</span><span class="p">,</span>
     <span class="n">StdSemiring</span><span class="p">,</span>
+    <span class="n">GumbelCRFSemiring</span><span class="p">,</span>
 <span class="p">)</span>
 
 
@@ -342,6 +343,13 @@
         <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">)</span>
         <span class="n">ones</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">StdSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">gumbel_crf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">enable_grad</span><span class="p">():</span>
+            <span class="n">st_gumbel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">GumbelCRFSemiring</span><span class="p">(</span><span class="n">temperature</span><span class="p">))</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">st_gumbel</span>
 
     <span class="c1"># @constraints.dependent_property</span>
     <span class="c1"># def support(self):</span>
