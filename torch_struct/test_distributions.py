@@ -42,7 +42,7 @@ def test_simple(data, seed):
         log_probs2[enum_lengths2[b] :, b] = -1e9
 
     assert torch.isclose(cross_entropy, -log_probs.exp().mul(log_probs2).sum(0)).all()
-    assert torch.isclose(kl, -log_probs.exp().mul(log_probs2-log_probs).sum(0)).all()
+    assert torch.isclose(kl, -log_probs.exp().mul(log_probs2 - log_probs).sum(0)).all()
 
     argmax = dist.argmax
     _, max_indices = log_probs.max(0)
