@@ -13,4 +13,4 @@ from .semirings import *  # noqa: F401,F403
 from .distributions import *  # noqa: F401,F403
 from .autoregressive import *  # noqa: F401,F403
 
-version = "0.4"
+version = "0.5"

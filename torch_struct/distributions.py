@@ -83,6 +83,9 @@ class StructDistribution(Distribution):
         """
         Compute cross-entropy for distribution p(self) and q(other) :math:`H[p, q]`.
 
+        Parameters:
+            other : Comparison distribution
+
         Returns:
             cross entropy (*batch_shape*)
         """
@@ -95,6 +98,9 @@ class StructDistribution(Distribution):
         """
         Compute KL-divergence for distribution p(self) and q(other) :math:`KL[p || q] = H[p, q] - H[p]`.
 
+        Parameters:
+            other : Comparison distribution
+
         Returns:
             cross entropy (*batch_shape*)
         """
@@ -106,6 +112,7 @@ class StructDistribution(Distribution):
     def max(self):
         r"""
         Compute an max for distribution :math:`\max p(z)`.
+
         Returns:
             max (*batch_shape*)
         """
@@ -124,6 +131,10 @@ class StructDistribution(Distribution):
     def kmax(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
+
+        Parameters :
+            k : Number of solutions to return
+
         Returns:
             kmax (*k x batch_shape*)
         """
@@ -135,6 +146,9 @@ class StructDistribution(Distribution):
     def topk(self, k):
         r"""
         Compute the k-argmax for distribution :math:`k\max p(z)`.
+
+        Parameters :
+            k : Number of solutions to return
 
         Returns:
             kmax (*k x batch_shape x event_shape*)

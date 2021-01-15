@@ -83,9 +83,10 @@ class CKY(_Struct):
         Compute the marginals of a CFG using CKY.
 
         Parameters:
-            terms : b x n x T
-            rules : b x NT x (NT+T) x (NT+T)
-            root:   b x NT
+            scores : terms : b x n x T
+                     rules : b x NT x (NT+T) x (NT+T)
+                     root:   b x NT
+            lengths :
 
         Returns:
             v: b tensor of total sum
