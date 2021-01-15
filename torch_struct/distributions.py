@@ -19,7 +19,6 @@ from .semirings import (
 )
 
 
-
 class StructDistribution(Distribution):
     r"""
     Base structured distribution class.
@@ -69,7 +68,6 @@ class StructDistribution(Distribution):
             batch_dims=batch_dims,
         )
 
-
         return v - self.partition
 
     @lazy_property
@@ -91,7 +89,9 @@ class StructDistribution(Distribution):
             cross entropy (*batch_shape*)
         """
 
-        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(CrossEntropySemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     def kl(self, other):
         """
@@ -100,7 +100,9 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(KLDivergenceSemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     @lazy_property
     def max(self):
@@ -166,10 +168,8 @@ class StructDistribution(Distribution):
     def count(self):
         "Compute the log-partition function."
         ones = torch.ones_like(self.log_potentials)
-        ones[self.log_potentials.eq(-float('inf'))] = 0
-        return self._struct(StdSemiring).sum(
-            ones, self.lengths
-        )
+        ones[self.log_potentials.eq(-float("inf"))] = 0
+        return self._struct(StdSemiring).sum(ones, self.lengths)
 
     # @constraints.dependent_property
     # def support(self):
@@ -377,7 +377,6 @@ class DependencyCRF(StructDistribution):
         super(DependencyCRF, self).__init__(log_potentials, lengths, args)
         self.struct = DepTree
         setattr(self.struct, "multiroot", multiroot)
-
 
 
 class TreeCRF(StructDistribution):

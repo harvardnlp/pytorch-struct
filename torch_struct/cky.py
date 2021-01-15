@@ -105,7 +105,11 @@ class CKY(_Struct):
         def marginal(obj, inputs):
             obj = self.semiring.unconvert(obj).sum(dim=0)
             marg = torch.autograd.grad(
-                obj, inputs, create_graph=True, only_inputs=True, allow_unused=False,
+                obj,
+                inputs,
+                create_graph=True,
+                only_inputs=True,
+                allow_unused=False,
             )
 
             spans_marg = torch.zeros(

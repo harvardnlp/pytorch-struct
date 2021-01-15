@@ -42,7 +42,7 @@ def test_simple(data, seed):
         log_probs2[enum_lengths2[b] :, b] = -1e9
 
     assert torch.isclose(cross_entropy, -log_probs.exp().mul(log_probs2).sum(0)).all()
-    assert torch.isclose(kl, -log_probs.exp().mul(log_probs2-log_probs).sum(0)).all()
+    assert torch.isclose(kl, -log_probs.exp().mul(log_probs2 - log_probs).sum(0)).all()
 
     argmax = dist.argmax
     _, max_indices = log_probs.max(0)
@@ -112,7 +112,7 @@ def test_autoregressive(data, seed):
     print(auto.log_prob(v.unsqueeze(0)))
     print(crf.struct().score(crf.argmax, values2))
     assert (
-        auto.log_prob(v.unsqueeze(0)) == crf.struct().score(crf.argmax, values2)
+        torch.isclose(auto.log_prob(v.unsqueeze(0)), crf.struct().score(crf.argmax, values2))
     ).all()
     assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
 
@@ -181,7 +181,7 @@ def test_ar2():
     v = v.unsqueeze(1).expand(v.shape[0], batch, N)
     all_scores = dist.log_prob(v, sparse=True)
     best, ind = torch.max(all_scores, dim=0)
-    assert (scores[0, 0] == best[0]).all()
+    assert torch.isclose(scores[0, 0], best[0]).all()
 
     print(v[ind[0], 0].shape, path[0, 0].shape)
     assert (torch.nn.functional.one_hot(v[ind, 0], C) == path[0, 0].long()).all()

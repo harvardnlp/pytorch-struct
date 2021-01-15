@@ -1,0 +1,39 @@
+name: Deploy Docs
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install pandoc
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pep8-naming doctr doc8 pytest-cov coveralls pandoc
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
+        pip install .
+    - name: build docs
+      run: |
+        pip install -r docs/requirements.txt
+        cd docs/; make html; cd ..
+    - name: Deploy
+      uses: "JamesIves/github-pages-deploy-action@3.7.1"
+      with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: docs/build/html/ # The folder the action should deploy.
+          CLEAN: true
