@@ -1,4 +1,4 @@
-name: Python package
+name: Build Docs
 
 on: [push]
 
@@ -30,17 +30,8 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --cov=torch_struct --cov-report annotate:annotate --cov-report term-missing torch_struct/
-    - name: build docs
-      run: |
-        pip install -r docs/requirements.txt
-        cd docs/; make html; cd ..
-    - name: Deploy
-      uses: "JamesIves/github-pages-deploy-action@3.7.1"
-      with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/build/html/ # The folder the action should deploy.
-          CLEAN: true
+        coveralls
+
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:

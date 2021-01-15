@@ -1,7 +1,9 @@
-name: Python docs
+name: Deploy Docs
 
-on: [push]
-
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
