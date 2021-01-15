@@ -233,6 +233,7 @@
 
 <span class="sd">        Parameters:</span>
 <span class="sd">            value (tensor): One-hot events (*sample_shape x batch_shape x N*)</span>
+<span class="sd">            sparse (bool): implement sparse</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            log_probs (*sample_shape x batch_shape*)</span>
@@ -367,6 +368,9 @@
 
 <span class="sd">        * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`</span>
 
+<span class="sd">        Parameters:</span>
+<span class="sd">            alpha : alpha param</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            greedy_path (*batch x N x C*)</span>
 <span class="sd">            greedy_max (*batch*)</span>
@@ -378,6 +382,9 @@
 <div class="viewcode-block" id="Autoregressive.beam_topk"><a class="viewcode-back" href="../../model.html#torch_struct.Autoregressive.beam_topk">[docs]</a>    <span class="k">def</span> <span class="nf">beam_topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute &quot;top-k&quot; using beam search</span>
+
+<span class="sd">        Parameters:</span>
+<span class="sd">            K : top-k</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            paths (*K x batch x N x C*)</span>

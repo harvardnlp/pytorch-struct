@@ -252,8 +252,9 @@
 
 <span class="sd">        Parameters:</span>
 <span class="sd">            sequence : b x N long tensor in [0, C-1]</span>
-<span class="sd">            C : number of states</span>
+<span class="sd">            extra : number of states</span>
 <span class="sd">            lengths: b long tensor of N values</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            edge : b x (N-1) x C x C markov indicators</span>
 <span class="sd">                        (t x z_t x z_{t-1})</span>
@@ -277,6 +278,7 @@
 <span class="sd">        Parameters:</span>
 <span class="sd">            edge : b x (N-1) x C x C markov indicators</span>
 <span class="sd">                        (t x z_t x z_{t-1})</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            sequence : b x N long tensor in [0, C-1]</span>
 <span class="sd">        &quot;&quot;&quot;</span>

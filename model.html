@@ -1079,8 +1079,11 @@ root  (<em>NT</em>)</p></li>
 <code class="sig-name descname">beam_topk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">K</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive.beam_topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.Autoregressive.beam_topk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute “top-k” using beam search</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>paths (<em>K x batch x N x C</em>)</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>K</strong> – top-k</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>paths (<em>K x batch x N x C</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1107,8 +1110,11 @@ logits (<em>batch x N x C</em>)</p>
 <li><p>Differentiable Scheduled Sampling for Credit Assignment <span id="id7">[<a class="reference internal" href="refs.html#id16"><span>GDBK17</span></a>]</span></p></li>
 </ul>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>greedy_path (<em>batch x N x C</em>)
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>alpha</strong> – alpha param</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>greedy_path (<em>batch x N x C</em>)
 greedy_max (<em>batch</em>)
 logits (<em>batch x N x C</em>)</p>
 </dd>

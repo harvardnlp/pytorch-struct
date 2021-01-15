@@ -295,6 +295,9 @@
 
 <span class="sd">        Parameters:</span>
 <span class="sd">            sequence : b x N long tensor in [0, N] (indexing is +1)</span>
+<span class="sd">            extra : None</span>
+<span class="sd">            lengths : lengths of sequences</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            arcs : b x N x N arc indicators</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -316,6 +319,7 @@
 
 <span class="sd">        Parameters:</span>
 <span class="sd">            arcs : b x N x N arc indicators</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            sequence : b x N long tensor in [0, N] (indexing is +1)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -372,7 +376,9 @@
 
 <span class="sd">    Parameters:</span>
 <span class="sd">         arc_scores : b x N x N arc scores with root scores on diagonal.</span>
-<span class="sd">         semiring</span>
+<span class="sd">         multi_root (bool) : multiple roots</span>
+<span class="sd">         lengths : length of examples</span>
+<span class="sd">         eps (float) : given</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">         arc_marginals : b x N x N.</span>
