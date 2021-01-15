@@ -181,7 +181,7 @@ def test_ar2():
     v = v.unsqueeze(1).expand(v.shape[0], batch, N)
     all_scores = dist.log_prob(v, sparse=True)
     best, ind = torch.max(all_scores, dim=0)
-    assert (scores[0, 0] == best[0]).all()
+    assert torch.isclose(scores[0, 0], best[0]).all()
 
     print(v[ind[0], 0].shape, path[0, 0].shape)
     assert (torch.nn.functional.one_hot(v[ind, 0], C) == path[0, 0].long()).all()
