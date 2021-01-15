@@ -33,6 +33,7 @@ jobs:
     - name: Coveralls
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_REPO_TOKEN: bOveeNWACHHXfs17wUkO6msUIf6rYrny8
       run: |
         coveralls
     - name: Upload pytest test results
