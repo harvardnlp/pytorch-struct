@@ -1414,8 +1414,11 @@ torch.Size([5, 10, 4])
 <code class="sig-name descname">cross_entropy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.cross_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.cross_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute cross-entropy for distribution p(self) and q(other) <span class="math notranslate nohighlight">\(H[p, q]\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>cross entropy (<em>batch_shape</em>)</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – Comparison distribution</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cross entropy (<em>batch_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1432,17 +1435,6 @@ torch.Size([5, 10, 4])
 </dd></dl>
 
 <dl class="py method">
-<dt id="torch_struct.StructDistribution.enumerate_support">
-<code class="sig-name descname">enumerate_support</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">expand</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.enumerate_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.enumerate_support" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the full exponential enumeration set.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>(enum, enum_lengths) - (<em>tuple cardinality x batch_shape x event_shape</em>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt id="torch_struct.StructDistribution.from_event">
 <code class="sig-name descname">from_event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.from_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.from_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert event to simple representation.</p>
@@ -1453,8 +1445,11 @@ torch.Size([5, 10, 4])
 <code class="sig-name descname">kl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.kl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.kl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute KL-divergence for distribution p(self) and q(other) <span class="math notranslate nohighlight">\(KL[p || q] = H[p, q] - H[p]\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>cross entropy (<em>batch_shape</em>)</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – Comparison distribution</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cross entropy (<em>batch_shape</em>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1462,8 +1457,16 @@ torch.Size([5, 10, 4])
 <dl class="py method">
 <dt id="torch_struct.StructDistribution.kmax">
 <code class="sig-name descname">kmax</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.kmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.kmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.
-:returns: kmax (<em>k x batch_shape</em>)</p>
+<dd><p>Compute the k-max for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
+<dl class="simple">
+<dt>Parameters :</dt><dd><p>k : Number of solutions to return</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>kmax (<em>k x batch_shape</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1498,8 +1501,12 @@ torch.Size([5, 10, 4])
 <dl class="py method">
 <dt id="torch_struct.StructDistribution.max">
 <code class="sig-name descname">max</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.max" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute an max for distribution <span class="math notranslate nohighlight">\(\max p(z)\)</span>.
-:returns: max (<em>batch_shape</em>)</p>
+<dd><p>Compute an max for distribution <span class="math notranslate nohighlight">\(\max p(z)\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>max (<em>batch_shape</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1532,6 +1539,10 @@ torch.Size([5, 10, 4])
 <dt id="torch_struct.StructDistribution.topk">
 <code class="sig-name descname">topk</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution.topk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StructDistribution.topk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the k-argmax for distribution <span class="math notranslate nohighlight">\(k\max p(z)\)</span>.</p>
+<dl class="simple">
+<dt>Parameters :</dt><dd><p>k : Number of solutions to return</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>kmax (<em>k x batch_shape x event_shape</em>)</p>
