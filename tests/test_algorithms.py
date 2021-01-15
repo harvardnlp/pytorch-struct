@@ -1,10 +1,5 @@
-from .cky import CKY
-from .cky_crf import CKY_CRF
-from .deptree import DepTree, deptree_nonproj, deptree_part
-from .linearchain import LinearChain
-from .semimarkov import SemiMarkov
-from .alignment import Alignment
-from .semirings import (
+from torch_struct import ( CKY, CKY_CRF, DepTree, deptree_nonproj, deptree_part, LinearChain, SemiMarkov, Alignment )
+from torch_struct import (
     LogSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
