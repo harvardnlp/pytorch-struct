@@ -112,7 +112,7 @@ def test_autoregressive(data, seed):
     print(auto.log_prob(v.unsqueeze(0)))
     print(crf.struct().score(crf.argmax, values2))
     assert (
-        auto.log_prob(v.unsqueeze(0)) == crf.struct().score(crf.argmax, values2)
+        torch.isclose(auto.log_prob(v.unsqueeze(0)), crf.struct().score(crf.argmax, values2))
     ).all()
     assert auto.sample((7,)).shape == (7, batch, n_length, n_classes)
 
