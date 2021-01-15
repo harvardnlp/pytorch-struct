@@ -9,15 +9,18 @@ tint = integers(min_value=1, max_value=2)
 lint = integers(min_value=2, max_value=10)
 
 
-def enumerate_support(self, expand=True):
+def enumerate_support(dist):
     """
     Compute the full exponential enumeration set.
+
+    Parameters:
+        dist : Distribution
 
     Returns:
         (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
     """
-    _, _, edges, enum_lengths = test_lookup[self.struct]().enumerate(
-        self.log_potentials, self.lengths
+    _, _, edges, enum_lengths = test_lookup[dist.struct]().enumerate(
+        dist.log_potentials, dist.lengths
     )
     # if expand:
     #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])

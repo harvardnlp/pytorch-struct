@@ -120,8 +120,9 @@ class SemiMarkov(_Struct):
 
         Parameters:
             sequence : b x N  long tensors in [-1, 0, C-1]
-            C : number of states
+            extra : number of states
             lengths: b long tensor of N values
+
         Returns:
             edge : b x (N-1) x K x C x C semimarkov potentials
                         (t x z_t x z_{t-1})
@@ -155,6 +156,7 @@ class SemiMarkov(_Struct):
         Parameters:
             edge : b x (N-1) x K x C x C semimarkov potentials
                     (t x z_t x z_{t-1})
+
         Returns:
             sequence : b x N  long tensors in [-1, 0, C-1]
 

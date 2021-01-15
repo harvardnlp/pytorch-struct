@@ -135,6 +135,9 @@ class DepTree(_Struct):
 
         Parameters:
             sequence : b x N long tensor in [0, N] (indexing is +1)
+            extra : None
+            lengths : lengths of sequences
+
         Returns:
             arcs : b x N x N arc indicators
         """
@@ -156,6 +159,7 @@ class DepTree(_Struct):
 
         Parameters:
             arcs : b x N x N arc indicators
+
         Returns:
             sequence : b x N long tensor in [0, N] (indexing is +1)
         """
@@ -212,7 +216,9 @@ def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
 
     Parameters:
          arc_scores : b x N x N arc scores with root scores on diagonal.
-         semiring
+         multi_root (bool) : multiple roots
+         lengths : length of examples
+         eps (float) : given
 
     Returns:
          arc_marginals : b x N x N.

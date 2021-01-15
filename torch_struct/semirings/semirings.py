@@ -148,12 +148,8 @@ class StdSemiring(_Base):
         return torch.sum(xs, dim=dim)
 
     @classmethod
-    def matmul(cls, a, b, dims=1):
-        """
-        Dot product along last dim.
-
-        (Faster than calling sum and times.)
-        """
+    def matmul(cls, a, b):
+        "Dot product along last dim"
 
         if has_genbmm and isinstance(a, genbmm.BandedMatrix):
             return b.multiply(a.transpose())
@@ -201,11 +197,7 @@ class MaxSemiring(_BaseLog):
 
 
 def KMaxSemiring(k):
-    """
-    Implements the k-max semiring (kmax, +, [-inf, -inf..], [0, -inf, ...]).
-
-    Gradients give k-argmax.
-    """
+    "Implements the k-max semiring (kmax, +, [-inf, -inf..], [0, -inf, ...])."
 
     class KMaxSemiring(_BaseLog):
         @staticmethod

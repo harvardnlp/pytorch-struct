@@ -92,8 +92,9 @@ class LinearChain(_Struct):
 
         Parameters:
             sequence : b x N long tensor in [0, C-1]
-            C : number of states
+            extra : number of states
             lengths: b long tensor of N values
+
         Returns:
             edge : b x (N-1) x C x C markov indicators
                         (t x z_t x z_{t-1})
@@ -117,6 +118,7 @@ class LinearChain(_Struct):
         Parameters:
             edge : b x (N-1) x C x C markov indicators
                         (t x z_t x z_{t-1})
+
         Returns:
             sequence : b x N long tensor in [0, C-1]
         """

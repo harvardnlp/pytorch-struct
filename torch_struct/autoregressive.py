@@ -73,6 +73,7 @@ class Autoregressive(Distribution):
 
         Parameters:
             value (tensor): One-hot events (*sample_shape x batch_shape x N*)
+            sparse (bool): implement sparse
 
         Returns:
             log_probs (*sample_shape x batch_shape*)
@@ -207,6 +208,9 @@ class Autoregressive(Distribution):
 
         * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`
 
+        Parameters:
+            alpha : alpha param
+
         Returns:
             greedy_path (*batch x N x C*)
             greedy_max (*batch*)
@@ -218,6 +222,9 @@ class Autoregressive(Distribution):
     def beam_topk(self, K):
         """
         Compute "top-k" using beam search
+
+        Parameters:
+            K : top-k
 
         Returns:
             paths (*K x batch x N x C*)

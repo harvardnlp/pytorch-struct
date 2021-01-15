@@ -500,8 +500,8 @@ class NonProjectiveDependencyCRF(StructDistribution):
 
         (Currently not implemented)
         """
-        raise NotImplementedError()
+        pass
 
     @lazy_property
     def entropy(self):
-        raise NotImplementedError()
+        pass

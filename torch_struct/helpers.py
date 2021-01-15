@@ -64,12 +64,12 @@ class _Struct:
             for _ in range(N)
         ]
 
-    def sum(self, edge, lengths=None, _autograd=True, _raw=False):
+    def sum(self, logpotentials, lengths=None, _autograd=True, _raw=False):
         """
         Compute the (semiring) sum over all structures model.
 
         Parameters:
-            params : generic params (see class)
+            logpotentials : generic params (see class)
             lengths: None or b long tensor mask
 
         Returns:
@@ -82,13 +82,13 @@ class _Struct:
             or not hasattr(self, "_dp_backward")
         ):
 
-            v = self._dp(edge, lengths)[0]
+            v = self._dp(logpotentials, lengths)[0]
             if _raw:
                 return v
             return self.semiring.unconvert(v)
 
         else:
-            v, _, alpha = self._dp(edge, lengths, False)
+            v, _, alpha = self._dp(logpotentials, lengths, False)
 
             class DPManual(Function):
                 @staticmethod
@@ -97,20 +97,23 @@ class _Struct:
 
                 @staticmethod
                 def backward(ctx, grad_v):
-                    marginals = self._dp_backward(edge, lengths, alpha)
+                    marginals = self._dp_backward(logpotentials, lengths, alpha)
                     return marginals.mul(
                         grad_v.view((grad_v.shape[0],) + tuple([1] * marginals.dim()))
                     )
 
-            return DPManual.apply(edge)
+            return DPManual.apply(logpotentials)
 
-    def marginals(self, edge, lengths=None, _autograd=True, _raw=False, _combine=False):
+    def marginals(
+        self, logpotentials, lengths=None, _autograd=True, _raw=False, _combine=False
+    ):
         """
         Compute the marginals of a structured model.
 
         Parameters:
-            params : generic params (see class)
+            logpotentials : generic params (see class)
             lengths: None or b long tensor mask
+
         Returns:
             marginals: b x (N-1) x C x C table
 
@@ -120,7 +123,7 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
+            v, edges, _ = self._dp(logpotentials, lengths=lengths, force_grad=True)
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):
@@ -150,8 +153,8 @@ class _Struct:
                 a_m = self._arrange_marginals(marg)
                 return self.semiring.unconvert(a_m)
         else:
-            v, _, alpha = self._dp(edge, lengths=lengths, force_grad=True)
-            return self._dp_backward(edge, lengths, alpha)
+            v, _, alpha = self._dp(logpotentials, lengths=lengths, force_grad=True)
+            return self._dp_backward(logpotentials, lengths, alpha)
 
     @staticmethod
     def to_parts(spans, extra, lengths=None):
