@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
+    def _dp(self, scores, lengths=None, force_grad=False):
 
         semiring = self.semiring
 
@@ -26,9 +26,7 @@ class CKY(_Struct):
             lengths = torch.LongTensor([N] * batch).to(terms.device)
 
         # Charts
-        beta = [
-            Chart((batch, N, N, NT), rules, semiring, cache=cache) for _ in range(2)
-        ]
+        beta = [Chart((batch, N, N, NT), rules, semiring) for _ in range(2)]
         span = [None for _ in range(N)]
         v = (ssize, batch)
         term_use = terms + 0.0
@@ -99,7 +97,7 @@ class CKY(_Struct):
         _, NT, _, _ = rules.shape
 
         v, (term_use, rule_use, root_use, spans), alpha = self._dp(
-            scores, lengths=lengths, force_grad=True, cache=not _raw
+            scores, lengths=lengths, force_grad=True
         )
 
         def marginal(obj, inputs):

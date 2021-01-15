@@ -46,7 +46,7 @@ class DepTree(_Struct):
     Note: For single-root case, do not set cache=True for now.
     """
 
-    def _dp(self, arc_scores_in, lengths=None, force_grad=False, cache=True):
+    def _dp(self, arc_scores_in, lengths=None, force_grad=False):
         multiroot = getattr(self, "multiroot", True)
         if arc_scores_in.dim() not in (3, 4):
             raise ValueError("potentials must have dim of 3 (unlabeled) or 4 (labeled)")
@@ -61,10 +61,7 @@ class DepTree(_Struct):
         arc_scores = semiring.sum(arc_scores_in) if labeled else arc_scores_in
         alpha = [
             [
-                [
-                    Chart((batch, N, N), arc_scores, semiring, cache=multiroot)
-                    for _ in range(2)
-                ]
+                [Chart((batch, N, N), arc_scores, semiring) for _ in range(2)]
                 for _ in range(2)
             ]
             for _ in range(2)

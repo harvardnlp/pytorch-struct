@@ -36,8 +36,6 @@ class StructDistribution(Distribution):
         lengths (long tensor, batch_shape) : integers for length masking
     """
 
-    has_enumerate_support = True
-
     def __init__(self, log_potentials, lengths=None, args={}):
         batch_shape = log_potentials.shape[:1]
         event_shape = log_potentials.shape[1:]
@@ -214,20 +212,6 @@ class StructDistribution(Distribution):
     def from_event(self, event):
         "Convert event to simple representation."
         return self.struct.from_parts(event)
-
-    def enumerate_support(self, expand=True):
-        """
-        Compute the full exponential enumeration set.
-
-        Returns:
-            (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
-        """
-        _, _, edges, enum_lengths = self._struct().enumerate(
-            self.log_potentials, self.lengths
-        )
-        # if expand:
-        #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
-        return edges, enum_lengths
 
     def _struct(self, sr=None):
         return self.struct(sr if sr is not None else LogSemiring)

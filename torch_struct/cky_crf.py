@@ -13,11 +13,11 @@ class CKY_CRF(_Struct):
 
         return edge, batch, N, NT, lengths
 
-    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
+    def _dp(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
-        beta = [Chart((batch, N, N), scores, semiring, cache=cache) for _ in range(2)]
+        beta = [Chart((batch, N, N), scores, semiring) for _ in range(2)]
         L_DIM, R_DIM = 2, 3
 
         # Initialize

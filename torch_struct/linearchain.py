@@ -41,7 +41,7 @@ class LinearChain(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, C, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False, cache=True):
+    def _dp(self, log_potentials, lengths=None, force_grad=False):
         return self._dp_scan(log_potentials, lengths, force_grad)
 
     def _dp_scan(self, log_potentials, lengths=None, force_grad=False):

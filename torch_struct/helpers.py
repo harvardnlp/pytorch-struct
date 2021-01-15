@@ -4,36 +4,8 @@ from .semirings import LogSemiring
 from torch.autograd import Function
 
 
-class Get(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, chart, grad_chart, indices):
-        ctx.save_for_backward(grad_chart)
-        out = chart[indices]
-        ctx.indices = indices
-        return out
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        (grad_chart,) = ctx.saved_tensors
-        grad_chart[ctx.indices] += grad_output
-        return grad_chart, None, None
-
-
-class Set(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, chart, indices, vals):
-        chart[indices] = vals
-        ctx.indices = indices
-        return chart
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        z = grad_output[ctx.indices]
-        return None, None, z
-
-
 class Chart:
-    def __init__(self, size, potentials, semiring, cache=True):
+    def __init__(self, size, potentials, semiring):
         self.data = semiring.zero_(
             torch.zeros(
                 *((semiring.size(),) + size),
@@ -42,27 +14,14 @@ class Chart:
             )
         )
         self.grad = self.data.detach().clone().fill_(0.0)
-        self.cache = cache
 
     def __getitem__(self, ind):
         I = slice(None)
-        if self.cache:
-            return Get.apply(self.data, self.grad, (I, I) + ind)
-        else:
-            return self.data[(I, I) + ind]
+        return self.data[(I, I) + ind]
 
     def __setitem__(self, ind, new):
         I = slice(None)
-        if self.cache:
-            self.data = Set.apply(self.data, (I, I) + ind, new)
-        else:
-            self.data[(I, I) + ind] = new
-
-    def get(self, ind):
-        return Get.apply(self.data, self.grad, ind)
-
-    def set(self, ind, new):
-        self.data = Set.apply(self.data, ind, new)
+        self.data[(I, I) + ind] = new
 
 
 class _Struct:
@@ -161,9 +120,7 @@ class _Struct:
             or self.semiring is not LogSemiring
             or not hasattr(self, "_dp_backward")
         ):
-            v, edges, _ = self._dp(
-                edge, lengths=lengths, force_grad=True, cache=not _raw
-            )
+            v, edges, _ = self._dp(edge, lengths=lengths, force_grad=True)
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):
