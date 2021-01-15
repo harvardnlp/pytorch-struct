@@ -31,9 +31,10 @@ jobs:
       run: |
         pytest --cov=torch_struct --cov-report annotate:annotate --cov-report term-missing torch_struct/
     - name: Coveralls
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        coveralls
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
