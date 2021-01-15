@@ -170,17 +170,38 @@ class DepTree(_Struct):
         return labels, None
 
 
-def deptree_part(arc_scores, eps=1e-5):
+def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
+    if lengths is not None:
+        batch, N, N = arc_scores.shape
+        x = torch.arange(N, device=arc_scores.device).expand(batch, N)
+        if not torch.is_tensor(lengths):
+            lengths = torch.tensor(lengths, device=arc_scores.device)
+        lengths = lengths.unsqueeze(1)
+        x = x < lengths
+        det_offset = torch.diag_embed((~x).float())
+        x = x.unsqueeze(2).expand(-1, -1, N)
+        mask = torch.transpose(x, 1, 2) * x
+        mask = mask.float()
+        mask[mask==0] = float('-inf')
+        mask[mask==1] = 0
+        arc_scores = arc_scores + mask
     input = arc_scores
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+    if lengths is not None:
+        lap += det_offset
+
+    if multi_root:
+        rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
+        lap = lap + torch.diag_embed(rss, offset=0, dim1=-2, dim2=-1)
+    else:
+        lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
     return lap.logdet()
-
-
-def deptree_nonproj(arc_scores, eps=1e-5):
+    
+    
+def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
     """
     Compute the marginals of a non-projective dependency tree using the
     matrix-tree theorem.
@@ -196,27 +217,61 @@ def deptree_nonproj(arc_scores, eps=1e-5):
     Returns:
          arc_marginals : b x N x N.
     """
-
+    if lengths is not None:
+        batch, N, N = arc_scores.shape
+        x = torch.arange(N, device=arc_scores.device).expand(batch, N)
+        if not torch.is_tensor(lengths):
+            lengths = torch.tensor(lengths, device=arc_scores.device)
+        lengths = lengths.unsqueeze(1)
+        x = x < lengths
+        det_offset = torch.diag_embed((~x).float())
+        x = x.unsqueeze(2).expand(-1, -1, N)
+        mask = torch.transpose(x, 1, 2) * x
+        mask = mask.float()
+        mask[mask==0] = float('-inf')
+        mask[mask==1] = 0
+        arc_scores = arc_scores + mask
+    
     input = arc_scores
     eye = torch.eye(input.shape[1], device=input.device)
     laplacian = input.exp() + eps
     lap = laplacian.masked_fill(eye != 0, 0)
     lap = -lap + torch.diag_embed(lap.sum(1), offset=0, dim1=-2, dim2=-1)
-    lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
-    inv_laplacian = lap.inverse()
-    factor = (
-        torch.diagonal(inv_laplacian, 0, -2, -1)
-        .unsqueeze(2)
-        .expand_as(input)
-        .transpose(1, 2)
-    )
-    term1 = input.exp().mul(factor).clone()
-    term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
-    term1[:, :, 0] = 0
-    term2[:, 0] = 0
-    output = term1 - term2
-    roots_output = (
-        torch.diagonal(input, 0, -2, -1).exp().mul(inv_laplacian.transpose(1, 2)[:, 0])
-    )
+    if lengths is not None:
+        lap += det_offset
+
+    if multi_root:
+        rss = torch.diagonal(input, 0, -2, -1).exp() # root selection scores
+        lap = lap + torch.diag_embed(rss, offset=0, dim1=-2, dim2=-1)
+        inv_laplacian = lap.inverse()
+        factor = (
+            torch.diagonal(inv_laplacian, 0, -2, -1)
+            .unsqueeze(2)
+            .expand_as(input)
+            .transpose(1, 2)
+        )
+        term1 = input.exp().mul(factor).clone()
+        term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
+        output = term1 - term2
+        roots_output = (
+            torch.diagonal(input, 0, -2, -1).exp().mul(torch.diagonal(inv_laplacian.transpose(1, 2), 0, -2, -1))
+        )
+    else:
+        lap[:, 0] = torch.diagonal(input, 0, -2, -1).exp()
+        inv_laplacian = lap.inverse()
+        factor = (
+            torch.diagonal(inv_laplacian, 0, -2, -1)
+            .unsqueeze(2)
+            .expand_as(input)
+            .transpose(1, 2)
+        )
+        term1 = input.exp().mul(factor).clone()
+        term2 = input.exp().mul(inv_laplacian.transpose(1, 2)).clone()
+        term1[:, :, 0] = 0
+        term2[:, 0] = 0
+        output = term1 - term2
+        roots_output = (
+            torch.diagonal(input, 0, -2, -1).exp().mul(inv_laplacian.transpose(1, 2)[:, 0])
+        )
     output = output + torch.diag_embed(roots_output, 0, -2, -1)
     return output

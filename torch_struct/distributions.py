@@ -466,8 +466,10 @@ class NonProjectiveDependencyCRF(StructDistribution):
     Note: Does not currently implement argmax (Chiu-Liu) or sampling.
 
     """
-
-    struct = DepTree
+    def __init__(self, log_potentials, lengths=None, args={}, multiroot=False):
+        super(NonProjectiveDependencyCRF, self).__init__(log_potentials, lengths, args)
+        self.multiroot = multiroot
+        
 
     @lazy_property
     def marginals(self):
@@ -479,7 +481,7 @@ class NonProjectiveDependencyCRF(StructDistribution):
         Returns:
             marginals (*batch_shape x event_shape*)
         """
-        return deptree_nonproj(self.log_potentials)
+        return deptree_nonproj(self.log_potentials, self.multiroot, self.lengths)
 
     def sample(self, sample_shape=torch.Size()):
         raise NotImplementedError()
@@ -489,7 +491,7 @@ class NonProjectiveDependencyCRF(StructDistribution):
         """
         Compute the partition function.
         """
-        return deptree_part(self.log_potentials)
+        return deptree_part(self.log_potentials, self.multiroot, self.lengths)
 
     @lazy_property
     def argmax(self):
