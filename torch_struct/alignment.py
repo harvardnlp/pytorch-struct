@@ -102,7 +102,7 @@ class Alignment(_Struct):
             )
 
         for b in range(lengths.shape[0]):
-            point = (lengths[b] + M) / 2
+            point = (lengths[b] + M) // 2
             lim = point * 2
 
             left_ = charta[0][:, b, 0:lim:2, 0]
