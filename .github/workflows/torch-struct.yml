@@ -1,4 +1,4 @@
-name: Build Docs
+name: Tests
 
 on: [push]
 
@@ -30,8 +30,10 @@ jobs:
     - name: Test with pytest
       run: |
         pytest --cov=torch_struct --cov-report annotate:annotate --cov-report term-missing torch_struct/
-        coveralls
-
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
     - name: Upload pytest test results
       uses: actions/upload-artifact@v2
       with:
