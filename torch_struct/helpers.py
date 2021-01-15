@@ -104,12 +104,14 @@ class _Struct:
 
             return DPManual.apply(logpotentials)
 
-    def marginals(self, logpotentials, lengths=None, _autograd=True, _raw=False, _combine=False):
+    def marginals(
+        self, logpotentials, lengths=None, _autograd=True, _raw=False, _combine=False
+    ):
         """
         Compute the marginals of a structured model.
 
         Parameters:
-            params : generic params (see class)
+            logpotentials : generic params (see class)
             lengths: None or b long tensor mask
 
         Returns:

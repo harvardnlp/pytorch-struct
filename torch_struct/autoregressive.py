@@ -208,7 +208,7 @@ class Autoregressive(Distribution):
 
         * Differentiable Scheduled Sampling for Credit Assignment :cite:`goyal2017differentiable`
 
-        Parameters: 
+        Parameters:
             alpha : alpha param
 
         Returns:
@@ -223,7 +223,7 @@ class Autoregressive(Distribution):
         """
         Compute "top-k" using beam search
 
-        Parameters
+        Parameters:
             K : top-k
 
         Returns:

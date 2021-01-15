@@ -2,6 +2,7 @@ pytest
 pytest-runner
 hypothesis == 4.38
 flake8
+darglint
 black
 pep8-naming
 dgl
