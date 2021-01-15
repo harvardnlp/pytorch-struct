@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
+    def _dp(self, scores, lengths=None, force_grad=False):
 
         semiring = self.semiring
 
@@ -26,9 +26,7 @@ class CKY(_Struct):
             lengths = torch.LongTensor([N] * batch).to(terms.device)
 
         # Charts
-        beta = [
-            Chart((batch, N, N, NT), rules, semiring, cache=cache) for _ in range(2)
-        ]
+        beta = [Chart((batch, N, N, NT), rules, semiring) for _ in range(2)]
         span = [None for _ in range(N)]
         v = (ssize, batch)
         term_use = terms + 0.0
@@ -85,9 +83,10 @@ class CKY(_Struct):
         Compute the marginals of a CFG using CKY.
 
         Parameters:
-            terms : b x n x T
-            rules : b x NT x (NT+T) x (NT+T)
-            root:   b x NT
+            scores : terms : b x n x T
+                     rules : b x NT x (NT+T) x (NT+T)
+                     root:   b x NT
+            lengths :
 
         Returns:
             v: b tensor of total sum
@@ -99,13 +98,17 @@ class CKY(_Struct):
         _, NT, _, _ = rules.shape
 
         v, (term_use, rule_use, root_use, spans), alpha = self._dp(
-            scores, lengths=lengths, force_grad=True, cache=not _raw
+            scores, lengths=lengths, force_grad=True
         )
 
         def marginal(obj, inputs):
             obj = self.semiring.unconvert(obj).sum(dim=0)
             marg = torch.autograd.grad(
-                obj, inputs, create_graph=True, only_inputs=True, allow_unused=False,
+                obj,
+                inputs,
+                create_graph=True,
+                only_inputs=True,
+                allow_unused=False,
             )
 
             spans_marg = torch.zeros(
@@ -264,43 +267,3 @@ class CKY(_Struct):
             cur += 1
         indices = left
         return (n_nodes, a, b, label), indices, topo
-
-    ###### Test
-
-    def enumerate(self, scores):
-        terms, rules, roots = scores
-        semiring = self.semiring
-        batch, N, T = terms.shape
-        _, NT, _, _ = rules.shape
-
-        def enumerate(x, start, end):
-            if start + 1 == end:
-                yield (terms[:, start, x - NT], [(start, x - NT)])
-            else:
-                for w in range(start + 1, end):
-                    for y in range(NT) if w != start + 1 else range(NT, NT + T):
-                        for z in range(NT) if w != end - 1 else range(NT, NT + T):
-                            for m1, y1 in enumerate(y, start, w):
-                                for m2, z1 in enumerate(z, w, end):
-                                    yield (
-                                        semiring.times(
-                                            semiring.times(m1, m2), rules[:, x, y, z]
-                                        ),
-                                        [(x, start, w, end)] + y1 + z1,
-                                    )
-
-        ls = []
-        for nt in range(NT):
-            ls += [semiring.times(s, roots[:, nt]) for s, _ in enumerate(nt, 0, N)]
-        return semiring.sum(torch.stack(ls, dim=-1)), None
-
-    @staticmethod
-    def _rand():
-        batch = torch.randint(2, 5, (1,))
-        N = torch.randint(2, 5, (1,))
-        NT = torch.randint(2, 5, (1,))
-        T = torch.randint(2, 5, (1,))
-        terms = torch.rand(batch, N, T)
-        rules = torch.rand(batch, NT, (NT + T), (NT + T))
-        roots = torch.rand(batch, NT)
-        return (terms, rules, roots), (batch.item(), N.item())

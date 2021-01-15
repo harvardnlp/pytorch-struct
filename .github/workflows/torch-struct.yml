@@ -1,0 +1,43 @@
+name: Tests
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        sudo apt-get install pandoc
+        python -m pip install --upgrade pip
+        pip install flake8 pytest pep8-naming doctr doc8 pytest-cov coveralls pandoc
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f requirements.dev.txt ]; then pip install -r requirements.dev.txt; fi
+        pip install .
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 --ignore "N801, E203, E266, E501, W503, F812, E741, N803, N802, N806" torch_struct/ tests/
+    - name: Test with pytest
+      run: |
+        pytest --cov=torch_struct --cov-report annotate:annotate --cov-report term-missing tests/
+    - name: Coveralls
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        COVERALLS_REPO_TOKEN: bOveeNWACHHXfs17wUkO6msUIf6rYrny8
+      run: |
+        coveralls
+    - name: Upload pytest test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: pytest-coverage
+        path: annotate/*

@@ -102,7 +102,7 @@ class Alignment(_Struct):
             )
 
         for b in range(lengths.shape[0]):
-            point = (lengths[b] + M) / 2
+            point = (lengths[b] + M) // 2
             lim = point * 2
 
             left_ = charta[0][:, b, 0:lim:2, 0]
@@ -193,48 +193,3 @@ class Alignment(_Struct):
                 ..., 0, Open, Open, Mid, N - 1, M - N + ((chart.shape[-1] - 1) // 2)
             ]
         return v, [log_potentials], None
-
-    @staticmethod
-    def _rand(min_n=2):
-        b = torch.randint(2, 4, (1,))
-        N = torch.randint(min_n, 4, (1,))
-        M = torch.randint(min_n, 4, (1,))
-        N = torch.min(M, N)
-        return torch.rand(b, N, M, 3), (b.item(), (N).item())
-
-    def enumerate(self, edge, lengths=None):
-        semiring = self.semiring
-        edge, batch, N, M, lengths = self._check_potentials(edge, lengths)
-        d = {}
-        d[0, 0] = [([(0, 0)], edge[:, :, 0, 0, 1])]
-        # enum_lengths = torch.LongTensor(lengths.shape)
-        for i in range(N):
-            for j in range(M):
-                d.setdefault((i + 1, j + 1), [])
-                d.setdefault((i, j + 1), [])
-                d.setdefault((i + 1, j), [])
-                for chain, score in d[i, j]:
-                    if i + 1 < N and j + 1 < M:
-                        d[i + 1, j + 1].append(
-                            (
-                                chain + [(i + 1, j + 1)],
-                                semiring.mul(score, edge[:, :, i + 1, j + 1, 1]),
-                            )
-                        )
-                    if i + 1 < N:
-
-                        d[i + 1, j].append(
-                            (
-                                chain + [(i + 1, j)],
-                                semiring.mul(score, edge[:, :, i + 1, j, 2]),
-                            )
-                        )
-                    if j + 1 < M:
-                        d[i, j + 1].append(
-                            (
-                                chain + [(i, j + 1)],
-                                semiring.mul(score, edge[:, :, i, j + 1, 0]),
-                            )
-                        )
-        all_val = torch.stack([x[1] for x in d[N - 1, M - 1]], dim=-1)
-        return semiring.unconvert(semiring.sum(all_val)), None

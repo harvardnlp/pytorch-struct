@@ -53,7 +53,7 @@ class _SparseMaxGrad(torch.autograd.Function):
 def project_simplex(v, dim, z=1):
     v_sorted, _ = torch.sort(v, dim=dim, descending=True)
     cssv = torch.cumsum(v_sorted, dim=dim) - z
-    ind = torch.arange(1, 1 + v.shape[dim]).to(dtype=v.dtype)
+    ind = torch.arange(1, 1 + v.shape[dim]).to(dtype=v.dtype).to(v.device)
     cond = v_sorted - cssv / ind >= 0
     k = cond.sum(dim=dim, keepdim=True)
     tau = cssv.gather(dim, k - 1) / k.to(dtype=v.dtype)

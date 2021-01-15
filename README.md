@@ -1,6 +1,6 @@
 # Torch-Struct: Structured Prediction Library 
 
-[![Build Status](https://travis-ci.org/harvardnlp/pytorch-struct.svg?branch=master)](https://travis-ci.org/harvardnlp/pytorch-struct)
+![Tests](https://github.com/harvardnlp/pytorch-struct/workflows/Tests/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/harvardnlp/pytorch-struct/badge.svg?branch=master)](https://coveralls.io/github/harvardnlp/pytorch-struct?branch=master)
 
 <p align="center">

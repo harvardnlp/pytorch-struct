@@ -20,7 +20,6 @@ from .semirings import (
 )
 
 
-
 class StructDistribution(Distribution):
     r"""
     Base structured distribution class.
@@ -37,8 +36,6 @@ class StructDistribution(Distribution):
         log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`
         lengths (long tensor, batch_shape) : integers for length masking
     """
-
-    has_enumerate_support = True
 
     def __init__(self, log_potentials, lengths=None, args={}):
         batch_shape = log_potentials.shape[:1]
@@ -70,7 +67,6 @@ class StructDistribution(Distribution):
             batch_dims=batch_dims,
         )
 
-
         return v - self.partition
 
     @lazy_property
@@ -88,25 +84,36 @@ class StructDistribution(Distribution):
         """
         Compute cross-entropy for distribution p(self) and q(other) :math:`H[p, q]`.
 
+        Parameters:
+            other : Comparison distribution
+
         Returns:
             cross entropy (*batch_shape*)
         """
 
-        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(CrossEntropySemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     def kl(self, other):
         """
         Compute KL-divergence for distribution p(self) and q(other) :math:`KL[p || q] = H[p, q] - H[p]`.
 
+        Parameters:
+            other : Comparison distribution
+
         Returns:
             cross entropy (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(KLDivergenceSemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     @lazy_property
     def max(self):
         r"""
         Compute an max for distribution :math:`\max p(z)`.
+
         Returns:
             max (*batch_shape*)
         """
@@ -125,6 +132,10 @@ class StructDistribution(Distribution):
     def kmax(self, k):
         r"""
         Compute the k-max for distribution :math:`k\max p(z)`.
+
+        Parameters :
+            k : Number of solutions to return
+
         Returns:
             kmax (*k x batch_shape*)
         """
@@ -136,6 +147,9 @@ class StructDistribution(Distribution):
     def topk(self, k):
         r"""
         Compute the k-argmax for distribution :math:`k\max p(z)`.
+
+        Parameters :
+            k : Number of solutions to return
 
         Returns:
             kmax (*k x batch_shape x event_shape*)
@@ -167,10 +181,8 @@ class StructDistribution(Distribution):
     def count(self):
         "Compute the log-partition function."
         ones = torch.ones_like(self.log_potentials)
-        ones[self.log_potentials.eq(-float('inf'))] = 0
-        return self._struct(StdSemiring).sum(
-            ones, self.lengths
-        )
+        ones[self.log_potentials.eq(-float("inf"))] = 0
+        return self._struct(StdSemiring).sum(ones, self.lengths)
 
 
     def gumbel_crf(self, temperature=1.0):
@@ -223,20 +235,6 @@ class StructDistribution(Distribution):
     def from_event(self, event):
         "Convert event to simple representation."
         return self.struct.from_parts(event)
-
-    def enumerate_support(self, expand=True):
-        """
-        Compute the full exponential enumeration set.
-
-        Returns:
-            (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
-        """
-        _, _, edges, enum_lengths = self._struct().enumerate(
-            self.log_potentials, self.lengths
-        )
-        # if expand:
-        #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
-        return edges, enum_lengths
 
     def _struct(self, sr=None):
         return self.struct(sr if sr is not None else LogSemiring)
@@ -386,7 +384,6 @@ class DependencyCRF(StructDistribution):
         super(DependencyCRF, self).__init__(log_potentials, lengths, args)
         self.struct = DepTree
         setattr(self.struct, "multiroot", multiroot)
-
 
 
 class TreeCRF(StructDistribution):

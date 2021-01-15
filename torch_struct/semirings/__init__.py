@@ -1,42 +1,6 @@
-from .semirings import (
-    LogSemiring,
-    StdSemiring,
-    KMaxSemiring,
-    MaxSemiring,
-    EntropySemiring,
-    TempMax,
-    CrossEntropySemiring,
-    KLDivergenceSemiring,
-)
+from .semirings import *  # noqa: F401,F403
+from .sparse_max import *  # noqa: F401,F403
+from .fast_semirings import *  # noqa: F401,F403
+from .checkpoint import *  # noqa: F401,F403
+from .sample import *  # noqa: F401,F403
 
-from .fast_semirings import FastLogSemiring, FastMaxSemiring, FastSampleSemiring
-
-
-from .checkpoint import CheckpointSemiring, CheckpointShardSemiring
-
-from .sparse_max import SparseMaxSemiring
-
-from .sample import MultiSampledSemiring, SampledSemiring, GumbelMaxSemiring, GumbelCRFSemiring
-
-
-# For flake8 compatibility.
-__all__ = [
-    FastLogSemiring,
-    FastMaxSemiring,
-    FastSampleSemiring,
-    GumbelCRFSemiring,
-    GumbelMaxSemiring,
-    LogSemiring,
-    StdSemiring,
-    SampledSemiring,
-    MaxSemiring,
-    SparseMaxSemiring,
-    KMaxSemiring,
-    EntropySemiring,
-    CrossEntropySemiring,
-    KLDivergenceSemiring,
-    MultiSampledSemiring,
-    CheckpointSemiring,
-    CheckpointShardSemiring,
-    TempMax,
-]

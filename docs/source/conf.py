@@ -38,7 +38,7 @@ extensions = ['sphinx.ext.autodoc',
 
 
 project = 'pytorch-struct'
-copyright = '2019, Sasha Rush'
+copyright = '2020, Sasha Rush'
 author = 'Sasha Rush'
 
 # The full version, including alpha/beta/rc tags
@@ -74,3 +74,4 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+bibtex_bibfiles = ['refs.bib']
