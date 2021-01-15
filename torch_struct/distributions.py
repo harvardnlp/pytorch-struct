@@ -466,10 +466,10 @@ class NonProjectiveDependencyCRF(StructDistribution):
     Note: Does not currently implement argmax (Chiu-Liu) or sampling.
 
     """
+
     def __init__(self, log_potentials, lengths=None, args={}, multiroot=False):
         super(NonProjectiveDependencyCRF, self).__init__(log_potentials, lengths, args)
         self.multiroot = multiroot
-        
 
     @lazy_property
     def marginals(self):
