@@ -86,7 +86,7 @@ class CKY(_Struct):
             scores : terms : b x n x T
                      rules : b x NT x (NT+T) x (NT+T)
                      root:   b x NT
-            lengths :
+            lengths : lengths in batch
 
         Returns:
             v: b tensor of total sum

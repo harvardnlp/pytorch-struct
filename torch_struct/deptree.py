@@ -135,6 +135,7 @@ class DepTree(_Struct):
 
         Parameters:
             sequence : b x N long tensor in [0, N] (indexing is +1)
+
         Returns:
             arcs : b x N x N arc indicators
         """
