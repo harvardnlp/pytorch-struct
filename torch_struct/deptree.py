@@ -1,5 +1,4 @@
 import torch
-import itertools
 from .helpers import _Struct, Chart
 
 
@@ -173,34 +172,6 @@ class DepTree(_Struct):
                 labels[on[i][0], on[i][2]] = on[i][1] + 1
         return labels, None
 
-    @staticmethod
-    def _rand():
-        b = torch.randint(2, 4, (1,))
-        N = torch.randint(2, 4, (1,))
-        return torch.rand(b, N, N), (b.item(), N.item())
-
-    def enumerate(self, arc_scores, non_proj=False, multi_root=True):
-        semiring = self.semiring
-        parses = []
-        q = []
-        arc_scores = convert(arc_scores)
-        batch, N, _ = arc_scores.shape
-        for mid in itertools.product(range(N + 1), repeat=N - 1):
-            parse = [-1] + list(mid)
-            if not _is_spanning(parse):
-                continue
-            if not non_proj and not _is_projective(parse):
-                continue
-
-            if not multi_root and _is_multi_root(parse):
-                continue
-
-            q.append(parse)
-            parses.append(
-                semiring.times(*[arc_scores[:, parse[i], i] for i in range(1, N, 1)])
-            )
-        return semiring.sum(torch.stack(parses, dim=-1)), None
-
 
 def deptree_part(arc_scores, eps=1e-5):
     input = arc_scores
@@ -252,72 +223,3 @@ def deptree_nonproj(arc_scores, eps=1e-5):
     )
     output = output + torch.diag_embed(roots_output, 0, -2, -1)
     return output
-
-
-### Tests
-
-
-def _is_spanning(parse):
-    """
-    Is the parse tree a valid spanning tree?
-    Returns
-    --------
-    spanning : bool
-    True if a valid spanning tree.
-    """
-    d = {}
-    for m, h in enumerate(parse):
-        if m == h:
-            return False
-        d.setdefault(h, [])
-        d[h].append(m)
-    stack = [0]
-    seen = set()
-    while stack:
-        cur = stack[0]
-        if cur in seen:
-            return False
-        seen.add(cur)
-        stack = d.get(cur, []) + stack[1:]
-    if len(seen) != len(parse) - len([1 for p in parse if p is None]):
-        return False
-    return True
-
-
-def _is_multi_root(parse):
-    root_count = 0
-    for m, h in enumerate(parse):
-        if h == 0:
-            root_count += 1
-    return root_count > 1
-
-
-def _is_projective(parse):
-    """
-    Is the parse tree projective?
-    Returns
-    --------
-    projective : bool
-       True if a projective tree.
-    """
-    for m, h in enumerate(parse):
-        for m2, h2 in enumerate(parse):
-            if m2 == m:
-                continue
-            if m < h:
-                if (
-                    m < m2 < h < h2
-                    or m < h2 < h < m2
-                    or m2 < m < h2 < h
-                    or h2 < m < m2 < h
-                ):
-                    return False
-            if h < m:
-                if (
-                    h < m2 < m < h2
-                    or h < h2 < m < m2
-                    or m2 < h < h2 < m
-                    or h2 < h < m2 < m
-                ):
-                    return False
-    return True
