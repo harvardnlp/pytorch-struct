@@ -8,6 +8,7 @@ smint = integers(min_value=2, max_value=4)
 tint = integers(min_value=1, max_value=2)
 lint = integers(min_value=2, max_value=10)
 
+
 def enumerate_support(self, expand=True):
     """
     Compute the full exponential enumeration set.
@@ -21,7 +22,6 @@ def enumerate_support(self, expand=True):
     # if expand:
     #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
     return edges, enum_lengths
-
 
 
 @given(data(), integers(min_value=1, max_value=20))

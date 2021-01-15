@@ -113,7 +113,6 @@ class SemiMarkov(_Struct):
     #     )
     #     return v, [edge], beta
 
-
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
         """
