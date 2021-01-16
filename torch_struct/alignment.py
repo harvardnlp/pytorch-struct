@@ -45,7 +45,7 @@ class Alignment(_Struct):
         assert max(lengths) == N, "One length must be at least N"
         return edge, batch, N, M, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False, cache=True):
+    def logparition(self, log_potentials, lengths=None, force_grad=False, cache=True):
         return self._dp_scan(log_potentials, lengths, force_grad)
 
     def _dp_scan(self, log_potentials, lengths=None, force_grad=False):
@@ -192,4 +192,4 @@ class Alignment(_Struct):
             v = chart[
                 ..., 0, Open, Open, Mid, N - 1, M - N + ((chart.shape[-1] - 1) // 2)
             ]
-        return v, [log_potentials], None
+        return v, [log_potentials]

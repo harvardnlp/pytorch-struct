@@ -41,10 +41,7 @@ class LinearChain(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, C, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False):
-        return self._dp_scan(log_potentials, lengths, force_grad)
-
-    def _dp_scan(self, log_potentials, lengths=None, force_grad=False):
+    def logpartition(self, log_potentials, lengths=None, force_grad=False):
         "Compute forward pass by linear scan"
         # Setup
         semiring = self.semiring
@@ -83,7 +80,7 @@ class LinearChain(_Struct):
         for n in range(1, log_N + 1):
             chart = semiring.matmul(chart[:, :, 1::2], chart[:, :, 0::2])
         v = semiring.sum(semiring.sum(chart[:, :, 0].contiguous()))
-        return v, [log_potentials], None
+        return v, [log_potentials]
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):

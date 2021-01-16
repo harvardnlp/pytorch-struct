@@ -5,7 +5,7 @@ A, B = 0, 1
 
 
 class CKY(_Struct):
-    def _dp(self, scores, lengths=None, force_grad=False):
+    def logpartition(self, scores, lengths=None, force_grad=False):
 
         semiring = self.semiring
 
@@ -76,7 +76,7 @@ class CKY(_Struct):
         final = beta[A][0, :, NTs]
         top = torch.stack([final[:, i, l - 1] for i, l in enumerate(lengths)], dim=1)
         log_Z = semiring.dot(top, roots)
-        return log_Z, (term_use, rules, roots, span[1:]), beta
+        return log_Z, (term_use, rules, roots, span[1:])
 
     def marginals(self, scores, lengths=None, _autograd=True, _raw=False):
         """
@@ -97,7 +97,7 @@ class CKY(_Struct):
         batch, N, T = terms.shape
         _, NT, _, _ = rules.shape
 
-        v, (term_use, rule_use, root_use, spans), alpha = self._dp(
+        v, (term_use, rule_use, root_use, spans) = self.logpartition(
             scores, lengths=lengths, force_grad=True
         )
 
