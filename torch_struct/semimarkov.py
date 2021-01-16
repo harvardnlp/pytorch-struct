@@ -18,7 +18,7 @@ class SemiMarkov(_Struct):
         assert C == C2, "Transition shape doesn't match"
         return edge, batch, N, K, C, lengths
 
-    def _dp(self, log_potentials, lengths=None, force_grad=False, cache=True):
+    def logpartition(self, log_potentials, lengths=None, force_grad=False):
         "Compute forward pass by linear scan"
 
         # Setup
@@ -79,7 +79,7 @@ class SemiMarkov(_Struct):
 
         final = chart.view(-1, batch, K_1, C, K_1, C)
         v = semiring.sum(semiring.sum(final[:, :, 0, :, 0, :].contiguous()))
-        return v, [log_potentials], None
+        return v, [log_potentials]
 
     # def _dp_standard(self, edge, lengths=None, force_grad=False):
     #     semiring = self.semiring

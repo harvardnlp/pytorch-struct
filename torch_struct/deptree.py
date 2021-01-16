@@ -46,7 +46,7 @@ class DepTree(_Struct):
     Note: For single-root case, do not set cache=True for now.
     """
 
-    def _dp(self, arc_scores_in, lengths=None, force_grad=False):
+    def logpartition(self, arc_scores_in, lengths=None, force_grad=False):
         multiroot = getattr(self, "multiroot", True)
         if arc_scores_in.dim() not in (3, 4):
             raise ValueError("potentials must have dim of 3 (unlabeled) or 4 (labeled)")
@@ -109,7 +109,7 @@ class DepTree(_Struct):
 
         final = alpha[A][C][R][(0,)]
         v = torch.stack([final[:, i, l] for i, l in enumerate(lengths)], dim=1)
-        return v, [arc_scores_in], alpha
+        return v, [arc_scores_in]
 
     def _check_potentials(self, arc_scores, lengths=None):
         semiring = self.semiring
@@ -174,7 +174,7 @@ class DepTree(_Struct):
         return labels, None
 
 
-def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
+def deptree_part(arc_scores, multi_root, lengths=None, eps=1e-5):
     if lengths is not None:
         batch, N, N = arc_scores.shape
         x = torch.arange(N, device=arc_scores.device).expand(batch, N)
@@ -205,7 +205,7 @@ def deptree_part(arc_scores, multi_root, lengths, eps=1e-5):
     return lap.logdet()
 
 
-def deptree_nonproj(arc_scores, multi_root, lengths, eps=1e-5):
+def deptree_nonproj(arc_scores, multi_root, lengths=None, eps=1e-5):
     """
     Compute the marginals of a non-projective dependency tree using the
     matrix-tree theorem.

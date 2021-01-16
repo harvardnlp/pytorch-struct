@@ -1,281 +1,259 @@
-from torch_struct import CKY, CKY_CRF, DepTree, LinearChain, SemiMarkov, Alignment
+from torch_struct import (
+    CKY,
+    CKY_CRF,
+    DepTree,
+    LinearChain,
+    SemiMarkov,
+    Alignment,
+    deptree_nonproj,
+    deptree_part,
+)
 from torch_struct import (
     LogSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
-    GumbelCRFSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
     StdSemiring,
-    SampledSemiring,
     EntropySemiring,
-    MultiSampledSemiring,
 )
-from .extensions import test_lookup
+from .extensions import (
+    LinearChainTest,
+    SemiMarkovTest,
+    DepTreeTest,
+    CKYTest,
+    CKY_CRFTest,
+    test_lookup,
+)
 import torch
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis.strategies import integers, data, sampled_from
+import pytest
+
+from hypothesis import settings
+
+settings.register_profile("ci", max_examples=50, deadline=None)
+
+settings.load_profile("ci")
+
 
 smint = integers(min_value=2, max_value=4)
 tint = integers(min_value=1, max_value=2)
 lint = integers(min_value=2, max_value=10)
 
 
+algorithms = {
+    "LinearChain": (LinearChain, LinearChainTest),
+    "SemiMarkov": (SemiMarkov, SemiMarkovTest),
+    "Dep": (DepTree, DepTreeTest),
+    "CKY_CRF": (CKY_CRF, CKY_CRFTest),
+    "CKY": (CKY, CKYTest),
+}
+
+
+class Gen:
+    "Helper class for tests"
+
+    def __init__(self, model_test, data, semiring):
+        model_test = algorithms[model_test]
+        self.data = data
+        self.model = model_test[0]
+        self.struct = self.model(semiring)
+        self.test = model_test[1]
+        self.vals, (self.batch, self.N) = data.draw(self.test.logpotentials())
+        # jitter
+        if not isinstance(self.vals, tuple):
+            self.vals = self.vals + 1e-6 * torch.rand(*self.vals.shape)
+        self.semiring = semiring
+
+    def enum(self, semiring=None):
+        return self.test.enumerate(
+            semiring if semiring is not None else self.semiring, self.vals
+        )
+
+
+# Model specific tests.
+
+
 @given(smint, smint, smint)
 @settings(max_examples=50, deadline=None)
-def test_simple_a(batch, N, C):
+def test_linear_chain_counting(batch, N, C):
     vals = torch.ones(batch, N, C, C)
     semiring = StdSemiring
     alpha = LinearChain(semiring).sum(vals)
     c = pow(C, N + 1)
-    print(c)
     assert (alpha == c).all()
-    LinearChain(SampledSemiring).marginals(vals)
-
-    LinearChain(MultiSampledSemiring).marginals(vals)
 
 
-@given(smint, smint, smint, smint)
-@settings(max_examples=50, deadline=None)
-def test_simple_b(batch, N, K, C):
-    print(N)
-    N = 14
-    vals = torch.ones(batch, N, 5, C, C)
-    SemiMarkov(SampledSemiring).marginals(vals)
-    SemiMarkov(MultiSampledSemiring).marginals(vals)
-
-
-# @given(data())
-# @settings(max_examples=50, deadline=None)
-# def test_networkx(data):
-#     batch = 5
-#     N = 10
-#     NT = 5
-#     T = 5
-
-#     torch.manual_seed(0)
-
-#     terms = torch.rand(batch, N, T)
-#     rules = torch.rand(batch, NT, (NT + T), (NT + T))
-#     roots = torch.rand(batch, NT)
-#     vals = (terms, rules, roots)
-#     model = CKY
-#     lengths = torch.tensor(
-#         [data.draw(integers(min_value=3, max_value=N)) for b in range(batch - 1)] + [N]
-#     )
-#     struct = model(SampledSemiring)
-#     marginals = struct.marginals(vals, lengths=lengths)
-#     spans = CKY.from_parts(marginals)[0]
-#     CKY.to_networkx(spans)
-
-#     struct = model(MultiSampledSemiring)
-#     marginals = struct.marginals(vals, lengths=lengths)
-#     m2 = tuple((MultiSampledSemiring.to_discrete(m, 5) for m in marginals))
-#     spans = CKY.from_parts(m2)[0]
-#     CKY.to_networkx(spans)
+# Semiring tests
 
 
 @given(data())
-def test_entropy(data):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov]))
-    semiring = EntropySemiring
-    struct = model(semiring)
-    test = test_lookup[model](LogSemiring)
-    vals, (batch, N) = test._rand()
-    alpha = struct.sum(vals)
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep"])
+@pytest.mark.parametrize("semiring", [LogSemiring, MaxSemiring])
+def test_log_shapes(model_test, semiring, data):
+    gen = Gen(model_test, data, semiring)
+    alpha = gen.struct.sum(gen.vals)
+    count = gen.enum()[0]
 
-    log_z = model(LogSemiring).sum(vals)
+    assert alpha.shape[0] == gen.batch
+    assert count.shape[0] == gen.batch
+    assert alpha.shape == count.shape
+    assert torch.isclose(count[0], alpha[0])
 
-    log_probs = test.enumerate(vals)[1]
+
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov"])
+def test_entropy(model_test, data):
+    "Test entropy by manual enumeration"
+    gen = Gen(model_test, data, EntropySemiring)
+    alpha = gen.struct.sum(gen.vals)
+    log_z = gen.model(LogSemiring).sum(gen.vals)
+
+    log_probs = gen.enum(LogSemiring)[1]
     log_probs = torch.stack(log_probs, dim=1) - log_z
-    print(log_probs.shape, log_z.shape, log_probs.exp().sum(1))
     entropy = -log_probs.mul(log_probs.exp()).sum(1).squeeze(0)
     assert entropy.shape == alpha.shape
     assert torch.isclose(entropy, alpha).all()
 
 
 @given(data())
-def test_kmax(data):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree]))
+@pytest.mark.parametrize("model_test", ["LinearChain"])
+def test_sparse_max(model_test, data):
+    gen = Gen(model_test, data, SparseMaxSemiring)
+    gen.vals.requires_grad_(True)
+    gen.struct.sum(gen.vals)
+    sparsemax = gen.struct.marginals(gen.vals)
+    sparsemax.sum().backward()
+
+
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep"])
+def test_kmax(model_test, data):
+    "Test out the k-max semiring"
     K = 2
-    semiring = KMaxSemiring(K)
-    struct = model(semiring)
-    test = test_lookup[model](LogSemiring)
-    vals, (batch, N) = test._rand()
-    max1 = model(MaxSemiring).sum(vals)
-    alpha = struct.sum(vals, _raw=True)
+    gen = Gen(model_test, data, KMaxSemiring(K))
+    max1 = gen.model(MaxSemiring).sum(gen.vals)
+    alpha = gen.struct.sum(gen.vals, _raw=True)
+
+    # 2max is less than max.
     assert (alpha[0] == max1).all()
     assert (alpha[1] <= max1).all()
 
-    topk = struct.marginals(vals, _raw=True)
-    argmax = model(MaxSemiring).marginals(vals)
+    topk = gen.struct.marginals(gen.vals, _raw=True)
+    argmax = gen.model(MaxSemiring).marginals(gen.vals)
+
+    # Argmax is different than 2-argmax
     assert (topk[0] == argmax).all()
-    print(topk[0].nonzero(), topk[1].nonzero())
     assert (topk[1] != topk[0]).any()
 
-    if model != DepTree:
-        log_probs = test_lookup[model](MaxSemiring).enumerate(vals)[1]
+    if model_test != "Dep":
+        log_probs = gen.enum(MaxSemiring)[1]
         tops = torch.topk(torch.cat(log_probs, dim=0), 5, 0)[0]
-        assert torch.isclose(struct.score(topk[1], vals), alpha[1]).all()
+        assert torch.isclose(gen.struct.score(topk[1], gen.vals), alpha[1]).all()
         for k in range(K):
             assert (torch.isclose(alpha[k], tops[k])).all()
 
 
 @given(data())
-@settings(max_examples=50, deadline=None)
-def test_cky(data):
-    model = data.draw(sampled_from([CKY]))
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
-    struct = model(semiring)
-    test = test_lookup[model](semiring)
-    vals, (batch, N) = test._rand()
-    alpha = struct.sum(vals)
-    count = test.enumerate(vals)[0]
+@pytest.mark.parametrize("model_test", ["CKY"])
+@pytest.mark.parametrize("semiring", [LogSemiring, MaxSemiring])
+def test_cky(model_test, semiring, data):
+    gen = Gen(model_test, data, semiring)
+    alpha = gen.struct.sum(gen.vals)
+    count = gen.enum()[0]
 
-    assert alpha.shape[0] == batch
-    assert count.shape[0] == batch
+    assert alpha.shape[0] == gen.batch
+    assert count.shape[0] == gen.batch
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
 
 
 @given(data())
-@settings(max_examples=50, deadline=None)
-def test_generic_a(data):
-    model = data.draw(
-        sampled_from(
-            [SemiMarkov]
-        )  # , Alignment , LinearChain, SemiMarkov, CKY, CKY_CRF, DepTree])
-    )
-
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
-    struct = model(semiring)
-    test = test_lookup[model](semiring)
-    vals, (batch, N) = test._rand()
-    alpha = struct.sum(vals)
-    count = test.enumerate(vals)[0]
-    # assert(False)
-    assert alpha.shape[0] == batch
-    assert count.shape[0] == batch
-    assert alpha.shape == count.shape
-    assert torch.isclose(count[0], alpha[0])
-
-    vals, _ = test._rand()
-    struct = model(MaxSemiring)
-    score = struct.sum(vals)
-    marginals = struct.marginals(vals)
-    # print(marginals)
-    # # assert(False)
-    assert torch.isclose(score, struct.score(vals, marginals)).all()
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "CKY_CRF", "Dep"])
+def test_max(model_test, data):
+    "Test that argmax score is the same as max"
+    gen = Gen(model_test, data, MaxSemiring)
+    score = gen.struct.sum(gen.vals)
+    marginals = gen.struct.marginals(gen.vals)
+    assert torch.isclose(score, gen.struct.score(gen.vals, marginals)).all()
 
 
 @given(data())
-@settings(max_examples=50, deadline=None)
-def test_labeled_proj_deptree(data):
-    semiring = data.draw(sampled_from([LogSemiring, MaxSemiring]))
-    struct = DepTree(semiring)
+@pytest.mark.parametrize("semiring", [LogSemiring, MaxSemiring])
+@pytest.mark.parametrize("model_test", ["Dep"])
+def test_labeled_proj_deptree(model_test, semiring, data):
+    gen = Gen(model_test, data, semiring)
+
     arc_scores = torch.rand(3, 5, 5, 7)
-    count = test_lookup[DepTree](semiring).enumerate(semiring.sum(arc_scores))[0]
-    alpha = struct.sum(arc_scores)
+    gen.vals = semiring.sum(arc_scores)
+    count = gen.enum()[0]
+    alpha = gen.struct.sum(arc_scores)
 
     assert torch.isclose(count, alpha).all()
 
-    struct = DepTree(MaxSemiring)
+    struct = gen.model(MaxSemiring)
     max_score = struct.sum(arc_scores)
     argmax = struct.marginals(arc_scores)
     assert torch.isclose(max_score, struct.score(arc_scores, argmax)).all()
 
 
-# @given(data())
-# @settings(max_examples=50, deadline=None)
-# def test_non_proj(data):
-#     model = data.draw(sampled_from([DepTree]))
-#     semiring = data.draw(sampled_from([LogSemiring]))
-#     struct = model(semiring)
-#     vals, (batch, N) = model._rand()
-#     alpha = deptree_part(vals)
-#     count = struct.enumerate(vals, non_proj=True, multi_root=False)[0]
+# todo: add CKY, DepTree too?
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep", "CKY_CRF"])
+def test_parts_from_marginals(model_test, data):
+    gen = Gen(model_test, data, MaxSemiring)
 
-#     assert alpha.shape[0] == batch
-#     assert count.shape[0] == batch
-#     assert alpha.shape == count.shape
-#     assert torch.isclose(count[0], alpha[0])
-
-#     marginals = deptree_nonproj(vals)
-#     print(marginals.sum(1))
-#     # assert(False)
-#     # vals, _ = model._rand()
-#     # struct = model(MaxSemiring)
-#     # score = struct.sum(vals)
-#     # marginals = struct.marginals(vals)
-#     # assert torch.isclose(score, struct.score(vals, marginals)).all()
-
-
-@given(data(), integers(min_value=1, max_value=20))
-def test_parts_from_marginals(data, seed):
-    # todo: add CKY, DepTree too?
-    model = data.draw(sampled_from([LinearChain, SemiMarkov]))
-    test = test_lookup[model]()
-    torch.manual_seed(seed)
-    vals, (batch, N) = test._rand()
-
-    edge = model(MaxSemiring).marginals(vals).long()
-
-    sequence, extra = model.from_parts(edge)
-    edge_ = model.to_parts(sequence, extra)
+    edge = gen.struct.marginals(gen.vals).long()
+    sequence, extra = gen.model.from_parts(edge)
+    edge_ = gen.model.to_parts(sequence, extra)
 
     assert (torch.isclose(edge, edge_)).all(), edge - edge_
 
-    sequence_, extra_ = model.from_parts(edge_)
+    sequence_, extra_ = gen.model.from_parts(edge_)
     assert extra == extra_, (extra, extra_)
-
     assert (torch.isclose(sequence, sequence_)).all(), sequence - sequence_
 
 
-@given(data(), integers(min_value=1, max_value=20))
-def test_parts_from_sequence(data, seed):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov]))
-    struct = model()
-    test = test_lookup[model]()
-    torch.manual_seed(seed)
-    vals, (batch, N) = test._rand()
-    C = vals.size(-1)
-    if isinstance(struct, LinearChain):
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov"])
+def test_parts_from_sequence(model_test, data):
+    gen = Gen(model_test, data, LogSemiring)
+    C = gen.vals.size(-1)
+    if isinstance(gen.struct, LinearChain):
         K = 2
         background = 0
         extra = C
-    elif isinstance(struct, SemiMarkov):
-        K = vals.size(-3)
+    elif isinstance(gen.struct, SemiMarkov):
+        K = gen.vals.size(-3)
         background = -1
         extra = C, K
     else:
         raise NotImplementedError()
 
-    sequence = torch.full((batch, N), background, dtype=int)
-    for b in range(batch):
+    sequence = torch.full((gen.batch, gen.N), background, dtype=int)
+    for b in range(gen.batch):
         i = 0
-        while i < N:
+        while i < gen.N:
             symbol = torch.randint(0, C, (1,)).item()
             sequence[b, i] = symbol
             length = torch.randint(1, K, (1,)).item()
             i += length
 
-    edge = model.to_parts(sequence, extra)
-    sequence_, extra_ = model.from_parts(edge)
+    edge = gen.model.to_parts(sequence, extra)
+    sequence_, extra_ = gen.model.from_parts(edge)
     assert extra == extra_, (extra, extra_)
     assert (torch.isclose(sequence, sequence_)).all(), sequence - sequence_
-    edge_ = model.to_parts(sequence_, extra_)
+    edge_ = gen.model.to_parts(sequence_, extra_)
     assert (torch.isclose(edge, edge_)).all(), edge - edge_
 
 
-@given(data(), integers(min_value=1, max_value=10))
-@settings(max_examples=50, deadline=None)
-def test_generic_lengths(data, seed):
-    model = data.draw(sampled_from([CKY, LinearChain, SemiMarkov, CKY_CRF, DepTree]))
-    struct = model()
-    torch.manual_seed(seed)
-    test = test_lookup[model]()
-    vals, (batch, N) = test._rand()
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "CKY_CRF", "Dep"])
+def test_generic_lengths(model_test, data):
+    gen = Gen(model_test, data, LogSemiring)
+    model, struct, vals, N, batch = gen.model, gen.struct, gen.vals, gen.N, gen.batch
     lengths = torch.tensor(
         [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
     )
@@ -283,64 +261,162 @@ def test_generic_lengths(data, seed):
     m = model(MaxSemiring).marginals(vals, lengths=lengths)
     maxes = struct.score(vals, m)
     part = model().sum(vals, lengths=lengths)
-    print(maxes, part)
+
+    # Check that max is correct
     assert (maxes <= part).all()
     m_part = model(MaxSemiring).sum(vals, lengths=lengths)
     assert (torch.isclose(maxes, m_part)).all(), maxes - m_part
-
-    # m2 = deptree(vals, lengths=lengths)
-    # assert (m2 < part).all()
 
     if model == CKY:
         return
 
     seqs, extra = struct.from_parts(m)
-    # assert (seqs.shape == (batch, N))
-    # assert seqs.max().item() <= N
     full = struct.to_parts(seqs, extra, lengths=lengths)
 
-    if isinstance(full, tuple):
-        for i in range(len(full)):
-            if i == 1:
-                p = m[i].sum(1).sum(1)
-            else:
-                p = m[i]
-            assert (full[i] == p.type_as(full[i])).all(), "%s %s %s" % (
-                i,
-                full[i].nonzero(),
-                p.nonzero(),
-            )
-    else:
-        assert (full == m.type_as(full)).all(), "%s %s %s" % (
-            full.shape,
-            m.shape,
-            (full - m.type_as(full)).nonzero(),
-        )
+    assert (full == m.type_as(full)).all(), "%s %s %s" % (
+        full.shape,
+        m.shape,
+        (full - m.type_as(full)).nonzero(),
+    )
 
 
-@settings(max_examples=50, deadline=None)
-@given(data(), integers(min_value=1, max_value=10))
-def test_params(data, seed):
-    model = data.draw(sampled_from([DepTree, SemiMarkov, DepTree, CKY, CKY_CRF]))
-    torch.manual_seed(seed)
-    test = test_lookup[model]()
-    vals, (batch, N) = test._rand()
+@given(data())
+@pytest.mark.parametrize(
+    "model_test", ["LinearChain", "SemiMarkov", "Dep", "CKY", "CKY_CRF"]
+)
+def test_params(model_test, data):
+    gen = Gen(model_test, data, LogSemiring)
+    _, struct, vals, _, _ = gen.model, gen.struct, gen.vals, gen.N, gen.batch
+
     if isinstance(vals, tuple):
         vals = tuple((v.requires_grad_(True) for v in vals))
     else:
         vals.requires_grad_(True)
-    # torch.autograd.set_detect_anomaly(True)
-    semiring = LogSemiring
-    alpha = model(semiring).sum(vals)
+    alpha = struct.sum(vals)
     alpha.sum().backward()
 
-    if not isinstance(vals, tuple):
-        b = vals.grad.detach()
-        vals.grad.zero_()
-        alpha = model(semiring).sum(vals, _autograd=False)
-        alpha.sum().backward()
-        c = vals.grad.detach()
-        assert torch.isclose(b, c).all()
+
+@given(data())
+@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep"])
+def test_gumbel(model_test, data):
+    gen = Gen(model_test, data, LogSemiring)
+    gen.vals.requires_grad_(True)
+    alpha = gen.struct.marginals(gen.vals)
+    print(alpha[0])
+    print(torch.autograd.grad(alpha, gen.vals, alpha.detach())[0][0])
+
+
+def test_hmm():
+    C, V, batch, N = 5, 20, 2, 5
+    transition = torch.rand(C, C)
+    emission = torch.rand(V, C)
+    init = torch.rand(C)
+    observations = torch.randint(0, V, (batch, N))
+    out = LinearChain.hmm(transition, emission, init, observations)
+    LinearChain().sum(out)
+
+
+def test_sparse_max2():
+    print(LinearChain(SparseMaxSemiring).sum(torch.rand(1, 8, 3, 3)))
+    print(LinearChain(SparseMaxSemiring).marginals(torch.rand(1, 8, 3, 3)))
+    # assert(False)
+
+
+def test_lc_custom():
+    model = LinearChain
+    vals, _ = model._rand()
+
+    struct = LinearChain(LogSemiring)
+    marginals = struct.marginals(vals)
+    s = struct.sum(vals)
+
+    struct = LinearChain(CheckpointSemiring(LogSemiring, 1))
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    assert torch.isclose(marginals, marginals2).all()
+
+    struct = LinearChain(CheckpointShardSemiring(LogSemiring, 1))
+    marginals2 = struct.marginals(vals)
+    s2 = struct.sum(vals)
+    assert torch.isclose(s, s2).all()
+    assert torch.isclose(marginals, marginals2).all()
+
+    # struct = LinearChain(LogMemSemiring)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals).all()
+
+    # struct = LinearChain(LogMemSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals).all()
+    # print(marginals)
+    # print(marginals2)
+
+    # struct = LinearChain(LogSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(LogSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # print(marginals)
+    # print(marginals2)
+
+    # struct = LinearChain(MaxSemiring)
+    # marginals = struct.marginals(vals)
+    # s = struct.sum(vals)
+
+    # struct = LinearChain(MaxSemiringKO)
+    # marginals2 = struct.marginals(vals)
+    # s2 = struct.sum(vals)
+    # assert torch.isclose(s, s2).all()
+    # assert torch.isclose(marginals, marginals2).all()
+
+
+@given(data())
+@pytest.mark.parametrize("model_test", ["Dep"])
+@pytest.mark.parametrize("semiring", [LogSemiring])
+def test_non_proj(model_test, semiring, data):
+    gen = Gen(model_test, data, semiring)
+    alpha = deptree_part(gen.vals, False)
+    count = gen.test.enumerate(LogSemiring, gen.vals, non_proj=True, multi_root=False)[
+        0
+    ]
+
+    assert alpha.shape[0] == gen.batch
+    assert count.shape[0] == gen.batch
+    assert alpha.shape == count.shape
+    # assert torch.isclose(count[0], alpha[0], 1e-2)
+
+    alpha = deptree_part(gen.vals, True)
+    count = gen.test.enumerate(LogSemiring, gen.vals, non_proj=True, multi_root=True)[0]
+
+    assert alpha.shape[0] == gen.batch
+    assert count.shape[0] == gen.batch
+    assert alpha.shape == count.shape
+    # assert torch.isclose(count[0], alpha[0], 1e-2)
+
+    marginals = deptree_nonproj(gen.vals, multi_root=False)
+    print(marginals.sum(1))
+    marginals = deptree_nonproj(gen.vals, multi_root=True)
+    print(marginals.sum(1))
+
+
+#     # assert(False)
+#     # vals, _ = model._rand()
+#     # struct = model(MaxSemiring)
+#     # score = struct.sum(vals)
+#     # marginals = struct.marginals(vals)
+#     # assert torch.isclose(score, struct.score(vals, marginals)).all()
 
 
 @given(data())
@@ -423,105 +499,3 @@ def ignore_alignment(data):
     # assert torch.isclose(count, alpha).all()
     struct = model(semiring, max_gap=1)
     alpha = struct.sum(vals)
-
-
-def test_hmm():
-    C, V, batch, N = 5, 20, 2, 5
-    transition = torch.rand(C, C)
-    emission = torch.rand(V, C)
-    init = torch.rand(C)
-    observations = torch.randint(0, V, (batch, N))
-    out = LinearChain.hmm(transition, emission, init, observations)
-    LinearChain().sum(out)
-
-
-@given(data())
-def test_sparse_max(data):
-    model = data.draw(sampled_from([LinearChain]))
-    semiring = SparseMaxSemiring
-    test = test_lookup[model]()
-    vals, (batch, N) = test._rand()
-    vals.requires_grad_(True)
-    model(semiring).sum(vals)
-    sparsemax = model(semiring).marginals(vals)
-    print(vals.requires_grad)
-    sparsemax.sum().backward()
-
-
-def test_sparse_max2():
-    print(LinearChain(SparseMaxSemiring).sum(torch.rand(1, 8, 3, 3)))
-    print(LinearChain(SparseMaxSemiring).marginals(torch.rand(1, 8, 3, 3)))
-    # assert(False)
-
-
-def test_lc_custom():
-    model = LinearChain
-    vals, _ = model._rand()
-
-    struct = LinearChain(LogSemiring)
-    marginals = struct.marginals(vals)
-    s = struct.sum(vals)
-
-    struct = LinearChain(CheckpointSemiring(LogSemiring, 1))
-    marginals2 = struct.marginals(vals)
-    s2 = struct.sum(vals)
-    assert torch.isclose(s, s2).all()
-    assert torch.isclose(marginals, marginals2).all()
-
-    struct = LinearChain(CheckpointShardSemiring(LogSemiring, 1))
-    marginals2 = struct.marginals(vals)
-    s2 = struct.sum(vals)
-    assert torch.isclose(s, s2).all()
-    assert torch.isclose(marginals, marginals2).all()
-
-    # struct = LinearChain(LogMemSemiring)
-    # marginals2 = struct.marginals(vals)
-    # s2 = struct.sum(vals)
-    # assert torch.isclose(s, s2).all()
-    # assert torch.isclose(marginals, marginals).all()
-
-    # struct = LinearChain(LogMemSemiring)
-    # marginals = struct.marginals(vals)
-    # s = struct.sum(vals)
-
-    # struct = LinearChain(LogSemiringKO)
-    # marginals2 = struct.marginals(vals)
-    # s2 = struct.sum(vals)
-    # assert torch.isclose(s, s2).all()
-    # assert torch.isclose(marginals, marginals).all()
-    # print(marginals)
-    # print(marginals2)
-
-    # struct = LinearChain(LogSemiring)
-    # marginals = struct.marginals(vals)
-    # s = struct.sum(vals)
-
-    # struct = LinearChain(LogSemiringKO)
-    # marginals2 = struct.marginals(vals)
-    # s2 = struct.sum(vals)
-    # assert torch.isclose(s, s2).all()
-    # print(marginals)
-    # print(marginals2)
-
-    # struct = LinearChain(MaxSemiring)
-    # marginals = struct.marginals(vals)
-    # s = struct.sum(vals)
-
-    # struct = LinearChain(MaxSemiringKO)
-    # marginals2 = struct.marginals(vals)
-    # s2 = struct.sum(vals)
-    # assert torch.isclose(s, s2).all()
-    # assert torch.isclose(marginals, marginals2).all()
-
-
-@given(data())
-def test_gumbel(data):
-    model = data.draw(sampled_from([LinearChain, SemiMarkov, DepTree]))
-    semiring = GumbelCRFSemiring(1.0)
-    test = test_lookup[model]()
-    struct = model(semiring)
-    vals, (batch, N) = test._rand()
-    vals.requires_grad_(True)
-    alpha = struct.marginals(vals)
-    print(alpha[0])
-    print(torch.autograd.grad(alpha, vals, alpha.detach())[0][0])

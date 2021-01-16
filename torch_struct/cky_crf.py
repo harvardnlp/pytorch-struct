@@ -13,7 +13,7 @@ class CKY_CRF(_Struct):
 
         return edge, batch, N, NT, lengths
 
-    def _dp(self, scores, lengths=None, force_grad=False):
+    def logpartition(self, scores, lengths=None, force_grad=False):
         semiring = self.semiring
         scores, batch, N, NT, lengths = self._check_potentials(scores, lengths)
 
@@ -40,4 +40,4 @@ class CKY_CRF(_Struct):
 
         final = beta[A][0, :]
         log_Z = final[:, torch.arange(batch), lengths - 1]
-        return log_Z, [scores], beta
+        return log_Z, [scores]

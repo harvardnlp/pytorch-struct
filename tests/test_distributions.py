@@ -1,4 +1,4 @@
-from torch_struct import LinearChainCRF, Autoregressive, KMaxSemiring
+from torch_struct import LinearChainCRF, Autoregressive, KMaxSemiring, LogSemiring
 import torch
 from hypothesis import given, settings
 from hypothesis.strategies import integers, data, sampled_from
@@ -20,7 +20,7 @@ def enumerate_support(dist):
         (enum, enum_lengths) - (*tuple cardinality x batch_shape x event_shape*)
     """
     _, _, edges, enum_lengths = test_lookup[dist.struct]().enumerate(
-        dist.log_potentials, dist.lengths
+        LogSemiring, dist.log_potentials, dist.lengths
     )
     # if expand:
     #     edges = edges.unsqueeze(1).expand(edges.shape[:1] + self.batch_shape[:1] + edges.shape[1:])
