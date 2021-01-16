@@ -1,24 +1,38 @@
-from torch_struct import CKY, CKY_CRF, DepTree, LinearChain, SemiMarkov, Alignment, deptree_nonproj, deptree_part
+from torch_struct import (
+    CKY,
+    CKY_CRF,
+    DepTree,
+    LinearChain,
+    SemiMarkov,
+    Alignment,
+    deptree_nonproj,
+    deptree_part,
+)
 from torch_struct import (
     LogSemiring,
     CheckpointSemiring,
     CheckpointShardSemiring,
-    GumbelCRFSemiring,
     KMaxSemiring,
     SparseMaxSemiring,
     MaxSemiring,
     StdSemiring,
-    SampledSemiring,
     EntropySemiring,
-    MultiSampledSemiring,
 )
-from .extensions import LinearChainTest, SemiMarkovTest, DepTreeTest, CKYTest, CKY_CRFTest, CKYTest
+from .extensions import (
+    LinearChainTest,
+    SemiMarkovTest,
+    DepTreeTest,
+    CKYTest,
+    CKY_CRFTest,
+    test_lookup,
+)
 import torch
-from hypothesis import given, settings
+from hypothesis import given
 from hypothesis.strategies import integers, data, sampled_from
 import pytest
 
 from hypothesis import settings
+
 settings.register_profile("ci", max_examples=50, deadline=None)
 
 settings.load_profile("ci")
@@ -30,15 +44,17 @@ lint = integers(min_value=2, max_value=10)
 
 
 algorithms = {
-    "LinearChain" : (LinearChain, LinearChainTest),
-    "SemiMarkov" : (SemiMarkov, SemiMarkovTest),
-    "Dep" : (DepTree, DepTreeTest),
-    "CKY_CRF" : (CKY_CRF, CKY_CRFTest),
-    "CKY" : (CKY, CKYTest),
+    "LinearChain": (LinearChain, LinearChainTest),
+    "SemiMarkov": (SemiMarkov, SemiMarkovTest),
+    "Dep": (DepTree, DepTreeTest),
+    "CKY_CRF": (CKY_CRF, CKY_CRFTest),
+    "CKY": (CKY, CKYTest),
 }
+
 
 class Gen:
     "Helper class for tests"
+
     def __init__(self, model_test, data, semiring):
         model_test = algorithms[model_test]
         self.data = data
@@ -50,12 +66,15 @@ class Gen:
         if not isinstance(self.vals, tuple):
             self.vals = self.vals + 1e-6 * torch.rand(*self.vals.shape)
         self.semiring = semiring
-        
+
     def enum(self, semiring=None):
-        return self.test.enumerate(semiring if semiring is not None else self.semiring,
-                                   self.vals)
+        return self.test.enumerate(
+            semiring if semiring is not None else self.semiring, self.vals
+        )
+
 
 # Model specific tests.
+
 
 @given(smint, smint, smint)
 @settings(max_examples=50, deadline=None)
@@ -68,6 +87,7 @@ def test_linear_chain_counting(batch, N, C):
 
 
 # Semiring tests
+
 
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep"])
@@ -82,7 +102,7 @@ def test_log_shapes(model_test, semiring, data):
     assert alpha.shape == count.shape
     assert torch.isclose(count[0], alpha[0])
 
-    
+
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov"])
 def test_entropy(model_test, data):
@@ -107,7 +127,6 @@ def test_sparse_max(model_test, data):
     sparsemax = gen.struct.marginals(gen.vals)
     sparsemax.sum().backward()
 
-    
 
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep"])
@@ -151,7 +170,6 @@ def test_cky(model_test, semiring, data):
     assert torch.isclose(count[0], alpha[0])
 
 
-
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "CKY_CRF", "Dep"])
 def test_max(model_test, data):
@@ -181,13 +199,12 @@ def test_labeled_proj_deptree(model_test, semiring, data):
     assert torch.isclose(max_score, struct.score(arc_scores, argmax)).all()
 
 
-
 # todo: add CKY, DepTree too?
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep", "CKY_CRF"])
 def test_parts_from_marginals(model_test, data):
     gen = Gen(model_test, data, MaxSemiring)
-    
+
     edge = gen.struct.marginals(gen.vals).long()
     sequence, extra = gen.model.from_parts(edge)
     edge_ = gen.model.to_parts(sequence, extra)
@@ -202,7 +219,7 @@ def test_parts_from_marginals(model_test, data):
 @given(data())
 @pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov"])
 def test_parts_from_sequence(model_test, data):
-    gen = Gen(model_test, data, LogSemiring)    
+    gen = Gen(model_test, data, LogSemiring)
     C = gen.vals.size(-1)
     if isinstance(gen.struct, LinearChain):
         K = 2
@@ -264,11 +281,13 @@ def test_generic_lengths(model_test, data):
 
 
 @given(data())
-@pytest.mark.parametrize("model_test", ["LinearChain", "SemiMarkov", "Dep", "CKY", "CKY_CRF"])
+@pytest.mark.parametrize(
+    "model_test", ["LinearChain", "SemiMarkov", "Dep", "CKY", "CKY_CRF"]
+)
 def test_params(model_test, data):
     gen = Gen(model_test, data, LogSemiring)
-    model, struct, vals, N, batch = gen.model, gen.struct, gen.vals, gen.N, gen.batch
-    
+    _, struct, vals, _, _ = gen.model, gen.struct, gen.vals, gen.N, gen.batch
+
     if isinstance(vals, tuple):
         vals = tuple((v.requires_grad_(True) for v in vals))
     else:
@@ -287,8 +306,6 @@ def test_gumbel(model_test, data):
     print(torch.autograd.grad(alpha, gen.vals, alpha.detach())[0][0])
 
 
-
-
 def test_hmm():
     C, V, batch, N = 5, 20, 2, 5
     transition = torch.rand(C, C)
@@ -297,8 +314,6 @@ def test_hmm():
     observations = torch.randint(0, V, (batch, N))
     out = LinearChain.hmm(transition, emission, init, observations)
     LinearChain().sum(out)
-
-
 
 
 def test_sparse_max2():
@@ -373,13 +388,14 @@ def test_lc_custom():
 def test_non_proj(model_test, semiring, data):
     gen = Gen(model_test, data, semiring)
     alpha = deptree_part(gen.vals, False)
-    count = gen.test.enumerate(LogSemiring, gen.vals, non_proj=True, multi_root=False)[0]
+    count = gen.test.enumerate(LogSemiring, gen.vals, non_proj=True, multi_root=False)[
+        0
+    ]
 
     assert alpha.shape[0] == gen.batch
     assert count.shape[0] == gen.batch
     assert alpha.shape == count.shape
     # assert torch.isclose(count[0], alpha[0], 1e-2)
-
 
     alpha = deptree_part(gen.vals, True)
     count = gen.test.enumerate(LogSemiring, gen.vals, non_proj=True, multi_root=True)[0]
@@ -389,12 +405,11 @@ def test_non_proj(model_test, semiring, data):
     assert alpha.shape == count.shape
     # assert torch.isclose(count[0], alpha[0], 1e-2)
 
-
-
     marginals = deptree_nonproj(gen.vals, multi_root=False)
     print(marginals.sum(1))
     marginals = deptree_nonproj(gen.vals, multi_root=True)
     print(marginals.sum(1))
+
 
 #     # assert(False)
 #     # vals, _ = model._rand()
@@ -402,6 +417,7 @@ def test_non_proj(model_test, semiring, data):
 #     # score = struct.sum(vals)
 #     # marginals = struct.marginals(vals)
 #     # assert torch.isclose(score, struct.score(vals, marginals)).all()
+
 
 @given(data())
 @settings(max_examples=50, deadline=None)
@@ -483,4 +499,3 @@ def ignore_alignment(data):
     # assert torch.isclose(count, alpha).all()
     struct = model(semiring, max_gap=1)
     alpha = struct.sum(vals)
-

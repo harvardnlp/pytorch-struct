@@ -1,7 +1,6 @@
 import torch
 import math
 from .semirings import LogSemiring
-from torch.autograd import Function
 
 
 class Chart:
@@ -81,9 +80,7 @@ class _Struct:
             return v
         return self.semiring.unconvert(v)
 
-    def marginals(
-        self, logpotentials, lengths=None, _raw=False
-    ):
+    def marginals(self, logpotentials, lengths=None, _raw=False):
         """
         Compute the marginals of a structured model.
 

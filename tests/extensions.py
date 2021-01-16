@@ -6,16 +6,17 @@ from hypothesis.strategies import integers, composite, floats
 from hypothesis.extra.numpy import arrays
 import numpy as np
 
+
 class LinearChainTest:
-
-
     @staticmethod
     @composite
     def logpotentials(draw, min_n=2):
         b = draw(integers(min_value=2, max_value=3))
         N = draw(integers(min_value=min_n, max_value=3))
         C = draw(integers(min_value=2, max_value=3))
-        logp = draw(arrays(np.float, (b, N, C, C), floats(min_value=-100.0, max_value=100.0)))
+        logp = draw(
+            arrays(np.float, (b, N, C, C), floats(min_value=-100.0, max_value=100.0))
+        )
         return torch.tensor(logp), (b, (N + 1))
 
     ### Tests
@@ -69,13 +70,14 @@ class LinearChainTest:
 
 
 class DepTreeTest:
-
     @staticmethod
     @composite
     def logpotentials(draw):
         b = draw(integers(min_value=2, max_value=3))
         N = draw(integers(min_value=2, max_value=3))
-        logp = draw(arrays(np.float, (b, N, N), floats(min_value=-10.0, max_value=10.0)))
+        logp = draw(
+            arrays(np.float, (b, N, N), floats(min_value=-10.0, max_value=10.0))
+        )
         return torch.tensor(logp), (b, N)
 
     @staticmethod
@@ -105,8 +107,6 @@ class DepTreeTest:
 
 class SemiMarkovTest:
 
-
-
     # Tests
 
     @staticmethod
@@ -116,7 +116,9 @@ class SemiMarkovTest:
         N = draw(integers(min_value=2, max_value=3))
         K = draw(integers(min_value=2, max_value=3))
         C = draw(integers(min_value=2, max_value=3))
-        logp = draw(arrays(np.float, (b, N, K, C, C), floats(min_value=-100.0, max_value=100.0)))
+        logp = draw(
+            arrays(np.float, (b, N, K, C, C), floats(min_value=-100.0, max_value=100.0))
+        )
         return torch.tensor(logp), (b, (N + 1))
 
     @staticmethod
@@ -224,7 +226,11 @@ class CKY_CRFTest:
         batch = draw(integers(min_value=2, max_value=4))
         N = draw(integers(min_value=2, max_value=4))
         NT = draw(integers(min_value=2, max_value=4))
-        logp = draw(arrays(np.float, (batch, N, N, NT), floats(min_value=-100.0, max_value=100.0)))
+        logp = draw(
+            arrays(
+                np.float, (batch, N, N, NT), floats(min_value=-100.0, max_value=100.0)
+            )
+        )
         return torch.tensor(logp), (batch, N)
 
     @staticmethod
@@ -255,7 +261,6 @@ class CKY_CRFTest:
         return semiring.sum(torch.stack(ls, dim=-1)), None
 
 
-
 class CKYTest:
     @staticmethod
     @composite
@@ -264,11 +269,23 @@ class CKYTest:
         N = draw(integers(min_value=2, max_value=4))
         NT = draw(integers(min_value=2, max_value=3))
         T = draw(integers(min_value=2, max_value=3))
-        terms = draw(arrays(np.float, (batch, N, T), floats(min_value=-100.0, max_value=100.0)))
-        rules = draw(arrays(np.float, (batch, NT, NT + T, NT +T), floats(min_value=-100.0, max_value=100.0)))
-        roots = draw(arrays(np.float, (batch, NT), floats(min_value=-100.0, max_value=100.0)))
-        return (torch.tensor(terms), torch.tensor(rules), torch.tensor(roots)), (batch, N)
-
+        terms = draw(
+            arrays(np.float, (batch, N, T), floats(min_value=-100.0, max_value=100.0))
+        )
+        rules = draw(
+            arrays(
+                np.float,
+                (batch, NT, NT + T, NT + T),
+                floats(min_value=-100.0, max_value=100.0),
+            )
+        )
+        roots = draw(
+            arrays(np.float, (batch, NT), floats(min_value=-100.0, max_value=100.0))
+        )
+        return (torch.tensor(terms), torch.tensor(rules), torch.tensor(roots)), (
+            batch,
+            N,
+        )
 
     @staticmethod
     def enumerate(semiring, scores):
@@ -296,7 +313,6 @@ class CKYTest:
         for nt in range(NT):
             ls += [semiring.times(s, roots[:, nt]) for s, _ in enumerate(nt, 0, N)]
         return semiring.sum(torch.stack(ls, dim=-1)), None
-
 
 
 class AlignmentTest:
