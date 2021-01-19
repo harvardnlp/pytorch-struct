@@ -71,6 +71,17 @@ class StructDistribution(Distribution):
         return v - self.partition
 
     @lazy_property
+    def expectation(self, values):
+        """
+        Compute expectation for distribution :math:`E_z[f(z)]` where f that decomposes additively over the parts.
+
+        Returns:
+            entropy (*batch_shape*)
+        """
+
+        return self._struct(ExpectationSemiring).sum([self.log_potentials, values], self.lengths)
+
+    @lazy_property
     def entropy(self):
         """
         Compute entropy for distribution :math:`H[z]`.

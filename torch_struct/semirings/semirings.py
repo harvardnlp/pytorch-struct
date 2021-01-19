@@ -482,6 +482,69 @@ class EntropySemiring(Semiring):
         return xs
 
 
+class ExpectationSemiring(Semiring):
+    """
+    Implements an value expectation semiring where the value function decomposes additively over parts
+
+    Based on descriptions in:
+
+    * Parameter estimation for probabilistic finite-state transducers :cite:`eisner2002parameter`
+    * First-and second-order expectation semirings with applications to minimum-risk training on translation forests :cite:`li2009first`
+    """
+
+    zero = 0
+
+    @staticmethod
+    def size():
+        return 2
+
+    @staticmethod
+    def convert(xs):
+        values = torch.zeros((2,) + xs.shape).type_as(xs)
+        values[0] = xs
+        values[1] = 0
+        return values
+
+    @staticmethod
+    def unconvert(xs):
+        return xs[1]
+
+    @staticmethod
+    def sum(xs, dim=-1):
+        assert dim != 0
+        d = dim - 1 if dim > 0 else dim
+        part = torch.logsumexp(xs[0], dim=d)
+        log_sm = xs[0] - part.unsqueeze(d)
+        sm = log_sm.exp()
+        return torch.stack((part, torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d)))
+
+    @staticmethod
+    def mul(a, b):
+        return torch.stack((a[0] + b[0], a[1] + b[1]))
+
+    @classmethod
+    def prod(cls, xs, dim=-1):
+        return xs.sum(dim)
+
+    @classmethod
+    def zero_mask_(cls, xs, mask):
+        "Fill *ssize x ...* tensor with additive identity."
+        xs[0].masked_fill_(mask, -1e5)
+        xs[1].masked_fill_(mask, 0)
+
+    @staticmethod
+    def zero_(xs):
+        xs[0].fill_(-1e5)
+        xs[1].fill_(0)
+        return xs
+
+    @staticmethod
+    def one_(xs):
+        xs[0].fill_(0)
+        xs[1].fill_(0)
+        return xs
+
+
 def TempMax(alpha):
     class _TempMax(_BaseLog):
         """
