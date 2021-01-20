@@ -191,9 +191,10 @@ class StructDistribution(Distribution):
         Compute expectated value for distribution :math:`E_z[f(z)]` where f decomposes additively over the factors of p_z.
 
         Parameters:
-          * values (:class: torch.FloatTensor): (*batch_shape x *event_shape, *value_shape), assigns a value to each
-              part of the structure. `values` can have 0 or more trailing dimensions in addition to the `event_shape`,
-              which allows for computing the expected value of, say, a vector valued function.
+            values (:class: torch.FloatTensor): (*batch_shape x *event_shape, *value_shape), assigns a value to each
+                part of the structure. `values` can have 0 or more trailing dimensions in addition to the `event_shape`,
+                which allows for computing the expected value of, say, a vector valued function.
+
         Returns:
             expected value (*batch_shape, *value_shape)
         """
@@ -249,7 +250,6 @@ class StructDistribution(Distribution):
 
         Parameters:
             sample_shape (int): number of samples
-            batch_size (int): number of samples to compute at a time
 
         Returns:
             samples (*sample_shape x batch_shape x event_shape*)

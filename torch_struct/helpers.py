@@ -37,22 +37,20 @@ class _Struct:
         """Implement computation equivalent to the computing log partition constant logZ (if self.semiring == `_BaseSemiring`).
 
         Parameters:
-          scores (torch.FloatTensor) : log potential scores for each factor of the model. Shape (* x batch size x *event_shape )
-          lengths (torch.LongTensor) : = None, lengths of batch padded examples. Shape = ( * x batch size )
-          force_grad: bool = False
+            scores (torch.FloatTensor) : log potential scores for each factor of the model. Shape (* x batch size x *event_shape )
+            lengths (torch.LongTensor) : = None, lengths of batch padded examples. Shape = ( * x batch size )
+            force_grad: bool = False
 
         Returns:
-          v (torch.Tensor) : the resulting output of the dynammic program
-          logpotentials (List[torch.Tensor]): the log edge potentials of the model.
+            v (torch.Tensor) : the resulting output of the dynammic program
+            logpotentials (List[torch.Tensor]): the log edge potentials of the model.
                  When `scores` is already in a log_potential format for the distribution (typical), this will be
                  [scores], as in `Alignment`, `LinearChain`, `SemiMarkov`, `CKY_CRF`.
                  An exceptional case is the `CKY` struct, which takes log potential parameters from production rules
                  for a PCFG, which are by definition independent of position in the sequence.
-          charts: Optional[List[Chart]] = None, the charts used in computing the dp. They are needed if we want to run the
-                  "backward" dynamic program and compute things like marginals w/o autograd.
 
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def score(self, potentials, parts, batch_dims=[0]):
         """Score for entire structure is product of potentials for all activated "parts"."""
