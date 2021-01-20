@@ -6,7 +6,11 @@ from .semirings import LogSemiring
 class Chart:
     def __init__(self, size, potentials, semiring):
         self.data = semiring.zero_(
-            torch.zeros(*((semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
+            torch.zeros(
+                *((semiring.size(),) + size),
+                dtype=potentials.dtype,
+                device=potentials.device
+            )
         )
         self.grad = self.data.detach().clone().fill_(0.0)
 
@@ -22,7 +26,7 @@ class Chart:
 class _Struct:
     """`_Struct` is base class used to represent the graphical structure of a model.
 
-    Subclasses should implement a `_dp` method which computes the partition function (under the standard `_BaseSemiring`).
+    Subclasses should implement a `logpartition` method which computes the partition function (under the standard `_BaseSemiring`).
     Different `StructDistribution` methods will instantiate the `_Struct` subclasses
     """
 
@@ -54,7 +58,7 @@ class _Struct:
         """Score for entire structure is product of potentials for all activated "parts"."""
         score = torch.mul(potentials, parts)  # mask potentials by activated "parts"
         batch = tuple((score.shape[b] for b in batch_dims))
-        return self.semiring.prod(score.view(batch + (-1,)))  # product of all potentialsa
+        return self.semiring.prod(score.view(batch + (-1,)))
 
     def _bin_length(self, length):
         """Find least upper bound for lengths that is a power of 2. Used in parallel scans."""
@@ -78,7 +82,11 @@ class _Struct:
         return [
             (
                 self.semiring.zero_(
-                    torch.zeros(*((self.semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
+                    torch.zeros(
+                        *((self.semiring.size(),) + size),
+                        dtype=potentials.dtype,
+                        device=potentials.device
+                    )
                 ).requires_grad_(force_grad and not potentials.requires_grad)
             )
             for _ in range(N)
@@ -114,7 +122,9 @@ class _Struct:
 
         """
         with torch.autograd.enable_grad():  # in case input potentials don't have grads enabled.
-            v, edges = self.logpartition(logpotentials, lengths=lengths, force_grad=True)
+            v, edges = self.logpartition(
+                logpotentials, lengths=lengths, force_grad=True
+            )
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):
@@ -131,7 +141,9 @@ class _Struct:
                 return torch.stack(all_m, dim=0)
             else:
                 obj = self.semiring.unconvert(v).sum(dim=0)
-                marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
+                marg = torch.autograd.grad(
+                    obj, edges, create_graph=True, only_inputs=True, allow_unused=False
+                )
                 a_m = self._arrange_marginals(marg)
                 return self.semiring.unconvert(a_m)
 

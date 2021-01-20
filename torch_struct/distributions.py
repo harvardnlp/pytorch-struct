@@ -197,8 +197,6 @@ class StructDistribution(Distribution):
               (or a vector of scalar functions).
         Returns:
             expected value (*batch_shape, *value_shape)
-
-
         """
         # Handle value function dimensionality
         phi_shape = self.log_potentials.shape
@@ -272,86 +270,6 @@ class StructDistribution(Distribution):
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % batch_size) + 1)
             samples.append(tmp_sample)
         return torch.stack(samples)
-
-    # def rsample(
-    #     self,
-    #     sample_shape=torch.Size(),
-    #     temp=1.0,
-    #     noise_shape=None,
-    #     sample_batch_size=10,
-    # ):
-    #     r"""
-    #     Compute structured samples from the _relaxed_ distribution :math:`z \sim p(z;\theta+\gamma, \tau)`
-
-    #     This uses gumbel perturbations on the potentials followed by the >zero-temp marginals to get approximate samples.
-    #     As temp varies from 0 to inf the samples will vary from being exact onehots from an approximate distribution to
-    #     a deterministic distribution that is always uniform over all values.
-
-    #     The approximation empirically causes a "heavy-hitting" bias where a few configurations are more likely than normal
-    #     at the expense of many others, making the tail effectively longer. There is evidence however that temps closer
-    #     to 1 reduce this somewhat by smoothing the distribution.
-
-    #     Parameters:
-    #         sample_shape (int): number of samples
-    #         temp (float): (default=1.0) relaxation temperature
-    #         sample_batch_size (int): size of batches to calculates samples
-
-    #     Returns:
-    #         samples (*sample_shape x batch_shape x event_shape*)
-
-    #     """
-    #     if type(sample_shape) == int:
-    #         nsamples = sample_shape
-    #     else:
-    #         assert len(sample_shape) == 1
-    #         nsamples = sample_shape[0]
-    #     if sample_batch_size > nsamples:
-    #         sample_batch_size = nsamples
-    #     samples = []
-
-    #     if noise_shape is None:
-    #         noise_shape = self.log_potentials.shape[1:]
-
-    #     # print(noise)
-    #     assert len(noise_shape) == len(self.log_potentials.shape[1:])
-    #     assert all(
-    #         s1 == 1 or s1 == s2
-    #         for s1, s2 in zip(noise_shape, self.log_potentials.shape[1:])
-    #     ), f"Noise shapes must match dimension or be 1: got: {list(zip(noise_shape, self.log_potentials.shape[1:]))}"
-
-    #     for k in range(nsamples):
-    #         if k % sample_batch_size == 0:
-    #             shape = self.log_potentials.shape
-    #             B = shape[0]
-    #             s_log_potentials = (
-    #                 self.log_potentials.reshape(1, *shape)
-    #                 .repeat(sample_batch_size, *tuple(1 for _ in shape))
-    #                 .reshape(-1, *shape[1:])
-    #             )
-
-    #             s_lengths = self.lengths
-    #             if s_lengths is not None:
-    #                 s_shape = s_lengths.shape
-    #                 s_lengths = (
-    #                     s_lengths.reshape(1, *s_shape)
-    #                     .repeat(sample_batch_size, *tuple(1 for _ in s_shape))
-    #                     .reshape(-1, *s_shape[1:])
-    #                 )
-
-    #             noise = (
-    #                 torch.distributions.Gumbel(0, 1)
-    #                 .sample((sample_batch_size * B, *noise_shape))
-    #                 .expand_as(s_log_potentials)
-    #             ).to(s_log_potentials.device)
-    #             noisy_potentials = (s_log_potentials + noise) / temp
-
-    #             r_sample = (
-    #                 self._struct(LogSemiring)
-    #                 .marginals(noisy_potentials, s_lengths)
-    #                 .reshape(sample_batch_size, B, *shape[1:])
-    #             )
-    #             samples.append(r_sample)
-    #     return torch.cat(samples, dim=0)[:nsamples]
 
     def to_event(self, sequence, extra, lengths=None):
         "Convert simple representation to event."
