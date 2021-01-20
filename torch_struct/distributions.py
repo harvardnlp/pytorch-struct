@@ -181,7 +181,7 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def count(self):
-        "Compute the total number of parts in structure with non-zero probability."
+        "Compute the total number of structures in the CRF support set."
         ones = torch.ones_like(self.log_potentials)
         ones[self.log_potentials.eq(-float("inf"))] = 0
         return self._struct(StdSemiring).sum(ones, self.lengths)
