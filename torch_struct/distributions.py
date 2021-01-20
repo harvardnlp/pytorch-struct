@@ -190,11 +190,10 @@ class StructDistribution(Distribution):
         """
         Compute expectated value for distribution :math:`E_z[f(z)]` where f decomposes additively over the factors of p_z.
 
-        Params:
-          * values (*batch_shape x *event_shape, *value_shape): torch.FloatTensor that assigns a value to each part
-              of the structure. `values` can have 0 or more training dimensions in addition to the `event_shape`,
-              which allows for computing the expected value of, say, a vector valued function
-              (or a vector of scalar functions).
+        Parameters:
+          * values (:class: torch.FloatTensor): (*batch_shape x *event_shape, *value_shape), assigns a value to each
+              part of the structure. `values` can have 0 or more trailing dimensions in addition to the `event_shape`,
+              which allows for computing the expected value of, say, a vector valued function.
         Returns:
             expected value (*batch_shape, *value_shape)
         """
@@ -244,7 +243,7 @@ class StructDistribution(Distribution):
         "Compute the log-partition function."
         return self._struct(LogSemiring).sum(self.log_potentials, self.lengths)
 
-    def sample(self, sample_shape=torch.Size(), batch_size=10):
+    def sample(self, sample_shape=torch.Size()):
         r"""
         Compute structured samples from the distribution :math:`z \sim p(z)`.
 
@@ -255,6 +254,7 @@ class StructDistribution(Distribution):
         Returns:
             samples (*sample_shape x batch_shape x event_shape*)
         """
+        batch_size = MultiSampledSemiring.batch_size
         if type(sample_shape) == int:
             nsamples = sample_shape
         else:
@@ -474,7 +474,7 @@ class FullTreeCRF(StructDistribution):
     Implementation uses width-batched, forward-pass only
 
     * Parallel Time: :math:`O(N)` parallel merges.
-    * Forward Memory: :math:`O(N^2)`
+    * Forward Memory: :math:`O(N^3)`
 
     Compact representation:  *N x N x N xNT x NT x NT* long tensor (Same)
     """

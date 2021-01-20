@@ -1,6 +1,5 @@
 import torch
-from .helpers import _Struct, Chart
-from tqdm import tqdm
+from .helpers import _Struct
 
 A, B = 0, 1
 
@@ -93,8 +92,10 @@ class Full_CKY_CRF(_Struct):
             assert sr.times(score, L_bcast, R_bcast).shape == tuple(
                 list(sshape) + [b, N - w, NT, w, NT, NT]
             )
-#             sum_prod_w = sr.sum(sr.sum(sr.sum(sr.times(score, L_bcast, R_bcast))))
-            sum_prod_w = sr.sum(sr.times(score, L_bcast, R_bcast).reshape(*score.shape[:-3],-1))
+            #             sum_prod_w = sr.sum(sr.sum(sr.sum(sr.times(score, L_bcast, R_bcast))))
+            sum_prod_w = sr.sum(
+                sr.times(score, L_bcast, R_bcast).reshape(*score.shape[:-3], -1)
+            )
             assert sum_prod_w.shape[S:] == (
                 b,
                 N - w,
