@@ -29,14 +29,13 @@ class _Struct:
     def __init__(self, semiring=LogSemiring):
         self.semiring = semiring
 
-    def _dp(self, scores, lengths=None, force_grad=False, cache=True):
-        """Implement computation equivalent to the computing partition constant Z (if self.semiring == `_BaseSemiring`).
+    def logpartition(self, scores, lengths=None, force_grad=False):
+        """Implement computation equivalent to the computing log partition constant logZ (if self.semiring == `_BaseSemiring`).
 
         Params:
           scores: torch.FloatTensor, log potential scores for each factor of the model. Shape (* x batch size x *event_shape )
           lengths: torch.LongTensor = None, lengths of batch padded examples. Shape = ( * x batch size )
           force_grad: bool = False
-          cache: bool = True
 
         Returns:
           v: torch.Tensor, the resulting output of the dynammic program
@@ -114,26 +113,27 @@ class _Struct:
             marginals: b x (N-1) x C x C table
 
         """
-        v, edges = self.logpartition(logpotentials, lengths=lengths, force_grad=True)
-        if _raw:
-            all_m = []
-            for k in range(v.shape[0]):
-                obj = v[k].sum(dim=0)
+        with torch.autograd.enable_grad():  # in case input potentials don't have grads enabled.
+            v, edges = self.logpartition(logpotentials, lengths=lengths, force_grad=True)
+            if _raw:
+                all_m = []
+                for k in range(v.shape[0]):
+                    obj = v[k].sum(dim=0)
 
-                marg = torch.autograd.grad(
-                    obj,
-                    edges,
-                    create_graph=True,
-                    only_inputs=True,
-                    allow_unused=False,
-                )
-                all_m.append(self.semiring.unconvert(self._arrange_marginals(marg)))
-            return torch.stack(all_m, dim=0)
-        else:
-            obj = self.semiring.unconvert(v).sum(dim=0)
-            marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
-            a_m = self._arrange_marginals(marg)
-            return self.semiring.unconvert(a_m)
+                    marg = torch.autograd.grad(
+                        obj,
+                        edges,
+                        create_graph=True,
+                        only_inputs=True,
+                        allow_unused=False,
+                    )
+                    all_m.append(self.semiring.unconvert(self._arrange_marginals(marg)))
+                return torch.stack(all_m, dim=0)
+            else:
+                obj = self.semiring.unconvert(v).sum(dim=0)
+                marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
+                a_m = self._arrange_marginals(marg)
+                return self.semiring.unconvert(a_m)
 
     @staticmethod
     def to_parts(spans, extra, lengths=None):
@@ -145,12 +145,3 @@ class _Struct:
 
     def _arrange_marginals(self, marg):
         return marg[0]
-
-    # For Testing
-    def _rand(self, *args, **kwargs):
-        """TODO:"""
-        raise NotImplementedError
-
-    def enumerate(self, edge, lengths=None):
-        """TODO:"""
-        raise NotImplementedError

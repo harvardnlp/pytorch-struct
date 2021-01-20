@@ -18,6 +18,7 @@ from .semirings import (
     KMaxSemiring,
     StdSemiring,
     GumbelCRFSemiring,
+    ValueExpectationSemiring,
 )
 
 
@@ -71,17 +72,6 @@ class StructDistribution(Distribution):
         return v - self.partition
 
     @lazy_property
-    def expectation(self, values):
-        """
-        Compute expectation for distribution :math:`E_z[f(z)]` where f that decomposes additively over the parts.
-
-        Returns:
-            entropy (*batch_shape*)
-        """
-
-        return self._struct(ExpectationSemiring).sum([self.log_potentials, values], self.lengths)
-
-    @lazy_property
     def entropy(self):
         """
         Compute entropy for distribution :math:`H[z]`.
@@ -103,7 +93,9 @@ class StructDistribution(Distribution):
             cross entropy (*batch_shape*)
         """
 
-        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(CrossEntropySemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     def kl(self, other):
         """
@@ -115,7 +107,9 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        return self._struct(KLDivergenceSemiring).sum(
+            [self.log_potentials, other.log_potentials], self.lengths
+        )
 
     @lazy_property
     def max(self):
@@ -148,7 +142,9 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).sum(self.log_potentials, self.lengths, _raw=True)
+            return self._struct(KMaxSemiring(k)).sum(
+                self.log_potentials, self.lengths, _raw=True
+            )
 
     def topk(self, k):
         r"""
@@ -161,7 +157,9 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape x event_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).marginals(self.log_potentials, self.lengths, _raw=True)
+            return self._struct(KMaxSemiring(k)).marginals(
+                self.log_potentials, self.lengths, _raw=True
+            )
 
     @lazy_property
     def mode(self):
@@ -183,14 +181,56 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def count(self):
-        "Compute the log-partition function."
+        "Compute the total number of parts in structure with non-zero probability."
         ones = torch.ones_like(self.log_potentials)
         ones[self.log_potentials.eq(-float("inf"))] = 0
         return self._struct(StdSemiring).sum(ones, self.lengths)
 
+    def expected_value(self, values):
+        """
+        Compute expectated value for distribution :math:`E_z[f(z)]` where f decomposes additively over the factors of p_z.
+
+        Params:
+          * values (*batch_shape x *event_shape, *value_shape): torch.FloatTensor that assigns a value to each part
+              of the structure. `values` can have 0 or more training dimensions in addition to the `event_shape`,
+              which allows for computing the expected value of, say, a vector valued function
+              (or a vector of scalar functions).
+        Returns:
+            expected value (*batch_shape, *value_shape)
+
+
+        """
+        # Handle value function dimensionality
+        phi_shape = self.log_potentials.shape
+        extra_dims = len(values.shape) - len(phi_shape)
+        if extra_dims:
+            # Extra dims get flattened and put in front
+            out_val_shape = values.shape[len(phi_shape) :]
+            values = values.reshape(*phi_shape, -1)
+            values = values.permute([-1] + list(range(len(phi_shape))))
+            k = values.shape[0]
+        else:
+            out_val_shape = None
+            k = 1
+
+        # Compute expected value
+        val = self._struct(ValueExpectationSemiring(k)).sum(
+            [self.log_potentials, values], self.lengths
+        )
+
+        # Reformat dimensions to match input dimensions
+        val = val.permute(list(range(1, len(val.shape))) + [0])
+        if out_val_shape is not None:
+            val = val.reshape(*val.shape[:-1] + out_val_shape)
+        else:
+            val = val.squeeze(-1)
+        return val
+
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
-            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(self.log_potentials, self.lengths)
+            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
+                self.log_potentials, self.lengths
+            )
             return st_gumbel
 
     # @constraints.dependent_property
@@ -225,84 +265,93 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % batch_size == 0:
-                sample = self._struct(MultiSampledSemiring).marginals(self.log_potentials, lengths=self.lengths)
+                sample = self._struct(MultiSampledSemiring).marginals(
+                    self.log_potentials, lengths=self.lengths
+                )
                 sample = sample.detach()
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % batch_size) + 1)
             samples.append(tmp_sample)
         return torch.stack(samples)
 
-    def rsample(self, sample_shape=torch.Size(), temp=1.0, noise_shape=None, sample_batch_size=10):
-        r"""
-        Compute structured samples from the _relaxed_ distribution :math:`z \sim p(z;\theta+\gamma, \tau)`
+    # def rsample(
+    #     self,
+    #     sample_shape=torch.Size(),
+    #     temp=1.0,
+    #     noise_shape=None,
+    #     sample_batch_size=10,
+    # ):
+    #     r"""
+    #     Compute structured samples from the _relaxed_ distribution :math:`z \sim p(z;\theta+\gamma, \tau)`
 
-        This uses gumbel perturbations on the potentials followed by the >zero-temp marginals to get approximate samples.
-        As temp varies from 0 to inf the samples will vary from being exact onehots from an approximate distribution to
-        a deterministic distribution that is always uniform over all values.
+    #     This uses gumbel perturbations on the potentials followed by the >zero-temp marginals to get approximate samples.
+    #     As temp varies from 0 to inf the samples will vary from being exact onehots from an approximate distribution to
+    #     a deterministic distribution that is always uniform over all values.
 
-        The approximation empirically causes a "heavy-hitting" bias where a few configurations are more likely than normal
-        at the expense of many others, making the tail effectively longer. There is evidence however that temps closer
-        to 1 reduce this somewhat by smoothing the distribution.
+    #     The approximation empirically causes a "heavy-hitting" bias where a few configurations are more likely than normal
+    #     at the expense of many others, making the tail effectively longer. There is evidence however that temps closer
+    #     to 1 reduce this somewhat by smoothing the distribution.
 
-        Parameters:
-            sample_shape (int): number of samples
-            temp (float): (default=1.0) relaxation temperature
-            sample_batch_size (int): size of batches to calculates samples
+    #     Parameters:
+    #         sample_shape (int): number of samples
+    #         temp (float): (default=1.0) relaxation temperature
+    #         sample_batch_size (int): size of batches to calculates samples
 
-        Returns:
-            samples (*sample_shape x batch_shape x event_shape*)
+    #     Returns:
+    #         samples (*sample_shape x batch_shape x event_shape*)
 
-        """
-        if type(sample_shape) == int:
-            nsamples = sample_shape
-        else:
-            assert len(sample_shape) == 1
-            nsamples = sample_shape[0]
-        if sample_batch_size > nsamples:
-            sample_batch_size = nsamples
-        samples = []
+    #     """
+    #     if type(sample_shape) == int:
+    #         nsamples = sample_shape
+    #     else:
+    #         assert len(sample_shape) == 1
+    #         nsamples = sample_shape[0]
+    #     if sample_batch_size > nsamples:
+    #         sample_batch_size = nsamples
+    #     samples = []
 
-        if noise_shape is None:
-            noise_shape = self.log_potentials.shape[1:]
+    #     if noise_shape is None:
+    #         noise_shape = self.log_potentials.shape[1:]
 
-        # print(noise)
-        assert len(noise_shape) == len(self.log_potentials.shape[1:])
-        assert all(
-            s1 == 1 or s1 == s2 for s1, s2 in zip(noise_shape, self.log_potentials.shape[1:])
-        ), f"Noise shapes must match dimension or be 1: got: {list(zip(noise_shape, self.log_potentials.shape[1:]))}"
+    #     # print(noise)
+    #     assert len(noise_shape) == len(self.log_potentials.shape[1:])
+    #     assert all(
+    #         s1 == 1 or s1 == s2
+    #         for s1, s2 in zip(noise_shape, self.log_potentials.shape[1:])
+    #     ), f"Noise shapes must match dimension or be 1: got: {list(zip(noise_shape, self.log_potentials.shape[1:]))}"
 
-        for k in range(nsamples):
-            if k % sample_batch_size == 0:
-                shape = self.log_potentials.shape
-                B = shape[0]
-                s_log_potentials = (
-                    self.log_potentials.reshape(1, *shape)
-                    .repeat(sample_batch_size, *tuple(1 for _ in shape))
-                    .reshape(-1, *shape[1:])
-                )
+    #     for k in range(nsamples):
+    #         if k % sample_batch_size == 0:
+    #             shape = self.log_potentials.shape
+    #             B = shape[0]
+    #             s_log_potentials = (
+    #                 self.log_potentials.reshape(1, *shape)
+    #                 .repeat(sample_batch_size, *tuple(1 for _ in shape))
+    #                 .reshape(-1, *shape[1:])
+    #             )
 
-                s_lengths = self.lengths
-                if s_lengths is not None:
-                    s_shape = s_lengths.shape
-                    s_lengths = (
-                        s_lengths.reshape(1, *s_shape)
-                        .repeat(sample_batch_size, *tuple(1 for _ in s_shape))
-                        .reshape(-1, *s_shape[1:])
-                    )
+    #             s_lengths = self.lengths
+    #             if s_lengths is not None:
+    #                 s_shape = s_lengths.shape
+    #                 s_lengths = (
+    #                     s_lengths.reshape(1, *s_shape)
+    #                     .repeat(sample_batch_size, *tuple(1 for _ in s_shape))
+    #                     .reshape(-1, *s_shape[1:])
+    #                 )
 
-                noise = (
-                    torch.distributions.Gumbel(0, 1)
-                    .sample((sample_batch_size * B, *noise_shape))
-                    .expand_as(s_log_potentials)
-                ).to(s_log_potentials.device)
-                noisy_potentials = (s_log_potentials + noise) / temp
+    #             noise = (
+    #                 torch.distributions.Gumbel(0, 1)
+    #                 .sample((sample_batch_size * B, *noise_shape))
+    #                 .expand_as(s_log_potentials)
+    #             ).to(s_log_potentials.device)
+    #             noisy_potentials = (s_log_potentials + noise) / temp
 
-                r_sample = (
-                    self._struct(LogSemiring)
-                    .marginals(noisy_potentials, s_lengths)
-                    .reshape(sample_batch_size, B, *shape[1:])
-                )
-                samples.append(r_sample)
-        return torch.cat(samples, dim=0)[:nsamples]
+    #             r_sample = (
+    #                 self._struct(LogSemiring)
+    #                 .marginals(noisy_potentials, s_lengths)
+    #                 .reshape(sample_batch_size, B, *shape[1:])
+    #             )
+    #             samples.append(r_sample)
+    #     return torch.cat(samples, dim=0)[:nsamples]
 
     def to_event(self, sequence, extra, lengths=None):
         "Convert simple representation to event."
@@ -378,7 +427,9 @@ class AlignmentCRF(StructDistribution):
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap)
+        return self.struct(
+            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
+        )
 
 
 class HMM(StructDistribution):
@@ -541,7 +592,9 @@ class SentCFG(StructDistribution):
         event_shape = log_potentials[0].shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
-        super(StructDistribution, self).__init__(batch_shape=batch_shape, event_shape=event_shape)
+        super(StructDistribution, self).__init__(
+            batch_shape=batch_shape, event_shape=event_shape
+        )
 
 
 class NonProjectiveDependencyCRF(StructDistribution):
