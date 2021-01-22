@@ -18,7 +18,6 @@ from .semirings import (
     KMaxSemiring,
     StdSemiring,
     GumbelCRFSemiring,
-    ValueExpectationSemiring,
 )
 
 
@@ -93,9 +92,7 @@ class StructDistribution(Distribution):
             cross entropy (*batch_shape*)
         """
 
-        return self._struct(CrossEntropySemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
 
     def kl(self, other):
         """
@@ -107,9 +104,7 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
 
     @lazy_property
     def max(self):
@@ -142,9 +137,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).sum(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).sum(self.log_potentials, self.lengths, _raw=True)
 
     def topk(self, k):
         r"""
@@ -157,9 +150,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape x event_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).marginals(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).marginals(self.log_potentials, self.lengths, _raw=True)
 
     @lazy_property
     def mode(self):
@@ -191,44 +182,23 @@ class StructDistribution(Distribution):
         Compute expectated value for distribution :math:`E_z[f(z)]` where f decomposes additively over the factors of p_z.
 
         Parameters:
-            values (:class: torch.FloatTensor): (*batch_shape x *event_shape, *value_shape), assigns a value to each
+            values (:class: torch.FloatTensor): (*batch_shape x *event_shape x *value_shape), assigns a value to each
                 part of the structure. `values` can have 0 or more trailing dimensions in addition to the `event_shape`,
                 which allows for computing the expected value of, say, a vector valued function.
 
         Returns:
             expected value (*batch_shape, *value_shape)
         """
-        # Handle value function dimensionality
-        phi_shape = self.log_potentials.shape
-        extra_dims = len(values.shape) - len(phi_shape)
-        if extra_dims:
-            # Extra dims get flattened and put in front
-            out_val_shape = values.shape[len(phi_shape) :]
-            values = values.reshape(*phi_shape, -1)
-            values = values.permute([-1] + list(range(len(phi_shape))))
-            k = values.shape[0]
-        else:
-            out_val_shape = None
-            k = 1
-
-        # Compute expected value
-        val = self._struct(ValueExpectationSemiring(k)).sum(
-            [self.log_potentials, values], self.lengths
-        )
-
-        # Reformat dimensions to match input dimensions
-        val = val.permute(list(range(1, len(val.shape))) + [0])
-        if out_val_shape is not None:
-            val = val.reshape(*val.shape[:-1] + out_val_shape)
-        else:
-            val = val.squeeze(-1)
-        return val
+        # For these "part-level" expectations, this can be computed by multiplying the marginals element-wise
+        # on the values and summing. This is faster than the semiring because of FastLogSemiring.
+        # (w/o genbmm it's about the same.)
+        ps = self.marginals
+        ps_bcast = ps.reshape(*ps.shape, *((1,) * (len(values.shape) - len(ps.shape))))
+        return ps_bcast.mul(values).reshape(ps.shape[0], -1, *values.shape[len(ps.shape) :]).sum(1)
 
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
-            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
-                self.log_potentials, self.lengths
-            )
+            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(self.log_potentials, self.lengths)
             return st_gumbel
 
     # @constraints.dependent_property
@@ -263,9 +233,7 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % batch_size == 0:
-                sample = self._struct(MultiSampledSemiring).marginals(
-                    self.log_potentials, lengths=self.lengths
-                )
+                sample = self._struct(MultiSampledSemiring).marginals(self.log_potentials, lengths=self.lengths)
                 sample = sample.detach()
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % batch_size) + 1)
             samples.append(tmp_sample)
@@ -345,9 +313,7 @@ class AlignmentCRF(StructDistribution):
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(
-            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
-        )
+        return self.struct(sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap)
 
 
 class HMM(StructDistribution):
@@ -474,9 +440,9 @@ class FullTreeCRF(StructDistribution):
     Implementation uses width-batched, forward-pass only
 
     * Parallel Time: :math:`O(N)` parallel merges.
-    * Forward Memory: :math:`O(N^3)`
+    * Forward Memory: :math:`O(N^3 NT^3)`
 
-    Compact representation:  *N x N x N xNT x NT x NT* long tensor (Same)
+    Compact representation:  *N x N x N x NT x NT x NT* long tensor (Same)
     """
     struct = Full_CKY_CRF
 
@@ -510,9 +476,7 @@ class SentCFG(StructDistribution):
         event_shape = log_potentials[0].shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
-        super(StructDistribution, self).__init__(
-            batch_shape=batch_shape, event_shape=event_shape
-        )
+        super(StructDistribution, self).__init__(batch_shape=batch_shape, event_shape=event_shape)
 
 
 class NonProjectiveDependencyCRF(StructDistribution):
