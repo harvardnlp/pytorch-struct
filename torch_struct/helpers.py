@@ -6,11 +6,7 @@ from .semirings import LogSemiring
 class Chart:
     def __init__(self, size, potentials, semiring):
         self.data = semiring.zero_(
-            torch.zeros(
-                *((semiring.size(),) + size),
-                dtype=potentials.dtype,
-                device=potentials.device
-            )
+            torch.zeros(*((semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
         )
         self.grad = self.data.detach().clone().fill_(0.0)
 
@@ -49,6 +45,7 @@ class _Struct:
                  An exceptional case is the `CKY` struct, which takes log potential parameters from production rules
                  for a PCFG, which are by definition independent of position in the sequence.
 
+        # noqa: DAR401, DAR202
         """
         raise NotImplementedError()
 
@@ -80,11 +77,7 @@ class _Struct:
         return [
             (
                 self.semiring.zero_(
-                    torch.zeros(
-                        *((self.semiring.size(),) + size),
-                        dtype=potentials.dtype,
-                        device=potentials.device
-                    )
+                    torch.zeros(*((self.semiring.size(),) + size), dtype=potentials.dtype, device=potentials.device)
                 ).requires_grad_(force_grad and not potentials.requires_grad)
             )
             for _ in range(N)
@@ -120,9 +113,7 @@ class _Struct:
 
         """
         with torch.autograd.enable_grad():  # in case input potentials don't have grads enabled.
-            v, edges = self.logpartition(
-                logpotentials, lengths=lengths, force_grad=True
-            )
+            v, edges = self.logpartition(logpotentials, lengths=lengths, force_grad=True)
             if _raw:
                 all_m = []
                 for k in range(v.shape[0]):
@@ -139,9 +130,7 @@ class _Struct:
                 return torch.stack(all_m, dim=0)
             else:
                 obj = self.semiring.unconvert(v).sum(dim=0)
-                marg = torch.autograd.grad(
-                    obj, edges, create_graph=True, only_inputs=True, allow_unused=False
-                )
+                marg = torch.autograd.grad(obj, edges, create_graph=True, only_inputs=True, allow_unused=False)
                 a_m = self._arrange_marginals(marg)
                 return self.semiring.unconvert(a_m)
 
