@@ -15,7 +15,7 @@ setup(
     long_description=long_description,
     package_data={"torch_struct": []},
     long_description_content_type="text/markdown",
-    url="https://github.com/harvardnlp/pytorch_struct",
+    url="https://github.com/harvardnlp/pytorch-struct",
     install_requires=["torch"],
     setup_requires=["pytest-runner"],
     tests_require=["pytest"],
