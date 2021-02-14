@@ -1,8 +1,10 @@
 import torch
 
+has_genbmm = False
 try:
     import genbmm
     from genbmm import BandedMatrix
+    has_genbmm = True
 except ImportError:
     pass
 
@@ -52,7 +54,7 @@ def CheckpointSemiring(cls, min_size=0):
     class _CheckpointSemiring(cls):
         @staticmethod
         def matmul(a, b):
-            if isinstance(a, genbmm.BandedMatrix):
+            if has_genbmm and isinstance(a, genbmm.BandedMatrix):
                 lu = a.lu + b.lu
                 ld = a.ld + b.ld
                 c = _CheckBand.apply(a.data, a.lu, a.ld, b.data, b.lu, b.ld)
