@@ -13,6 +13,8 @@
   
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
 
   
   
@@ -29,12 +31,13 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -523,8 +526,8 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Log">
 <h2>Log<a class="headerlink" href="#Log" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.LogSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">LogSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.LogSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LogSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the log-space semiring (logsumexp, +, -inf, 0).</p>
 <p>Gradients give marginals.</p>
 </dd></dl>
@@ -570,8 +573,8 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Max">
 <h2>Max<a class="headerlink" href="#Max" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.MaxSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.MaxSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the max semiring (max, +, -inf, 0).</p>
 <p>Gradients give argmax.</p>
 </dd></dl>
@@ -657,8 +660,8 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Counting">
 <h2>Counting<a class="headerlink" href="#Counting" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.StdSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">StdSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.StdSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StdSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the counting semiring (+, <a href="#id1"><span class="problematic" id="id2">*</span></a>, 0, 1).</p>
 </dd></dl>
 
@@ -703,8 +706,8 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Sampled">
 <h2>Sampled<a class="headerlink" href="#Sampled" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.SampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.SampledSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give sample.</p>
 <p>This is an exact forward-filtering, backward-sampling approach.</p>
@@ -748,8 +751,8 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <dl class="py class">
-<dt id="torch_struct.MultiSampledSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">MultiSampledSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.MultiSampledSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MultiSampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give up to 16 samples with replacement.</p>
 </dd></dl>
@@ -795,15 +798,15 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Entropy">
 <h2>Entropy<a class="headerlink" href="#Entropy" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.EntropySemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">EntropySemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.EntropySemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">EntropySemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements an entropy expectation semiring.</p>
 <p>Computes both the log-values and the running distributional entropy.</p>
 <p>Based on descriptions in:</p>
 <ul class="simple">
-<li><p>Parameter estimation for probabilistic finite-state transducers <span id="id3">[<a class="reference internal" href="refs.html#id14"><span>Eis02</span></a>]</span></p></li>
-<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <span id="id4">[<a class="reference internal" href="refs.html#id9"><span>LE09</span></a>]</span></p></li>
-<li><p>Sample Selection for Statistical Grammar Induction <span id="id5">[<span>hwa2000samplesf</span>]</span></p></li>
+<li><p>Parameter estimation for probabilistic finite-state transducers <span id="id3">[<a class="reference internal" href="refs.html#id14">Eis02</a>]</span></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <span id="id4">[<a class="reference internal" href="refs.html#id9">LE09</a>]</span></p></li>
+<li><p>Sample Selection for Statistical Grammar Induction <span id="id5">[]</span></p></li>
 </ul>
 </dd></dl>
 
@@ -848,13 +851,13 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Sparsemax">
 <h2>Sparsemax<a class="headerlink" href="#Sparsemax" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
-<dt id="torch_struct.SparseMaxSemiring">
-<em class="property">class </em><code class="sig-prename descclassname">torch_struct.</code><code class="sig-name descname">SparseMaxSemiring</code><a class="reference internal" href="_modules/torch_struct/semirings/sparse_max.html#SparseMaxSemiring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="torch_struct.SparseMaxSemiring">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SparseMaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sparse_max.html#SparseMaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).</p>
 <p>Sparse-max gradients give a more sparse set of marginal like terms.</p>
 <ul class="simple">
-<li><p>From softmax to sparsemax- A sparse model of attention and multi-label classification <span id="id6">[<a class="reference internal" href="refs.html#id3"><span>MA16</span></a>]</span></p></li>
-<li><p>Differentiable dynamic programming for structured prediction and attention <span id="id7">[<a class="reference internal" href="refs.html#id4"><span>MB18</span></a>]</span></p></li>
+<li><p>From softmax to sparsemax- A sparse model of attention and multi-label classification <span id="id6">[<a class="reference internal" href="refs.html#id3">MA16</a>]</span></p></li>
+<li><p>Differentiable dynamic programming for structured prediction and attention <span id="id7">[<a class="reference internal" href="refs.html#id4">MB18</a>]</span></p></li>
 </ul>
 </dd></dl>
 
