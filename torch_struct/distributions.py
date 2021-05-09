@@ -229,7 +229,7 @@ class StructDistribution(Distribution):
 
     def to_event(self, sequence, extra, lengths=None):
         "Convert simple representation to event."
-        return self.struct.to_parts(sequence, extra, lengths=None)
+        return self.struct.to_parts(sequence, extra, lengths=lengths)
 
     def from_event(self, event):
         "Convert event to simple representation."
