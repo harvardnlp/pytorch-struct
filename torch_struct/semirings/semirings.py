@@ -20,6 +20,9 @@ def matmul(cls, a, b):
     return c
 
 
+INF = 1e5  # numerically stable large value
+
+
 class Semiring:
     """
     Base semiring class.
@@ -27,6 +30,10 @@ class Semiring:
     Based on description in:
 
     * Semiring parsing :cite:`goodman1999semiring`
+
+    Attributes:
+      * zero: the additive identity, subclasses should override
+      * one: the multiplicative identity, subclasses should override
 
     """
 
@@ -48,6 +55,11 @@ class Semiring:
         return cls.matmul(a, b).squeeze(-1).squeeze(-1)
 
     @classmethod
+    def mul(cls, a, b):
+        "Multiply a and b under the semirings"
+        raise NotImplementedError()
+
+    @classmethod
     def times(cls, *ls):
         "Multiply a list of tensors together"
         cur = ls[0]
@@ -65,20 +77,20 @@ class Semiring:
         "Unconvert from semiring by removing extra first dimension."
         return potentials.squeeze(0)
 
-    @staticmethod
-    def zero_(xs):
+    @classmethod
+    def zero_(cls, xs):
         "Fill *ssize x ...* tensor with additive identity."
-        raise NotImplementedError()
+        return xs.fill_(cls.zero)
 
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
         xs.masked_fill_(mask.unsqueeze(0), cls.zero)
 
-    @staticmethod
-    def one_(xs):
+    @classmethod
+    def one_(cls, xs):
         "Fill *ssize x ...* tensor with multiplicative identity."
-        raise NotImplementedError()
+        return xs.fill_(cls.one)
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -92,6 +104,7 @@ class Semiring:
 
 class _Base(Semiring):
     zero = 0
+    one = 1
 
     @staticmethod
     def mul(a, b):
@@ -101,17 +114,10 @@ class _Base(Semiring):
     def prod(a, dim=-1):
         return torch.prod(a, dim=dim)
 
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(0)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(1)
-
 
 class _BaseLog(Semiring):
-    zero = -1e9
+    zero = -INF
+    one = 0
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -120,14 +126,6 @@ class _BaseLog(Semiring):
     @staticmethod
     def mul(a, b):
         return a + b
-
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(-1e5)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(0.0)
 
     @staticmethod
     def prod(a, dim=-1):
@@ -277,7 +275,8 @@ class KLDivergenceSemiring(Semiring):
 
     """
 
-    zero = 0
+    zero = (-INF, -INF, 0)
+    one = (0, 0, 0)
 
     @staticmethod
     def size():
@@ -308,9 +307,7 @@ class KLDivergenceSemiring(Semiring):
             (
                 part_p,
                 part_q,
-                torch.sum(
-                    xs[2].mul(sm_p) - log_sm_q.mul(sm_p) + log_sm_p.mul(sm_p), dim=d
-                ),
+                torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p) + log_sm_p.mul(sm_p), dim=d),
             )
         )
 
@@ -325,22 +322,22 @@ class KLDivergenceSemiring(Semiring):
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, -1e5)
-        xs[2].masked_fill_(mask, 0)
+        xs[0].masked_fill_(mask, cls.zero[0])
+        xs[1].masked_fill_(mask, cls.zero[1])
+        xs[2].masked_fill_(mask, cls.zero[2])
 
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(-1e5)
-        xs[2].fill_(0)
+    @classmethod
+    def zero_(cls, xs):
+        xs[0].fill_(cls.zero[0])
+        xs[1].fill_(cls.zero[1])
+        xs[2].fill_(cls.zero[2])
         return xs
 
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        xs[2].fill_(0)
+    @classmethod
+    def one_(cls, xs):
+        xs[0].fill_(cls.one[0])
+        xs[1].fill_(cls.one[1])
+        xs[2].fill_(cls.one[2])
         return xs
 
 
@@ -357,7 +354,8 @@ class CrossEntropySemiring(Semiring):
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
-    zero = 0
+    zero = (-INF, -INF, 0)
+    one = (0, 0, 0)
 
     @staticmethod
     def size():
@@ -384,9 +382,7 @@ class CrossEntropySemiring(Semiring):
         log_sm_p = xs[0] - part_p.unsqueeze(d)
         log_sm_q = xs[1] - part_q.unsqueeze(d)
         sm_p = log_sm_p.exp()
-        return torch.stack(
-            (part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p), dim=d))
-        )
+        return torch.stack((part_p, part_q, torch.sum(xs[2].mul(sm_p) - log_sm_q.mul(sm_p), dim=d)))
 
     @staticmethod
     def mul(a, b):
@@ -399,22 +395,22 @@ class CrossEntropySemiring(Semiring):
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, -1e5)
-        xs[2].masked_fill_(mask, 0)
+        xs[0].masked_fill_(mask, cls.zero[0])
+        xs[1].masked_fill_(mask, cls.zero[1])
+        xs[2].masked_fill_(mask, cls.zero[2])
 
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(-1e5)
-        xs[2].fill_(0)
+    @classmethod
+    def zero_(cls, xs):
+        xs[0].fill_(cls.zero[0])
+        xs[1].fill_(cls.zero[1])
+        xs[2].fill_(cls.zero[2])
         return xs
 
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        xs[2].fill_(0)
+    @classmethod
+    def one_(cls, xs):
+        xs[0].fill_(cls.one[0])
+        xs[1].fill_(cls.one[1])
+        xs[2].fill_(cls.one[2])
         return xs
 
 
@@ -431,7 +427,8 @@ class EntropySemiring(Semiring):
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
-    zero = 0
+    zero = (-INF, 0)
+    one = (0, 0)
 
     @staticmethod
     def size():
@@ -468,19 +465,19 @@ class EntropySemiring(Semiring):
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, 0)
+        xs[0].masked_fill_(mask, cls.zero[0])
+        xs[1].masked_fill_(mask, cls.zero[1])
 
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(0)
+    @classmethod
+    def zero_(cls, xs):
+        xs[0].fill_(cls.zero[0])
+        xs[1].fill_(cls.zero[1])
         return xs
 
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
+    @classmethod
+    def one_(cls, xs):
+        xs[0].fill_(cls.one[0])
+        xs[1].fill_(cls.one[1])
         return xs
 
 
