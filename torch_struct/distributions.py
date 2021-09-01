@@ -61,11 +61,7 @@ class StructDistribution(Distribution):
 
         d = value.dim()
         batch_dims = range(d - len(self.event_shape))
-        v = self._struct().score(
-            self.log_potentials,
-            value.type_as(self.log_potentials),
-            batch_dims=batch_dims,
-        )
+        v = self._struct().score(self.log_potentials, value.type_as(self.log_potentials), batch_dims=batch_dims,)
 
         return v - self.partition
 
@@ -91,9 +87,7 @@ class StructDistribution(Distribution):
             cross entropy (*batch_shape*)
         """
 
-        return self._struct(CrossEntropySemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
 
     def kl(self, other):
         """
@@ -105,9 +99,7 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
 
     @lazy_property
     def max(self):
@@ -140,9 +132,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).sum(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).sum(self.log_potentials, self.lengths, _raw=True)
 
     def topk(self, k):
         r"""
@@ -155,9 +145,7 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape x event_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).marginals(
-                self.log_potentials, self.lengths, _raw=True
-            )
+            return self._struct(KMaxSemiring(k)).marginals(self.log_potentials, self.lengths, _raw=True)
 
     @lazy_property
     def mode(self):
@@ -186,9 +174,7 @@ class StructDistribution(Distribution):
 
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
-            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
-                self.log_potentials, self.lengths
-            )
+            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(self.log_potentials, self.lengths)
             return st_gumbel
 
     # @constraints.dependent_property
@@ -219,9 +205,7 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % 10 == 0:
-                sample = self._struct(MultiSampledSemiring).marginals(
-                    self.log_potentials, lengths=self.lengths
-                )
+                sample = self._struct(MultiSampledSemiring).marginals(self.log_potentials, lengths=self.lengths)
                 sample = sample.detach()
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % 10) + 1)
             samples.append(tmp_sample)
@@ -301,9 +285,7 @@ class AlignmentCRF(StructDistribution):
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(
-            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
-        )
+        return self.struct(sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap)
 
 
 class HMM(StructDistribution):
@@ -440,9 +422,7 @@ class SentCFG(StructDistribution):
         event_shape = log_potentials[0].shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
-        super(StructDistribution, self).__init__(
-            batch_shape=batch_shape, event_shape=event_shape
-        )
+        super(StructDistribution, self).__init__(batch_shape=batch_shape, event_shape=event_shape)
 
 
 class NonProjectiveDependencyCRF(StructDistribution):
@@ -507,8 +487,20 @@ class NonProjectiveDependencyCRF(StructDistribution):
         """
         Compute entropy efficiently using arc-factorization property.
 
-        See implementation notebook [here](https://colab.research.google.com/drive/1iUr78J901lMBlGVYpxSrRRmNJYX4FWyg?usp=sharing)
-        for derivation.
+        Algorithm derivation:
+        ..math::
+        {{
+            \begin{align}
+            H[p] &= E_{p(T)}[-\log p(T)]\\
+            &= -E_{p(T)}\big[ \log [\frac{1}{Z} \prod\limits_{(i,j) \in T} \exp\{\phi_{i,j}\}] \big]\\
+            &= -E_{p(T)}\big[  \sum\limits_{(i,j) \in T} \phi_{i,j} - \log Z \big]\\
+            &= \log Z -E_{p(T)}\big[\sum\limits_{(i,j) \in A} 1\{(i,j) \in T\} \phi_{i,j}\big]\\
+            &= \log Z - \sum\limits_{(i,j) \in A} p\big((i,j) \in T\big) \phi_{i,j}
+            \end{align}
+        }}
+
+        Returns:
+            entropy (*batch_shape)
         """
         logZ = self.partition
         p = self.marginals
