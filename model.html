@@ -37,7 +37,7 @@
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "document", "processHtmlClass": "math|output_area"}}</script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -90,7 +90,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="README.html">Torch-Struct: Structured Prediction Library</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Model</a><ul>
@@ -479,11 +479,11 @@ div.rendered_html tbody tr:hover {
 <dd><p>Represents structured linear-chain CRFs with C classes.</p>
 <p>For reference see:</p>
 <ul class="simple">
-<li><p>An introduction to conditional random fields <span id="id1">[<a class="reference internal" href="refs.html#id11">SM+12</a>]</span></p></li>
+<li><p>An introduction to conditional random fields <span id="id1">[<a class="reference internal" href="refs.html#id11" title="Charles Sutton, Andrew McCallum, and others. An introduction to conditional random fields. Foundations and Trends® in Machine Learning, 4(4):267–373, 2012.">SM+12</a>]</span></p></li>
 </ul>
 <p>Example application:</p>
 <ul class="simple">
-<li><p>Bidirectional LSTM-CRF Models for Sequence Tagging <span id="id2">[<a class="reference internal" href="refs.html#id12">HXY15</a>]</span></p></li>
+<li><p>Bidirectional LSTM-CRF Models for Sequence Tagging <span id="id2">[<a class="reference internal" href="refs.html#id12" title="Zhiheng Huang, Wei Xu, and Kai Yu. Bidirectional lstm-crf models for sequence tagging. arXiv preprint arXiv:1508.01991, 2015.">HXY15</a>]</span></p></li>
 </ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -765,7 +765,7 @@ div.rendered_html tbody tr:hover {
 <dd><p>Represents a projective dependency CRF.</p>
 <p>Reference:</p>
 <ul class="simple">
-<li><p>Bilexical grammars and their cubic-time parsing algorithms <span id="id3">[<a class="reference internal" href="refs.html#id13">Eis00</a>]</span></p></li>
+<li><p>Bilexical grammars and their cubic-time parsing algorithms <span id="id3">[<a class="reference internal" href="refs.html#id13" title="Jason Eisner. Bilexical grammars and their cubic-time parsing algorithms. In Advances in probabilistic and other parsing technologies, pages 29–61. Springer, 2000.">Eis00</a>]</span></p></li>
 </ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -851,8 +851,8 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 <dd><p>Represents a non-projective dependency CRF.</p>
 <p>For references see:</p>
 <ul class="simple">
-<li><p>Non-projective dependency parsing using spanning tree algorithms <span id="id4">[<a class="reference internal" href="refs.html#id6">MPRHajivc05</a>]</span></p></li>
-<li><p>Structured prediction models via the matrix-tree theorem <span id="id5">[<a class="reference internal" href="refs.html#id5">KGCPerezC07</a>]</span></p></li>
+<li><p>Non-projective dependency parsing using spanning tree algorithms <span id="id4">[<a class="reference internal" href="refs.html#id6" title="Ryan McDonald, Fernando Pereira, Kiril Ribarov, and Jan Hajič. Non-projective dependency parsing using spanning tree algorithms. In Proceedings of the conference on Human Language Technology and Empirical Methods in Natural Language Processing, 523–530. Association for Computational Linguistics, 2005.">MPRHajivc05</a>]</span></p></li>
+<li><p>Structured prediction models via the matrix-tree theorem <span id="id5">[<a class="reference internal" href="refs.html#id5" title="Terry Koo, Amir Globerson, Xavier Carreras Pérez, and Michael Collins. Structured prediction models via the matrix-tree theorem. In Joint Conference on Empirical Methods in Natural Language Processing and Computational Natural Language Learning (EMNLP-CoNLL), 141–150. 2007.">KGCPerezC07</a>]</span></p></li>
 </ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -899,7 +899,7 @@ arc scores with root scores on diagonal e.g.
 fast CKY algorithm.</p>
 <p>For example usage see:</p>
 <ul class="simple">
-<li><p>A Minimal Span-Based Neural Constituency Parser <span id="id6">[<a class="reference internal" href="refs.html#id10">SAK17</a>]</span></p></li>
+<li><p>A Minimal Span-Based Neural Constituency Parser <span id="id6">[<a class="reference internal" href="refs.html#id10" title="Mitchell Stern, Jacob Andreas, and Dan Klein. A minimal span-based neural constituency parser. arXiv preprint arXiv:1705.03919, 2017.">SAK17</a>]</span></p></li>
 </ul>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -1110,7 +1110,7 @@ logits (<em>batch x N x C</em>)</p>
 <dd><p>Compute differentiable scheduled sampling using greedy search.</p>
 <p>Based on:</p>
 <ul class="simple">
-<li><p>Differentiable Scheduled Sampling for Credit Assignment <span id="id7">[<a class="reference internal" href="refs.html#id16">GDBK17</a>]</span></p></li>
+<li><p>Differentiable Scheduled Sampling for Credit Assignment <span id="id7">[<a class="reference internal" href="refs.html#id16" title="Kartik Goyal, Chris Dyer, and Taylor Berg-Kirkpatrick. Differentiable scheduled sampling for credit assignment. arXiv preprint arXiv:1704.06970, 2017.">GDBK17</a>]</span></p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1145,7 +1145,7 @@ logits (<em>batch x N x C</em>)</p>
 <p>Based on:</p>
 <ul class="simple">
 <li><dl class="simple">
-<dt>Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</dt><dd><p>Sampling Sequences Without Replacement <span id="id8">[<a class="reference internal" href="refs.html#id15">KvHW19</a>]</span></p>
+<dt>Stochastic Beams and Where to Find Them: The Gumbel-Top-k Trick for</dt><dd><p>Sampling Sequences Without Replacement <span id="id8">[<a class="reference internal" href="refs.html#id15" title="Wouter Kool, Herke van Hoof, and Max Welling. Stochastic beams and where to find them: the gumbel-top-k trick for sampling sequences without replacement. CoRR, 2019. URL: http://arxiv.org/abs/1903.06059, arXiv:1903.06059.">KvHW19</a>]</span></p>
 </dd>
 </dl>
 </li>
@@ -1389,9 +1389,9 @@ torch.Size([5, 10, 4])
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
 <ul class="simple">
-<li><p>Inside-outside and forward-backward algorithms are just backprop <span id="id9">[<a class="reference internal" href="refs.html#id7">Eis16</a>]</span></p></li>
-<li><p>Semiring Parsing <span id="id10">[<a class="reference internal" href="refs.html#id8">Goo99</a>]</span></p></li>
-<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <span id="id11">[<a class="reference internal" href="refs.html#id9">LE09</a>]</span></p></li>
+<li><p>Inside-outside and forward-backward algorithms are just backprop <span id="id9">[<a class="reference internal" href="refs.html#id7" title="Jason Eisner. Inside-outside and forward-backward algorithms are just backprop (tutorial paper). In Proceedings of the Workshop on Structured Prediction for NLP, 1–17. 2016.">Eis16</a>]</span></p></li>
+<li><p>Semiring Parsing <span id="id10">[<a class="reference internal" href="refs.html#id8" title="Joshua Goodman. Semiring parsing. Computational Linguistics, 25(4):573–605, 1999.">Goo99</a>]</span></p></li>
+<li><p>First-and second-order expectation semirings with applications to minimum-risk training on translation forests <span id="id11">[<a class="reference internal" href="refs.html#id9" title="Zhifei Li and Jason Eisner. First-and second-order expectation semirings with applications to minimum-risk training on translation forests. In Proceedings of the 2009 Conference on Empirical Methods in Natural Language Processing: Volume 1-Volume 1, 40–51. Association for Computational Linguistics, 2009.">LE09</a>]</span></p></li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
