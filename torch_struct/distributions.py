@@ -484,7 +484,7 @@ class NonProjectiveDependencyCRF(StructDistribution):
 
     @lazy_property
     def entropy(self):
-        """
+        r"""
         Compute entropy efficiently using arc-factorization property.
 
         Algorithm derivation:
