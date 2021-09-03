@@ -76,6 +76,18 @@ def test_simple(data, seed):
     dist.kmax(5)
     dist.count
 
+    val_func = torch.rand(*vals.shape, 10)
+    E_val = dist.expected_value(val_func)
+    struct_vals = (
+        edges.unsqueeze(-1)
+        .mul(val_func.unsqueeze(0))
+        .reshape(*edges.shape[:2], -1, val_func.shape[-1])
+        .sum(2)
+    )
+    assert torch.isclose(
+        E_val, log_probs.exp().unsqueeze(-1).mul(struct_vals).sum(0)
+    ).all(), "Efficient expected value not equal to enumeration"
+
 
 @given(data(), integers(min_value=1, max_value=20))
 @settings(max_examples=50, deadline=None)

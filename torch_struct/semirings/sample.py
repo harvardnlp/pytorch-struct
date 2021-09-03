@@ -215,6 +215,8 @@ class MultiSampledSemiring(_BaseLog):
     "Gradients" give up to 16 samples with replacement.
     """
 
+    batch_size = 10
+
     @staticmethod
     def sum(xs, dim=-1):
         return _MultiSampledLogSumExp.apply(xs, dim)
