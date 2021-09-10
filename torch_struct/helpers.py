@@ -5,13 +5,13 @@ from .semirings import LogSemiring
 
 class Chart:
     def __init__(self, size, potentials, semiring):
-        self.data = semiring.zero_(
-            torch.zeros(
+        zero = semiring.zero
+        self.data = torch.zeros(
                 *((semiring.size(),) + size),
                 dtype=potentials.dtype,
                 device=potentials.device
             )
-        )
+        self.data[:] = zero.view((semiring.size(),) + (1,) * len(size))
         self.grad = self.data.detach().clone().fill_(0.0)
 
     def __getitem__(self, ind):
@@ -50,18 +50,18 @@ class _Struct:
         return self._make_chart(1, size, potentials, force_grad)[0]
 
     def _make_chart(self, N, size, potentials, force_grad=False):
-        return [
-            (
-                self.semiring.zero_(
-                    torch.zeros(
+        chart = []
+        for _ in range(N):
+            data = torch.zeros(
                         *((self.semiring.size(),) + size),
                         dtype=potentials.dtype,
                         device=potentials.device
                     )
-                ).requires_grad_(force_grad and not potentials.requires_grad)
-            )
-            for _ in range(N)
-        ]
+            data[:] = self.semiring.zero.view((self.semiring.size(),) + (1,) * len(size))
+            print("data", data)
+            data.requires_grad_(force_grad and not potentials.requires_grad)
+            chart.append(data)
+        return chart
 
     def sum(self, logpotentials, lengths=None, _raw=False):
         """

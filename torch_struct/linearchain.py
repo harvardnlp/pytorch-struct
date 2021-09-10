@@ -53,8 +53,9 @@ class LinearChain(_Struct):
         chart = self._chart((batch, bin_N, C, C), log_potentials, force_grad)
 
         # Init
-        semiring.one_(chart[:, :, :].diagonal(0, 3, 4))
-
+        init = torch.zeros(*chart.shape).bool()
+        init.diagonal(0, 3, 4).fill_(True)
+        chart = torch.where(init, semiring.one.type_as(chart), chart)
         # Length mask
         big = torch.zeros(
             ssize,
@@ -71,8 +72,8 @@ class LinearChain(_Struct):
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N).type_as(c)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1).to(lp.device)
-        semiring.zero_mask_(lp.data, mask)
-        semiring.zero_mask_(c.data, (~mask))
+        lp.data = torch.where(mask, semiring.zero.type_as(lp), lp.data)
+        c.data = torch.where(~mask, semiring.zero.type_as(c), c.data)
 
         c[:] = semiring.sum(torch.stack([c.data, lp], dim=-1))
 

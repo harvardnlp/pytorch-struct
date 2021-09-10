@@ -119,9 +119,15 @@ class DepTree(_Struct):
             lengths = torch.LongTensor([N - 1] * batch).to(arc_scores.device)
         assert max(lengths) <= N, "Length longer than N"
         arc_scores = semiring.convert(arc_scores)
+
+        cond = torch.zeros_like(arc_scores).bool()
         for b in range(batch):
-            semiring.zero_(arc_scores[:, b, lengths[b] + 1 :, :])
-            semiring.zero_(arc_scores[:, b, :, lengths[b] + 1 :])
+            cond[:, b, lengths[b] + 1 :, :] = True
+            cond[:, b, :, lengths[b] + 1 :] = True
+        arc_scores = torch.where(cond,
+                                 torch.tensor(semiring.zero).type_as(arc_scores),
+                                 arc_scores)
+        
 
         return arc_scores, batch, N, lengths
 

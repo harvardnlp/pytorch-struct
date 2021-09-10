@@ -3,7 +3,6 @@ import torch
 has_genbmm = False
 try:
     import genbmm
-
     has_genbmm = True
 except ImportError:
     pass
@@ -33,6 +32,7 @@ class Semiring:
     @classmethod
     def matmul(cls, a, b):
         "Generalized tensordot. Classes should override."
+        print(a.shape, b.shape)
         return matmul(cls, a, b)
 
     @classmethod
@@ -65,20 +65,10 @@ class Semiring:
         "Unconvert from semiring by removing extra first dimension."
         return potentials.squeeze(0)
 
-    @staticmethod
-    def zero_(xs):
-        "Fill *ssize x ...* tensor with additive identity."
-        raise NotImplementedError()
-
     @classmethod
     def zero_mask_(cls, xs, mask):
         "Fill *ssize x ...* tensor with additive identity."
         xs.masked_fill_(mask.unsqueeze(0), cls.zero)
-
-    @staticmethod
-    def one_(xs):
-        "Fill *ssize x ...* tensor with multiplicative identity."
-        raise NotImplementedError()
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -91,8 +81,9 @@ class Semiring:
 
 
 class _Base(Semiring):
-    zero = 0
-
+    zero = torch.tensor(0)
+    one = torch.tensor(1)
+    
     @staticmethod
     def mul(a, b):
         return torch.mul(a, b)
@@ -101,17 +92,9 @@ class _Base(Semiring):
     def prod(a, dim=-1):
         return torch.prod(a, dim=dim)
 
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(0)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(1)
-
-
 class _BaseLog(Semiring):
-    zero = -1e9
+    zero = torch.tensor(-1e5)
+    one = torch.tensor(0.0)
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -120,14 +103,6 @@ class _BaseLog(Semiring):
     @staticmethod
     def mul(a, b):
         return a + b
-
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(-1e5)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(0.0)
 
     @staticmethod
     def prod(a, dim=-1):
@@ -277,7 +252,7 @@ class KLDivergenceSemiring(Semiring):
 
     """
 
-    zero = 0
+    zero = torch.tensor(0)
 
     @staticmethod
     def size():
@@ -357,7 +332,7 @@ class CrossEntropySemiring(Semiring):
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
-    zero = 0
+    zero = torch.tensor(0)
 
     @staticmethod
     def size():

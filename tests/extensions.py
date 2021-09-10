@@ -15,7 +15,7 @@ class LinearChainTest:
         N = draw(integers(min_value=min_n, max_value=3))
         C = draw(integers(min_value=2, max_value=3))
         logp = draw(
-            arrays(np.float, (b, N, C, C), floats(min_value=-100.0, max_value=100.0))
+            arrays(np.float64, (b, N, C, C), floats(min_value=-100.0, max_value=100.0))
         )
         return torch.tensor(logp), (b, (N + 1))
 
@@ -26,7 +26,9 @@ class LinearChainTest:
         semiring = semiring
         ssize = semiring.size()
         edge, batch, N, C, lengths = model._check_potentials(edge, lengths)
-        chains = [[([c], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)]]
+        ones = torch.zeros(ssize, batch)
+        ones[:] = semiring.one.view((ssize, 1))
+        chains = [[([c], ones) for c in range(C)]]
 
         enum_lengths = torch.LongTensor(lengths.shape)
         for n in range(1, N):
@@ -76,7 +78,7 @@ class DepTreeTest:
         b = draw(integers(min_value=2, max_value=3))
         N = draw(integers(min_value=2, max_value=3))
         logp = draw(
-            arrays(np.float, (b, N, N), floats(min_value=-10.0, max_value=10.0))
+            arrays(np.float64, (b, N, N), floats(min_value=-10.0, max_value=10.0))
         )
         return torch.tensor(logp), (b, N)
 
@@ -117,7 +119,7 @@ class SemiMarkovTest:
         K = draw(integers(min_value=2, max_value=3))
         C = draw(integers(min_value=2, max_value=3))
         logp = draw(
-            arrays(np.float, (b, N, K, C, C), floats(min_value=-100.0, max_value=100.0))
+            arrays(np.float64, (b, N, K, C, C), floats(min_value=-100.0, max_value=100.0))
         )
         return torch.tensor(logp), (b, (N + 1))
 
@@ -228,7 +230,7 @@ class CKY_CRFTest:
         NT = draw(integers(min_value=2, max_value=4))
         logp = draw(
             arrays(
-                np.float, (batch, N, N, NT), floats(min_value=-100.0, max_value=100.0)
+                np.float64, (batch, N, N, NT), floats(min_value=-100.0, max_value=100.0)
             )
         )
         return torch.tensor(logp), (batch, N)
@@ -270,17 +272,17 @@ class CKYTest:
         NT = draw(integers(min_value=2, max_value=3))
         T = draw(integers(min_value=2, max_value=3))
         terms = draw(
-            arrays(np.float, (batch, N, T), floats(min_value=-100.0, max_value=100.0))
+            arrays(np.float64, (batch, N, T), floats(min_value=-100.0, max_value=100.0))
         )
         rules = draw(
             arrays(
-                np.float,
+                np.float64,
                 (batch, NT, NT + T, NT + T),
                 floats(min_value=-100.0, max_value=100.0),
             )
         )
         roots = draw(
-            arrays(np.float, (batch, NT), floats(min_value=-100.0, max_value=100.0))
+            arrays(np.float64, (batch, NT), floats(min_value=-100.0, max_value=100.0))
         )
         return (torch.tensor(terms), torch.tensor(rules), torch.tensor(roots)), (
             batch,
