@@ -4,6 +4,7 @@ has_genbmm = False
 try:
     import genbmm
     from genbmm import BandedMatrix
+
     has_genbmm = True
 except ImportError:
     pass

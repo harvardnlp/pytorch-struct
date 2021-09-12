@@ -47,6 +47,12 @@ class Semiring:
         b = b.unsqueeze(-1)
         return cls.matmul(a, b).squeeze(-1).squeeze(-1)
 
+    @staticmethod
+    def fill(c, mask, v):
+        return torch.where(
+            mask, v.type_as(c).view((-1,) + (1,) * (len(c.shape) - 1)), c
+        )
+
     @classmethod
     def times(cls, *ls):
         "Multiply a list of tensors together"
@@ -66,21 +72,6 @@ class Semiring:
         return potentials.squeeze(0)
 
     @staticmethod
-    def zero_(xs):
-        "Fill *ssize x ...* tensor with additive identity."
-        raise NotImplementedError()
-
-    @classmethod
-    def zero_mask_(cls, xs, mask):
-        "Fill *ssize x ...* tensor with additive identity."
-        xs.masked_fill_(mask.unsqueeze(0), cls.zero)
-
-    @staticmethod
-    def one_(xs):
-        "Fill *ssize x ...* tensor with multiplicative identity."
-        raise NotImplementedError()
-
-    @staticmethod
     def sum(xs, dim=-1):
         "Sum over *dim* of tensor."
         raise NotImplementedError()
@@ -91,7 +82,8 @@ class Semiring:
 
 
 class _Base(Semiring):
-    zero = 0
+    zero = torch.tensor(0.0)
+    one = torch.tensor(1.0)
 
     @staticmethod
     def mul(a, b):
@@ -101,17 +93,10 @@ class _Base(Semiring):
     def prod(a, dim=-1):
         return torch.prod(a, dim=dim)
 
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(0)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(1)
-
 
 class _BaseLog(Semiring):
-    zero = -1e9
+    zero = torch.tensor(-1e5)
+    one = torch.tensor(-0.0)
 
     @staticmethod
     def sum(xs, dim=-1):
@@ -120,14 +105,6 @@ class _BaseLog(Semiring):
     @staticmethod
     def mul(a, b):
         return a + b
-
-    @staticmethod
-    def zero_(xs):
-        return xs.fill_(-1e5)
-
-    @staticmethod
-    def one_(xs):
-        return xs.fill_(0.0)
 
     @staticmethod
     def prod(a, dim=-1):
@@ -200,6 +177,10 @@ def KMaxSemiring(k):
     "Implements the k-max semiring (kmax, +, [-inf, -inf..], [0, -inf, ...])."
 
     class KMaxSemiring(_BaseLog):
+
+        zero = torch.tensor([-1e5 for i in range(k)])
+        one = torch.tensor([0 if i == 0 else -1e5 for i in range(k)])
+
         @staticmethod
         def size():
             return k
@@ -211,15 +192,9 @@ def KMaxSemiring(k):
                 dtype=orig_potentials.dtype,
                 device=orig_potentials.device,
             )
-            cls.zero_(potentials)
+            potentials = cls.fill(potentials, torch.tensor(True), cls.zero)
             potentials[0] = orig_potentials
             return potentials
-
-        @classmethod
-        def one_(cls, xs):
-            cls.zero_(xs)
-            xs[0].fill_(0)
-            return xs
 
         @staticmethod
         def unconvert(potentials):
@@ -277,7 +252,8 @@ class KLDivergenceSemiring(Semiring):
 
     """
 
-    zero = 0
+    zero = torch.tensor([-1e5, -1e5, 0.0])
+    one = torch.tensor([0.0, 0.0, 0.0])
 
     @staticmethod
     def size():
@@ -322,27 +298,6 @@ class KLDivergenceSemiring(Semiring):
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
 
-    @classmethod
-    def zero_mask_(cls, xs, mask):
-        "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, -1e5)
-        xs[2].masked_fill_(mask, 0)
-
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(-1e5)
-        xs[2].fill_(0)
-        return xs
-
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        xs[2].fill_(0)
-        return xs
-
 
 class CrossEntropySemiring(Semiring):
     """
@@ -357,7 +312,8 @@ class CrossEntropySemiring(Semiring):
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
-    zero = 0
+    zero = torch.tensor([-1e5, -1e5, 0.0])
+    one = torch.tensor([0.0, 0.0, 0.0])
 
     @staticmethod
     def size():
@@ -396,27 +352,6 @@ class CrossEntropySemiring(Semiring):
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
 
-    @classmethod
-    def zero_mask_(cls, xs, mask):
-        "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, -1e5)
-        xs[2].masked_fill_(mask, 0)
-
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(-1e5)
-        xs[2].fill_(0)
-        return xs
-
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        xs[2].fill_(0)
-        return xs
-
 
 class EntropySemiring(Semiring):
     """
@@ -431,7 +366,8 @@ class EntropySemiring(Semiring):
     * Sample Selection for Statistical Grammar Induction :cite:`hwa2000samplesf`
     """
 
-    zero = 0
+    zero = torch.tensor([-1e5, 0.0])
+    one = torch.tensor([0.0, 0.0])
 
     @staticmethod
     def size():
@@ -464,24 +400,6 @@ class EntropySemiring(Semiring):
     @classmethod
     def prod(cls, xs, dim=-1):
         return xs.sum(dim)
-
-    @classmethod
-    def zero_mask_(cls, xs, mask):
-        "Fill *ssize x ...* tensor with additive identity."
-        xs[0].masked_fill_(mask, -1e5)
-        xs[1].masked_fill_(mask, 0)
-
-    @staticmethod
-    def zero_(xs):
-        xs[0].fill_(-1e5)
-        xs[1].fill_(0)
-        return xs
-
-    @staticmethod
-    def one_(xs):
-        xs[0].fill_(0)
-        xs[1].fill_(0)
-        return xs
 
 
 def TempMax(alpha):
