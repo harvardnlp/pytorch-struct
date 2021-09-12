@@ -36,6 +36,7 @@ class StructDistribution(Distribution):
         log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`
         lengths (long tensor, batch_shape) : integers for length masking
     """
+    validate_args = False
 
     def __init__(self, log_potentials, lengths=None, args={}):
         batch_shape = log_potentials.shape[:1]
