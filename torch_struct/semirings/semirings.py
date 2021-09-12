@@ -252,7 +252,8 @@ class KLDivergenceSemiring(Semiring):
 
     """
 
-    zero = torch.tensor(0.0)
+    zero = torch.tensor([-1e5, -1e5, 0.0])
+    one = torch.tensor([0.0, 0.0, 0.0])
 
     @staticmethod
     def size():
