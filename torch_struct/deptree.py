@@ -66,10 +66,22 @@ class DepTree(_Struct):
             ]
             for _ in range(2)
         ]
-        semiring.one_(alpha[A][C][L].data[:, :, :, 0].data)
-        semiring.one_(alpha[A][C][R].data[:, :, :, 0].data)
-        semiring.one_(alpha[B][C][L].data[:, :, :, -1].data)
-        semiring.one_(alpha[B][C][R].data[:, :, :, -1].data)
+        mask = torch.zeros(alpha[A][C][L].data.shape).bool()
+        mask[:, :, :, 0].fill_(True)
+        alpha[A][C][L].data[:] = semiring.fill(
+            alpha[A][C][L].data[:], mask, semiring.one
+        )
+        alpha[A][C][R].data[:] = semiring.fill(
+            alpha[A][C][R].data[:], mask, semiring.one
+        )
+        mask = torch.zeros(alpha[B][C][L].data[:].shape).bool()
+        mask[:, :, :, -1].fill_(True)
+        alpha[B][C][L].data[:] = semiring.fill(
+            alpha[B][C][L].data[:], mask, semiring.one
+        )
+        alpha[B][C][R].data[:] = semiring.fill(
+            alpha[B][C][R].data[:], mask, semiring.one
+        )
 
         if multiroot:
             start_idx = 0
@@ -119,10 +131,13 @@ class DepTree(_Struct):
             lengths = torch.LongTensor([N - 1] * batch).to(arc_scores.device)
         assert max(lengths) <= N, "Length longer than N"
         arc_scores = semiring.convert(arc_scores)
-        for b in range(batch):
-            semiring.zero_(arc_scores[:, b, lengths[b] + 1 :, :])
-            semiring.zero_(arc_scores[:, b, :, lengths[b] + 1 :])
 
+        # Set the extra elements of the log-potentials to zero.
+        keep = torch.ones_like(arc_scores).bool()
+        for b in range(batch):
+            keep[:, b, lengths[b] + 1 :, :].fill_(0.0)
+            keep[:, b, :, lengths[b] + 1 :].fill_(0.0)
+        arc_scores = semiring.fill(arc_scores, ~keep, semiring.zero)
         return arc_scores, batch, N, lengths
 
     def _arrange_marginals(self, grads):

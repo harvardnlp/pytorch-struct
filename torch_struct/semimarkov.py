@@ -34,7 +34,9 @@ class SemiMarkov(_Struct):
         )
 
         # Init.
-        semiring.one_(init.data[:, :, :, 0, 0].diagonal(0, -2, -1))
+        mask = torch.zeros(*init.shape).bool()
+        mask[:, :, :, 0, 0].diagonal(0, -2, -1).fill_(True)
+        init = semiring.fill(init, mask, semiring.one)
 
         # Length mask
         big = torch.zeros(
@@ -54,16 +56,16 @@ class SemiMarkov(_Struct):
         mask = mask.to(log_potentials.device)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
-        semiring.zero_mask_(lp.data, mask)
-        semiring.zero_mask_(c.data[:, :, :, 0], (~mask))
+        lp.data = semiring.fill(lp.data, mask, semiring.zero)
+        m = semiring.fill(c.data[:, :, :, 0], (~mask), semiring.zero)
         c[:, :, : K - 1, 0] = semiring.sum(
-            torch.stack([c.data[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
+            torch.stack([m.data[:, :, : K - 1], lp[:, :, 1:K]], dim=-1)
         )
         end = torch.min(lengths) - 1
+        mask = torch.zeros(*init.shape).bool()
         for k in range(1, K - 1):
-            semiring.one_(
-                init.data[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1)
-            )
+            mask[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1).fill_(True)
+        init = semiring.fill(init, mask, semiring.one)
 
         K_1 = K - 1
 
