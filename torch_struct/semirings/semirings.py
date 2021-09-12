@@ -47,6 +47,7 @@ class Semiring:
         b = b.unsqueeze(-1)
         return cls.matmul(a, b).squeeze(-1).squeeze(-1)
 
+    @staticmethod
     def fill(c, mask, v):
         return torch.where(
             mask, v.type_as(c).view((-1,) + (1,) * (len(c.shape) - 1)), c
