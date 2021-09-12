@@ -197,6 +197,7 @@
 <span class="sd">        log_potentials (tensor, batch_shape x event_shape) :  log-potentials :math:`\phi`</span>
 <span class="sd">        lengths (long tensor, batch_shape) : integers for length masking</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">validate_args</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log_potentials</span><span class="p">,</span> <span class="n">lengths</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">batch_shape</span> <span class="o">=</span> <span class="n">log_potentials</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
