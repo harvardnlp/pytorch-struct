@@ -73,10 +73,10 @@ class LinearChain(_Struct):
         mask = torch.arange(bin_N).view(1, bin_N).expand(batch, bin_N).type_as(c)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1).to(lp.device)
-        lp.data = semiring.fill(lp, mask, semiring.zero)
-        m = semiring.fill(c.data, ~mask, semiring.zero)
+        lp.data[:] = semiring.fill(lp.data, mask, semiring.zero)
+        c.data[:] = semiring.fill(c.data, ~mask, semiring.zero)
 
-        c[:] = semiring.sum(torch.stack([m, lp], dim=-1))
+        c[:] = semiring.sum(torch.stack([c.data, lp], dim=-1))
 
         # Scan
         for n in range(1, log_N + 1):

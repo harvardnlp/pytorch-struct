@@ -56,10 +56,10 @@ class SemiMarkov(_Struct):
         mask = mask.to(log_potentials.device)
         mask = mask >= (lengths - 1).view(batch, 1)
         mask = mask.view(batch * bin_N, 1, 1, 1).to(lp.device)
-        lp.data = semiring.fill(lp.data, mask, semiring.zero)
-        m = semiring.fill(c.data[:, :, :, 0], (~mask), semiring.zero)
+        lp.data[:] = semiring.fill(lp.data, mask, semiring.zero)
+        c.data[:, :, :, 0] = semiring.fill(c.data[:, :, :, 0], (~mask), semiring.zero)
         c[:, :, : K - 1, 0] = semiring.sum(
-            torch.stack([m.data[:, :, : K - 1], lp[:, :, 1:K]], dim=-1)
+            torch.stack([c.data[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
         )
         end = torch.min(lengths) - 1
         mask = torch.zeros(*init.shape).bool()
