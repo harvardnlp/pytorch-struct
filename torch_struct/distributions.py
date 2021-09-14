@@ -10,9 +10,6 @@ from .cky_crf import CKY_CRF
 from .semirings import (
     LogSemiring,
     MaxSemiring,
-    EntropySemiring,
-    CrossEntropySemiring,
-    KLDivergenceSemiring,
     MultiSampledSemiring,
     KMaxSemiring,
     StdSemiring,
@@ -61,20 +58,39 @@ class StructDistribution(Distribution):
 
         d = value.dim()
         batch_dims = range(d - len(self.event_shape))
-        v = self._struct().score(self.log_potentials, value.type_as(self.log_potentials), batch_dims=batch_dims,)
+        v = self._struct().score(
+            self.log_potentials,
+            value.type_as(self.log_potentials),
+            batch_dims=batch_dims,
+        )
 
         return v - self.partition
 
     @lazy_property
     def entropy(self):
         """
-        Compute entropy for distribution :math:`H[z]`.
+        Compute entropy for distribution :math:`H[p]`.
+
+        Algorithm derivation:
+        ..math::
+        {{
+            \begin{align}
+            H[p] &= E_{p(z)}[-\log p(z)]\\
+            &= -E_{p(z)}\big[ \log [\frac{1}{Z} \prod\limits_{c \in \mathcal{C}} \exp\{\phi_c(z_c)\}] \big]\\
+            &= -E_{p(z)}\big[  \sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c) - \log Z \big]\\
+            &= \log Z -E_{p(z)}\big[\sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c)\big]\\
+            &= \log Z - \sum\limits_{c \in \mathcal{C}} p(z_c) \phi_{c}(z_c)
+            \end{align}
+        }}
 
         Returns:
             entropy (*batch_shape*)
         """
-
-        return self._struct(EntropySemiring).sum(self.log_potentials, self.lengths)
+        logZ = self.partition
+        p = self.marginals
+        phi = self.log_potentials
+        Hz = logZ - (p * phi).reshape(p.shape[0], -1).sum(-1)
+        return Hz
 
     def cross_entropy(self, other):
         """
@@ -86,8 +102,11 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-
-        return self._struct(CrossEntropySemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        logZ = other.partition
+        p = self.marginals
+        phi_q = other.log_potentials
+        Hq = logZ - (p * phi_q).reshape(p.shape[0], -1).sum(-1)
+        return Hq
 
     def kl(self, other):
         """
@@ -97,9 +116,15 @@ class StructDistribution(Distribution):
             other : Comparison distribution
 
         Returns:
-            cross entropy (*batch_shape*)
+            kl divergence (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum([self.log_potentials, other.log_potentials], self.lengths)
+        logZp = self.partition
+        logZq = other.partition
+        p = self.marginals
+        phi_p = self.log_potentials
+        phi_q = other.log_potentials
+        KLpq = (p * (phi_p - phi_q)).reshape(p.shape[0], -1).sum(-1) - logZp + logZq
+        return KLpq
 
     @lazy_property
     def max(self):
@@ -132,7 +157,9 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).sum(self.log_potentials, self.lengths, _raw=True)
+            return self._struct(KMaxSemiring(k)).sum(
+                self.log_potentials, self.lengths, _raw=True
+            )
 
     def topk(self, k):
         r"""
@@ -145,7 +172,9 @@ class StructDistribution(Distribution):
             kmax (*k x batch_shape x event_shape*)
         """
         with torch.enable_grad():
-            return self._struct(KMaxSemiring(k)).marginals(self.log_potentials, self.lengths, _raw=True)
+            return self._struct(KMaxSemiring(k)).marginals(
+                self.log_potentials, self.lengths, _raw=True
+            )
 
     @lazy_property
     def mode(self):
@@ -174,7 +203,9 @@ class StructDistribution(Distribution):
 
     def gumbel_crf(self, temperature=1.0):
         with torch.enable_grad():
-            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(self.log_potentials, self.lengths)
+            st_gumbel = self._struct(GumbelCRFSemiring(temperature)).marginals(
+                self.log_potentials, self.lengths
+            )
             return st_gumbel
 
     # @constraints.dependent_property
@@ -205,7 +236,9 @@ class StructDistribution(Distribution):
         samples = []
         for k in range(nsamples):
             if k % 10 == 0:
-                sample = self._struct(MultiSampledSemiring).marginals(self.log_potentials, lengths=self.lengths)
+                sample = self._struct(MultiSampledSemiring).marginals(
+                    self.log_potentials, lengths=self.lengths
+                )
                 sample = sample.detach()
             tmp_sample = MultiSampledSemiring.to_discrete(sample, (k % 10) + 1)
             samples.append(tmp_sample)
@@ -285,7 +318,9 @@ class AlignmentCRF(StructDistribution):
         super().__init__(log_potentials, lengths)
 
     def _struct(self, sr=None):
-        return self.struct(sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap)
+        return self.struct(
+            sr if sr is not None else LogSemiring, self.local, max_gap=self.max_gap
+        )
 
 
 class HMM(StructDistribution):
@@ -422,7 +457,9 @@ class SentCFG(StructDistribution):
         event_shape = log_potentials[0].shape[1:]
         self.log_potentials = log_potentials
         self.lengths = lengths
-        super(StructDistribution, self).__init__(batch_shape=batch_shape, event_shape=event_shape)
+        super(StructDistribution, self).__init__(
+            batch_shape=batch_shape, event_shape=event_shape
+        )
 
 
 class NonProjectiveDependencyCRF(StructDistribution):
@@ -450,6 +487,23 @@ class NonProjectiveDependencyCRF(StructDistribution):
     def __init__(self, log_potentials, lengths=None, args={}, multiroot=False):
         super(NonProjectiveDependencyCRF, self).__init__(log_potentials, lengths, args)
         self.multiroot = multiroot
+
+    def log_prob(self, value):
+        """
+        Compute log probability over values :math:`p(z)`.
+
+        Parameters:
+            value (tensor): One-hot events (*sample_shape x batch_shape x event_shape*)
+
+        Returns:
+            log_probs (*sample_shape x batch_shape*)
+        """
+        s = value.shape
+        # assumes values do not have any 1s outside of the lengths
+        value_total_log_potentials = (
+            (value * self.log_potentials.expand(s)).reshape(*s[:-2], -1).sum(-1)
+        )
+        return value_total_log_potentials - self.partition
 
     @lazy_property
     def marginals(self):
@@ -481,29 +535,3 @@ class NonProjectiveDependencyCRF(StructDistribution):
         (Currently not implemented)
         """
         pass
-
-    @lazy_property
-    def entropy(self):
-        """
-        Compute entropy efficiently using arc-factorization property.
-
-        Algorithm derivation:
-        ..math::
-        {{
-            \begin{align}
-            H[p] &= E_{p(T)}[-\log p(T)]\\
-            &= -E_{p(T)}\big[ \log [\frac{1}{Z} \prod\limits_{(i,j) \in T} \exp\{\phi_{i,j}\}] \big]\\
-            &= -E_{p(T)}\big[  \sum\limits_{(i,j) \in T} \phi_{i,j} - \log Z \big]\\
-            &= \log Z -E_{p(T)}\big[\sum\limits_{(i,j) \in A} 1\{(i,j) \in T\} \phi_{i,j}\big]\\
-            &= \log Z - \sum\limits_{(i,j) \in A} p\big((i,j) \in T\big) \phi_{i,j}
-            \end{align}
-        }}
-
-        Returns:
-            entropy (*batch_shape)
-        """
-        logZ = self.partition
-        p = self.marginals
-        phi = self.log_potentials
-        H = logZ - (p * phi).reshape(phi.shape[0], -1).sum(-1)
-        return H
