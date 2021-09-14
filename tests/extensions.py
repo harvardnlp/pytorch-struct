@@ -26,7 +26,17 @@ class LinearChainTest:
         semiring = semiring
         ssize = semiring.size()
         edge, batch, N, C, lengths = model._check_potentials(edge, lengths)
-        chains = [[([c], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)]]
+        chains = [
+            [
+                (
+                    [c],
+                    semiring.fill(
+                        torch.zeros(ssize, batch), torch.tensor(True), semiring.one
+                    ),
+                )
+                for c in range(C)
+            ]
+        ]
 
         enum_lengths = torch.LongTensor(lengths.shape)
         for n in range(1, N):
@@ -128,7 +138,13 @@ class SemiMarkovTest:
         edge = semiring.convert(edge)
         chains = {}
         chains[0] = [
-            ([(c, 0)], semiring.one_(torch.zeros(ssize, batch))) for c in range(C)
+            (
+                [(c, 0)],
+                semiring.fill(
+                    torch.zeros(ssize, batch), torch.tensor(True), semiring.one
+                ),
+            )
+            for c in range(C)
         ]
 
         for n in range(1, N + 1):

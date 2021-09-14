@@ -263,7 +263,7 @@ def test_generic_lengths(model_test, data):
     part = model().sum(vals, lengths=lengths)
 
     # Check that max is correct
-    assert (maxes <= part).all()
+    assert (maxes <= part + 1e-3).all()
     m_part = model(MaxSemiring).sum(vals, lengths=lengths)
     assert (torch.isclose(maxes, m_part)).all(), maxes - m_part
 

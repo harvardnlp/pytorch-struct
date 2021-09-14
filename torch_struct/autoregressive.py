@@ -118,8 +118,10 @@ class Autoregressive(Distribution):
         return wrap(scores, sample)
 
     def _beam_search(self, semiring, gumbel=False):
-        beam = semiring.one_(
-            torch.zeros((semiring.size(),) + self.batch_shape, device=self.device)
+        beam = semiring.fill(
+            torch.zeros((semiring.size(),) + self.batch_shape, device=self.device),
+            torch.tensor(True),
+            semiring.one,
         )
         ssize = semiring.size()
 
