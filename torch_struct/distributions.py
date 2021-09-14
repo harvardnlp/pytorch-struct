@@ -532,14 +532,3 @@ class NonProjectiveDependencyCRF(StructDistribution):
         (Currently not implemented)
         """
         pass
-
-    def rsample(self, temp=1.0):
-        """ Do a marginal reparameterization sample to get a soft approximate sample.
-        """
-        noise = (torch.distributions.Gumbel(0, 1).sample(self.log_potentials.shape)).to(
-            self.log_potentials.device
-        )
-        noised_log_potentials = (self.log_potentials + noise) / temp
-        return NonProjectiveDependencyCRF(
-            noised_log_potentials, self.lengths, multiroot=self.multiroot
-        ).marginals
