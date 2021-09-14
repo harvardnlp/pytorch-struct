@@ -69,20 +69,16 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def entropy(self):
-        """
+        r"""
         Compute entropy for distribution :math:`H[p]`.
 
         Algorithm derivation:
         ..math::
-        {{
-            \begin{align}
             H[p] &= E_{p(z)}[-\log p(z)]\\
-            &= -E_{p(z)}\big[ \log [\frac{1}{Z} \prod\limits_{c \in \mathcal{C}} \exp\{\phi_c(z_c)\}] \big]\\
-            &= -E_{p(z)}\big[  \sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c) - \log Z \big]\\
-            &= \log Z -E_{p(z)}\big[\sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c)\big]\\
-            &= \log Z - \sum\limits_{c \in \mathcal{C}} p(z_c) \phi_{c}(z_c)
-            \end{align}
-        }}
+                 &= -E_{p(z)}\big[ \log [\frac{1}{Z} \prod\limits_{c \in \mathcal{C}} \exp\{\phi_c(z_c)\}] \big]\\
+                 &= -E_{p(z)}\big[  \sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c) - \log Z \big]\\
+                 &= \log Z -E_{p(z)}\big[\sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c)\big]\\
+                 &= \log Z - \sum\limits_{c \in \mathcal{C}} p(z_c) \phi_{c}(z_c)
 
         Returns:
             entropy (*batch_shape*)
@@ -90,8 +86,8 @@ class StructDistribution(Distribution):
         logZ = self.partition
         p = self.marginals
         phi = self.log_potentials
-        Hz = logZ - (p * phi).reshape(p.shape[0], -1).sum(-1)
-        return Hz
+        Hp = logZ - (p * phi).reshape(p.shape[0], -1).sum(-1)
+        return Hp
 
     def cross_entropy(self, other):
         """
@@ -536,3 +532,14 @@ class NonProjectiveDependencyCRF(StructDistribution):
         (Currently not implemented)
         """
         pass
+
+    def rsample(self, temp=1.0):
+        """ Do a marginal reparameterization sample to get a soft approximate sample.
+        """
+        noise = (torch.distributions.Gumbel(0, 1).sample(self.log_potentials.shape)).to(
+            self.log_potentials.device
+        )
+        noised_log_potentials = (self.log_potentials + noise) / temp
+        return NonProjectiveDependencyCRF(
+            noised_log_potentials, self.lengths, multiroot=self.multiroot
+        ).marginals
