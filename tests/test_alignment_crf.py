@@ -11,7 +11,7 @@ def test_alignment_crf():
         log_potentials = log_potentials.cuda()
         on_cuda = True
 
-    except Exception:
+    except RuntimeError:
         warnings.warn('Could not move log potentials to CUDA device. '
                       'Will not test marginals.')
         on_cuda = False
