@@ -5,7 +5,7 @@ import warnings
 
 def test_alignment_crf():
     batch, N, M = 1, 4, 5
-    log_potentials = torch.rand(batch, N, M, 3).cuda()
+    log_potentials = torch.rand(batch, N, M, 3)
 
     if torch.cuda.is_available():
         log_potentials = log_potentials.cuda()
