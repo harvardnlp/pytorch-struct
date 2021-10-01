@@ -7,16 +7,13 @@ def test_alignment_crf():
     batch, N, M = 1, 4, 5
     log_potentials = torch.rand(batch, N, M, 3).cuda()
 
-    try:
+    if torch.cuda.is_available():
         log_potentials = log_potentials.cuda()
-        on_cuda = True
-
-    except RuntimeError:
+    else:
         warnings.warn('Could not move log potentials to CUDA device. '
                       'Will not test marginals.')
-        on_cuda = False
 
     dist = torch_struct.AlignmentCRF(log_potentials)
     assert (N, M, 3) == dist.argmax[0].shape
-    if on_cuda:
+    if torch.cuda.is_available():
         assert (N, M, 3) == dist.marginals[0].shape
