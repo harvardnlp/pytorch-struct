@@ -173,3 +173,44 @@ class SemiMarkov(_Struct):
             labels[on[i][0], on[i][1] + on[i][2]] = on[i][3]
         # print(edge.nonzero(), labels)
         return labels, (C, K)
+
+    # Adapters
+    @staticmethod
+    def hsmm(init_z_1, transition_z_to_z, transition_z_to_l, emission_n_l_z):
+        """
+        Convert HSMM log-probs to edge scores.
+
+        Parameters:
+            init_z_1: C or b x C (init_z[i] = log P(z_{-1}=i), note that z_{-1} is an
+                      auxiliary state whose purpose is to induce a distribution over z_0.)
+            transition_z_to_z: C X C (transition_z_to_z[i][j] = log P(z_{n+1}=j | z_n=i),
+                               note that the order of z_{n+1} and z_n is different
+                               from `edges`.)
+            transition_z_to_l: C X K (transition_z_to_l[i][j] = P(l_n=j | z_n=i))
+            emission_n_l_z: b x N x K x C
+
+        Returns:
+            edges: b x (N-1) x K x C x C, where edges[b, n, k, c2, c1]
+                   = log P(z_n=c2 | z_{n-1}=c1) + log P(l_n=k | z_n=c2)
+                     + log P(x_{n:n+l_n} | z_n=c2, l_n=k), if n>0
+                   = log P(z_n=c2 | z_{n-1}=c1) + log P(l_n=k | z_n=c2)
+                     + log P(x_{n:n+l_n} | z_n=c2, l_n=k) + log P(z_{-1}), if n=0
+        """
+        batch, N, K, C = emission_n_l_z.shape
+        edges = torch.zeros(batch, N, K, C, C).type_as(emission_n_l_z)
+
+        # initial state: log P(z_{-1})
+        if init_z_1.dim() == 1:
+            init_z_1 = init_z_1.unsqueeze(0).expand(batch, -1)
+        edges[:, 0, :, :, :] += init_z_1.view(batch, 1, 1, C)
+
+        # transitions: log P(z_n | z_{n-1})
+        edges += transition_z_to_z.transpose(-1, -2).view(1, 1, 1, C, C)
+
+        # l given z: log P(l_n | z_n)
+        edges += transition_z_to_l.transpose(-1, -2).view(1, 1, K, C, 1)
+
+        # emissions: log P(x_{n:n+l_n} | z_n, l_n)
+        edges += emission_n_l_z.view(batch, N, K, C, 1)
+
+        return edges
