@@ -165,6 +165,56 @@ class SemiMarkovTest:
         ls = [s for (_, s) in chains[N]]
         return semiring.unconvert(semiring.sum(torch.stack(ls, dim=1), dim=1)), ls
 
+    @staticmethod
+    def enumerate_hsmm(semiring, init_z_1, transition_z_to_z, transition_z_to_l, emission_n_l_z):
+        ssize = semiring.size()
+        batch, N, K, C = emission_n_l_z.shape
+
+        if init_z_1.dim() == 1:
+            init_z_1 = init_z_1.unsqueeze(0).expand(batch, C)  # batch, C
+        transition_z_to_z = transition_z_to_z.unsqueeze(0).expand(batch, C, C)
+        transition_z_to_l = transition_z_to_l.unsqueeze(0).expand(batch, C, K)
+
+        init_z_1 = semiring.convert(init_z_1)  # ssize, batch, C
+        transition_z_to_z = semiring.convert(transition_z_to_z)  # ssize, batch, C, C
+        transition_z_to_l = semiring.convert(transition_z_to_l)  # ssize, batch, C, K
+        emission_n_l_z = semiring.convert(emission_n_l_z)  # ssize, batch, N, K, C
+
+        def score_chain(chain):
+            score = semiring.fill(torch.zeros(ssize, batch), torch.tensor(True), semiring.one)
+            state_0, _ = chain[0]
+            # P(z_{-1})
+            score = semiring.mul(score, init_z_1[:, :, state_0])
+            prev_state = state_0
+            n = 0
+            for t in range(len(chain) - 1):
+                state, k = chain[t + 1]
+                # P(z_t | z_{t-1})
+                score = semiring.mul(score, transition_z_to_z[:, :, prev_state, state])
+                # P(l_t | z_t)
+                score = semiring.mul(score, transition_z_to_l[:, :, state, k])
+                # P(x_{n:n+l_t} | z_t, l_t)
+                score = semiring.mul(score, emission_n_l_z[:, :, n, k, state])
+                prev_state = state
+                n += k
+            return score
+
+        chains = {}
+        chains[0] = [
+            [(c, 0)] for c in range(C)
+        ]
+
+        for n in range(1, N + 1):
+            chains[n] = []
+            for k in range(1, K):
+                if n - k not in chains:
+                    continue
+                for chain in chains[n - k]:
+                    for c in range(C):
+                        chains[n].append(chain + [(c, k)])
+        ls = [score_chain(chain) for chain in chains[N]]
+        return semiring.unconvert(semiring.sum(torch.stack(ls, dim=1), dim=1)), ls
+
 
 ### Tests
 
