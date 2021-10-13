@@ -100,7 +100,9 @@ class Alignment(_Struct):
             # Create finalizing paths.
             point = (l + M) // 2
 
-            charta[1][:, b, point:, 1, ind, :, :, Mid] = charta[1][:, b, point:, 1, ind, :, :, Mid].fill_(0)
+            init = torch.zeros(charta[1].shape, device=charta[1].device).bool()
+            init[:, b, point:, 1, ind, :, :, Mid].fill_(True)
+            charta[1] = semiring.fill(charta[1], init, semiring.one)
 
         for b in range(lengths.shape[0]):
             point = (lengths[b] + M) // 2
