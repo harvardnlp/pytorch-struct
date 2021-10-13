@@ -53,7 +53,7 @@ class LinearChain(_Struct):
         chart = self._chart((batch, bin_N, C, C), log_potentials, force_grad)
 
         # Init
-        init = torch.zeros(*chart.shape).bool()
+        init = torch.zeros_like(chart).bool()
         init.diagonal(0, 3, 4).fill_(True)
         chart = semiring.fill(chart, init, semiring.one)
 
