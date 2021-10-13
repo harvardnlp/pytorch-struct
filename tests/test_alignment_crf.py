@@ -1,10 +1,9 @@
 import torch
 import torch_struct
-import warnings
 import pytest
 
 
-@pytest.skipif(not torch.cuda.isavailable(), 'needs CUDA')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='needs CUDA')
 def test_alignment_crf_shapes():
     batch, N, M = 2, 4, 5
     log_potentials = torch.rand(batch, N, M, 3).cuda()
