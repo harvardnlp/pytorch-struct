@@ -98,6 +98,13 @@ class _BaseLog(Semiring):
     zero = torch.tensor(-1e5)
     one = torch.tensor(-0.0)
 
+    @classmethod
+    def matmul(cls, a, b):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
+            return b.multiply_log(a.transpose())
+        else:
+            return Semiring.matmul(a, b)
+
     @staticmethod
     def sum(xs, dim=-1):
         return torch.logsumexp(xs, dim=dim)
@@ -140,13 +147,7 @@ class LogSemiring(_BaseLog):
 
     Gradients give marginals.
     """
-
-    @classmethod
-    def matmul(cls, a, b):
-        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
-            return b.multiply_log(a.transpose())
-        else:
-            return _BaseLog.matmul(a, b)
+    pass
 
 
 class MaxSemiring(_BaseLog):
@@ -192,7 +193,7 @@ def KMaxSemiring(k):
                 dtype=orig_potentials.dtype,
                 device=orig_potentials.device,
             )
-            potentials = cls.fill(potentials, torch.tensor(True), cls.zero)
+            potentials = cls.fill(potentials, torch.tensor(True, device=potentials.device), cls.zero.to(potentials.device))
             potentials[0] = orig_potentials
             return potentials
 
@@ -392,6 +393,13 @@ class EntropySemiring(Semiring):
         log_sm = xs[0] - part.unsqueeze(d)
         sm = log_sm.exp()
         return torch.stack((part, torch.sum(xs[1].mul(sm) - log_sm.mul(sm), dim=d)))
+
+    @classmethod
+    def matmul(cls, a, b):
+        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
+            return b.multiply(a.transpose())
+        else:
+            return Semiring.matmul(a, b)
 
     @staticmethod
     def mul(a, b):
