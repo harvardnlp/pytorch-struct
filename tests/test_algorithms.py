@@ -499,3 +499,26 @@ def ignore_alignment(data):
     # assert torch.isclose(count, alpha).all()
     struct = model(semiring, max_gap=1)
     alpha = struct.sum(vals)
+
+
+@pytest.mark.parametrize("model_test", ["SemiMarkov"])
+@pytest.mark.parametrize("semiring", [LogSemiring, MaxSemiring])
+def test_hsmm(model_test, semiring):
+    "Test HSMM helper function."
+    C, K, batch, N = 5, 3, 2, 5
+    init_z_1 = torch.rand(batch, C)
+    transition_z_to_z = torch.rand(C, C)
+    transition_z_to_l = torch.rand(C, K)
+    emission_n_l_z = torch.rand(batch, N, K, C)
+
+    # first way: enumerate using init/transitions/emission
+    partition1 = algorithms[model_test][1].enumerate_hsmm(semiring, init_z_1, transition_z_to_z,
+                                                          transition_z_to_l, emission_n_l_z)[0]
+    # second way: enumerate using edge scores computed from init/transitions/emission
+    edge = SemiMarkov.hsmm(init_z_1, transition_z_to_z, transition_z_to_l, emission_n_l_z)
+    partition2 = algorithms[model_test][1].enumerate(semiring, edge)[0]
+    # third way: dp using edge scores computed from init/transitions/emission
+    partition3 = algorithms[model_test][0](semiring).logpartition(edge)[0]
+
+    assert torch.isclose(partition1, partition2).all()
+    assert torch.isclose(partition2, partition3).all()
