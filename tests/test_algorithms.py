@@ -519,9 +519,12 @@ def test_hsmm(model_test, semiring):
     partition2 = algorithms[model_test][1].enumerate(semiring, edge)[0]
     # third way: dp using edge scores computed from init/transitions/emission
     partition3 = algorithms[model_test][0](semiring).logpartition(edge)[0]
+    # fourth way: dp_standard using edge scores computed from init/transitions/emission
+    partition4 = algorithms[model_test][0](semiring)._dp_standard(edge)[0]
 
     assert torch.isclose(partition1, partition2).all()
     assert torch.isclose(partition2, partition3).all()
+    assert torch.isclose(partition3, partition4).all()
 
 
 @given(data())
@@ -542,3 +545,6 @@ def test_batching_lengths(model_test, semiring, data):
         lengths_b = lengths[b:(b + 1)]
         partition_b = model(semiring).logpartition(vals_b, lengths=lengths_b)[0][0]
         assert torch.isclose(partition[b], partition_b).all()
+    # test _dp_standard
+    partition_dp_standard = model(semiring)._dp_standard(vals, lengths=lengths)[0][0]
+    assert torch.isclose(partition, partition_dp_standard).all()

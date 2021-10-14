@@ -86,37 +86,37 @@ class SemiMarkov(_Struct):
         v = semiring.sum(semiring.sum(final[:, :, 0, :, 0, :].contiguous()))
         return v, [log_potentials]
 
-    # def _dp_standard(self, edge, lengths=None, force_grad=False):
-    #     semiring = self.semiring
-    #     ssize = semiring.size()
-    #     edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
-    #     edge.requires_grad_(True)
+    def _dp_standard(self, edge, lengths=None, force_grad=False):
+        semiring = self.semiring
+        ssize = semiring.size()
+        edge, batch, N, K, C, lengths = self._check_potentials(edge, lengths)
+        edge.requires_grad_(True)
 
-    #     # Init
-    #     # All paths starting at N of len K
-    #     alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
+        # Init
+        # All paths starting at N of len K
+        alpha = self._make_chart(1, (batch, N, K, C), edge, force_grad)[0]
 
-    #     # All paths finishing at N with label C
-    #     beta = self._make_chart(N, (batch, C), edge, force_grad)
-    #     semiring.one_(beta[0].data)
+        # All paths finishing at N with label C
+        beta = self._make_chart(N, (batch, C), edge, force_grad)
+        beta[0] = semiring.fill(beta[0], torch.tensor(True).to(edge.device), semiring.one)
 
-    #     # Main.
-    #     for n in range(1, N):
-    #         alpha[:, :, n - 1] = semiring.dot(
-    #             beta[n - 1].view(ssize, batch, 1, 1, C),
-    #             edge[:, :, n - 1].view(ssize, batch, K, C, C),
-    #         )
+        # Main.
+        for n in range(1, N):
+            alpha[:, :, n - 1] = semiring.dot(
+                beta[n - 1].view(ssize, batch, 1, 1, C),
+                edge[:, :, n - 1].view(ssize, batch, K, C, C),
+            )
 
-    #         t = max(n - K, -1)
-    #         f1 = torch.arange(n - 1, t, -1)
-    #         f2 = torch.arange(1, len(f1) + 1)
-    #         beta[n][:] = semiring.sum(
-    #             torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
-    #         )
-    #     v = semiring.sum(
-    #         torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
-    #     )
-    #     return v, [edge], beta
+            t = max(n - K, -1)
+            f1 = torch.arange(n - 1, t, -1)
+            f2 = torch.arange(1, len(f1) + 1)
+            beta[n][:] = semiring.sum(
+                torch.stack([alpha[:, :, a, b] for a, b in zip(f1, f2)], dim=-1)
+            )
+        v = semiring.sum(
+            torch.stack([beta[l - 1][:, i] for i, l in enumerate(lengths)], dim=1)
+        )
+        return v, [edge], beta
 
     @staticmethod
     def to_parts(sequence, extra, lengths=None):
