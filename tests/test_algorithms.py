@@ -522,3 +522,23 @@ def test_hsmm(model_test, semiring):
 
     assert torch.isclose(partition1, partition2).all()
     assert torch.isclose(partition2, partition3).all()
+
+
+@given(data())
+@pytest.mark.parametrize("model_test", ["SemiMarkov"])
+@pytest.mark.parametrize("semiring", [LogSemiring, MaxSemiring])
+def test_batching_lengths(model_test, semiring, data):
+    "Test batching"
+    gen = Gen(model_test, data, LogSemiring)
+    model, vals, N, batch = gen.model, gen.vals, gen.N, gen.batch
+    lengths = torch.tensor(
+        [data.draw(integers(min_value=2, max_value=N)) for b in range(batch - 1)] + [N]
+    )
+    # first way: batched implementation
+    partition = model(semiring).logpartition(vals, lengths=lengths)[0][0]
+    # second way: unbatched implementation
+    for b in range(batch):
+        vals_b = vals[b:(b + 1), :(lengths[b] - 1)]
+        lengths_b = lengths[b:(b + 1)]
+        partition_b = model(semiring).logpartition(vals_b, lengths=lengths_b)[0][0]
+        assert torch.isclose(partition[b], partition_b).all()

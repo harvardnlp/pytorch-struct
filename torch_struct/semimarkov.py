@@ -34,7 +34,7 @@ class SemiMarkov(_Struct):
         )
 
         # Init.
-        mask = torch.zeros(*init.shape).bool()
+        mask = torch.zeros(*init.shape, device=log_potentials.device).bool()
         mask[:, :, :, 0, 0].diagonal(0, -2, -1).fill_(True)
         init = semiring.fill(init, mask, semiring.one)
 
@@ -61,10 +61,12 @@ class SemiMarkov(_Struct):
         c[:, :, : K - 1, 0] = semiring.sum(
             torch.stack([c.data[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
         )
-        end = torch.min(lengths) - 1
-        mask = torch.zeros(*init.shape).bool()
+        end = torch.max(lengths) - 1
+        mask = torch.zeros(*init.shape, device=log_potentials.device).bool()
         for k in range(1, K - 1):
-            mask[:, :, : end - (k - 1), k - 1, k].diagonal(0, -2, -1).fill_(True)
+            for b in range(batch):
+                end = lengths[b] - 1
+                mask[:, b, : end - (k - 1), k - 1, k].diagonal(0, -2, -1).fill_(True)
         init = semiring.fill(init, mask, semiring.one)
 
         K_1 = K - 1
