@@ -61,7 +61,6 @@ class SemiMarkov(_Struct):
         c[:, :, : K - 1, 0] = semiring.sum(
             torch.stack([c.data[:, :, : K - 1, 0], lp[:, :, 1:K]], dim=-1)
         )
-        end = torch.max(lengths) - 1
         mask = torch.zeros(*init.shape, device=log_potentials.device).bool()
         for k in range(1, K - 1):
             for b in range(batch):
