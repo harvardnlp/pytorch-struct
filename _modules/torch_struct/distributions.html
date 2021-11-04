@@ -141,7 +141,7 @@
 
         <span class="k">return</span> <span class="n">v</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">partition</span></div>
 
-<div class="viewcode-block" id="StructDistribution.entropy"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.entropy">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute entropy for distribution :math:`H[z]`.</span>
@@ -150,7 +150,7 @@
 <span class="sd">            entropy (*batch_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">EntropySemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StructDistribution.cross_entropy"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.cross_entropy">[docs]</a>    <span class="k">def</span> <span class="nf">cross_entropy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -181,7 +181,7 @@
             <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="StructDistribution.max"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.max">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute an max for distribution :math:`\max p(z)`.</span>
@@ -189,9 +189,9 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            max (*batch_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StructDistribution.argmax"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.argmax">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">argmax</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute an argmax for distribution :math:`\arg\max p(z)`.</span>
@@ -199,7 +199,7 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            argmax (*batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">MaxSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StructDistribution.kmax"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.kmax">[docs]</a>    <span class="k">def</span> <span class="nf">kmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
@@ -235,7 +235,7 @@
     <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">argmax</span>
 
-<div class="viewcode-block" id="StructDistribution.marginals"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.marginals">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">marginals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute marginals for distribution :math:`p(z_t)`.</span>
@@ -247,14 +247,14 @@
 <span class="sd">        Returns:</span>
 <span class="sd">            marginals (*batch_shape x event_shape*)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">marginals</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StructDistribution.count"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.count">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the log-partition function.&quot;</span>
         <span class="n">ones</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">)</span>
         <span class="n">ones</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">StdSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">StdSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">gumbel_crf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
         <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">enable_grad</span><span class="p">():</span>
@@ -271,10 +271,10 @@
     <span class="c1"># def param_shape(self):</span>
     <span class="c1">#     return self._param.size()</span>
 
-<div class="viewcode-block" id="StructDistribution.partition"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.partition">[docs]</a>    <span class="nd">@lazy_property</span>
+    <span class="nd">@lazy_property</span>
     <span class="k">def</span> <span class="nf">partition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Compute the log-partition function.&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_struct</span><span class="p">(</span><span class="n">LogSemiring</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_potentials</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lengths</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StructDistribution.sample"><a class="viewcode-back" href="../../model.html#torch_struct.StructDistribution.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_shape</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">Size</span><span class="p">()):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
