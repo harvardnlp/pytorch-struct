@@ -143,8 +143,13 @@ class LogSemiring(_BaseLog):
 
     @classmethod
     def matmul(cls, a, b):
-        if has_genbmm and isinstance(a, genbmm.BandedMatrix):
-            return b.multiply_log(a.transpose())
+        if has_genbmm and a.device != "cpu":
+            if isinstance(a, genbmm.BandedMatrix):
+                return b.multiply_log(a.transpose())
+            return genbmm.logbmm(
+                                    a.contiguous(),#.view(-1, a.size(-1), a.size(-1)), 
+                                    b.contiguous()#.view(-1, b.size(-1), b.size(-1))
+                                )#.view(*a.shape)
         else:
             return _BaseLog.matmul(a, b)
 
