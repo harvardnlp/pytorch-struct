@@ -169,6 +169,8 @@ Everything implemented through semiring dynamic programming.
 
 <img src="https://media.giphy.com/media/IdxKpsWBHa5PpjuhHM/giphy.gif">
 
+
+
 ## Citation
 
 ```
@@ -181,3 +183,5 @@ Everything implemented through semiring dynamic programming.
     primaryClass={cs.CL}
 }
 ```
+
+This work was partially supported by NSF grant IIS-1901030. 
