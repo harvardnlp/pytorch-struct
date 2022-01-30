@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced Usage: Semirings &mdash; pytorch-struct 0.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -93,39 +92,39 @@
     text-align: unset;
 }
 </style>
-<section id="advanced-usage-semirings">
+<div class="section" id="advanced-usage-semirings">
 <h1>Advanced Usage: Semirings<a class="headerlink" href="#advanced-usage-semirings" title="Permalink to this headline">¶</a></h1>
 <p>All of the distributional code is implemented through a series of
 semiring objects. These are passed through dynamic programming
 backends to compute the distributions.</p>
-<section id="standard-semirings">
+<div class="section" id="standard-semirings">
 <h2>Standard Semirings<a class="headerlink" href="#standard-semirings" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.LogSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LogSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LogSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the log-space semiring (logsumexp, +, -inf, 0).</p>
 <p>Gradients give marginals.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.StdSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StdSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StdSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the counting semiring (+, <a href="#id1"><span class="problematic" id="id2">*</span></a>, 0, 1).</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.MaxSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the max semiring (max, +, -inf, 0).</p>
 <p>Gradients give argmax.</p>
 </dd></dl>
 
-</section>
-<section id="higher-order-semirings">
+</div>
+<div class="section" id="higher-order-semirings">
 <h2>Higher-Order Semirings<a class="headerlink" href="#higher-order-semirings" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.EntropySemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">EntropySemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">EntropySemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements an entropy expectation semiring.</p>
 <p>Computes both the log-values and the running distributional entropy.</p>
 <p>Based on descriptions in:</p>
@@ -136,12 +135,12 @@ backends to compute the distributions.</p>
 </ul>
 </dd></dl>
 
-</section>
-<section id="sampling-semirings">
+</div>
+<div class="section" id="sampling-semirings">
 <h2>Sampling Semirings<a class="headerlink" href="#sampling-semirings" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SampledSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give sample.</p>
 <p>This is an exact forward-filtering, backward-sampling approach.</p>
@@ -149,30 +148,30 @@ backends to compute the distributions.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.MultiSampledSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MultiSampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MultiSampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give up to 16 samples with replacement.</p>
 </dd></dl>
 
-</section>
-<section id="dynamic-programming">
+</div>
+<div class="section" id="dynamic-programming">
 <h2>Dynamic Programming<a class="headerlink" href="#dynamic-programming" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.LinearChain">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LinearChain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/linearchain.html#LinearChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LinearChain" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LinearChain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/linearchain.html#LinearChain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LinearChain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents structured linear-chain CRFs, generalizing HMMs smoothing, tagging models,
 and anything with chain-like dynamics.</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SemiMarkov">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SemiMarkov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/semimarkov.html#SemiMarkov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SemiMarkov" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SemiMarkov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/semimarkov.html#SemiMarkov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SemiMarkov" title="Permalink to this definition">¶</a></dt>
 <dd><p>edge : b x N x K x C x C semimarkov potentials</p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.DepTree">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">DepTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/deptree.html#DepTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.DepTree" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">DepTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/deptree.html#DepTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.DepTree" title="Permalink to this definition">¶</a></dt>
 <dd><p>A projective dependency CRF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -187,11 +186,11 @@ and anything with chain-like dynamics.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.CKY">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">CKY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/cky.html#CKY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.CKY" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">CKY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">semiring=&lt;class</span> <span class="pre">'torch_struct.semirings.semirings.LogSemiring'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/cky.html#CKY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.CKY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Model &mdash; pytorch-struct 0.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,8 +15,8 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -295,7 +294,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
@@ -355,7 +354,7 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Model">
+<div class="section" id="Model">
 <h1>Model<a class="headerlink" href="#Model" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
@@ -363,8 +362,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch_struct</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch_struct</span>
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span>
@@ -375,16 +373,15 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mf">7.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<section id="Chain">
+<div class="section" id="Chain">
 <h2>Chain<a class="headerlink" href="#Chain" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.LinearChainCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LinearChainCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LinearChainCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#LinearChainCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LinearChainCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents structured linear-chain CRFs with C classes.</p>
 <p>For reference see:</p>
 <ul class="simple">
@@ -416,8 +413,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
 <span class="k">def</span> <span class="nf">show_chain</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
@@ -439,8 +435,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -455,8 +450,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="mi">2</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="mi">2</span><span class="p">)</span>
 <span class="n">show_chain</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -468,12 +462,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/model_8_0.png" src="_images/model_8_0.png" />
 </div>
 </div>
-</section>
-<section id="Hidden-Markov-Model">
+</div>
+<div class="section" id="Hidden-Markov-Model">
 <h2>Hidden Markov Model<a class="headerlink" href="#Hidden-Markov-Model" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.HMM">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">HMM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emission</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#HMM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.HMM" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">HMM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emission</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observations</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#HMM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.HMM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents hidden-markov smoothing with C hidden states.</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -494,8 +488,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
 
 <span class="n">transition</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">emission</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -514,12 +507,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/model_11_0.png" src="_images/model_11_0.png" />
 </div>
 </div>
-</section>
-<section id="Semi-Markov">
+</div>
+<div class="section" id="Semi-Markov">
 <h2>Semi-Markov<a class="headerlink" href="#Semi-Markov" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SemiMarkovCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SemiMarkovCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SemiMarkovCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SemiMarkovCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SemiMarkovCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a semi-markov or segmental CRF with C classes of max width K</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -543,8 +536,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span>
 <span class="k">def</span> <span class="nf">show_sm</span><span class="p">(</span><span class="n">chain</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">chain</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
@@ -567,8 +559,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_sm</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_sm</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -583,8 +574,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Use -1 for segments.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use -1 for segments.</span>
 <span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
 <span class="n">show_sm</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -597,12 +587,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/model_16_0.png" src="_images/model_16_0.png" />
 </div>
 </div>
-</section>
-<section id="Alignment">
+</div>
+<div class="section" id="Alignment">
 <h2>Alignment<a class="headerlink" href="#Alignment" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.AlignmentCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">AlignmentCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">AlignmentCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_gap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#AlignmentCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.AlignmentCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents basic alignment algorithm, i.e. dynamic-time warping, Needleman-Wunsch, and Smith-Waterman.</p>
 <p>Event shape is of the form:</p>
 <dl class="field-list simple">
@@ -631,8 +621,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span>
 <span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
@@ -653,8 +642,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -665,12 +653,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/model_20_0.png" src="_images/model_20_0.png" />
 </div>
 </div>
-</section>
-<section id="Dependency-Tree">
+</div>
+<div class="section" id="Dependency-Tree">
 <h2>Dependency Tree<a class="headerlink" href="#Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.DependencyCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">DependencyCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiroot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">DependencyCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiroot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#DependencyCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.DependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a projective dependency CRF.</p>
 <p>Reference:</p>
 <ul class="simple">
@@ -699,8 +687,7 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
 <span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
@@ -721,8 +708,7 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_deps</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -737,8 +723,7 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Convert from 1-index standard format. (Head is 0)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Convert from 1-index standard format. (Head is 0)</span>
 <span class="n">event</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">to_event</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="kc">None</span><span class="p">)</span>
 <span class="n">show_deps</span><span class="p">(</span><span class="n">event</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -751,12 +736,12 @@ e.g. <span class="math notranslate nohighlight">\(\phi(i, j)\)</span> where <spa
 <img alt="_images/model_25_0.png" src="_images/model_25_0.png" />
 </div>
 </div>
-</section>
-<section id="Non-Projective-Dependency-Tree">
+</div>
+<div class="section" id="Non-Projective-Dependency-Tree">
 <h2>Non-Projective Dependency Tree<a class="headerlink" href="#Non-Projective-Dependency-Tree" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.NonProjectiveDependencyCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">NonProjectiveDependencyCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiroot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">NonProjectiveDependencyCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiroot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#NonProjectiveDependencyCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.NonProjectiveDependencyCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a non-projective dependency CRF.</p>
 <p>For references see:</p>
 <ul class="simple">
@@ -779,8 +764,7 @@ arc scores with root scores on diagonal e.g.
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>
 <span class="k">def</span> <span class="nf">show_deps</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
 
@@ -797,13 +781,13 @@ arc scores with root scores on diagonal e.g.
 <img alt="_images/model_28_0.png" src="_images/model_28_0.png" />
 </div>
 </div>
-</section>
-<section id="Binary-Labeled-Tree">
+</div>
+<div class="section" id="Binary-Labeled-Tree">
 <h2>Binary Labeled Tree<a class="headerlink" href="#Binary-Labeled-Tree" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.TreeCRF">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">TreeCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">TreeCRF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#TreeCRF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.TreeCRF" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a 0th-order span parser with NT nonterminals. Implemented using a
 fast CKY algorithm.</p>
 <p>For example usage see:</p>
@@ -833,8 +817,7 @@ fast CKY algorithm.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span>
 <span class="k">def</span> <span class="nf">show_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span> <span class="p">:,</span> <span class="p">:</span> <span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
@@ -858,8 +841,7 @@ fast CKY algorithm.</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_tree</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_tree</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -870,13 +852,13 @@ fast CKY algorithm.</p>
 <img alt="_images/model_32_0.png" src="_images/model_32_0.png" />
 </div>
 </div>
-</section>
-<section id="Probabilistic-Context-Free-Grammar">
+</div>
+<div class="section" id="Probabilistic-Context-Free-Grammar">
 <h2>Probabilistic Context-Free Grammar<a class="headerlink" href="#Probabilistic-Context-Free-Grammar" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SentCFG">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SentCFG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SentCFG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#SentCFG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SentCFG" title="Permalink to this definition">¶</a></dt>
 <dd><p>Represents a full generative context-free grammar with
 non-terminals NT and terminals T.</p>
 <p>Event shape is of the form:</p>
@@ -904,8 +886,7 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">NT</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span>
 <span class="k">def</span> <span class="nf">show_prob_tree</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
     <span class="n">t</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span> <span class="p">:,</span> <span class="p">:</span> <span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
@@ -925,8 +906,7 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Rules</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Rules</span>
 <span class="n">show_prob_tree</span><span class="p">(</span><span class="n">rules</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -942,8 +922,7 @@ root  (<em>NT</em>)</p></li>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Terminals</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Terminals</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">term</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -964,13 +943,13 @@ root  (<em>NT</em>)</p></li>
 <img alt="_images/model_37_1.png" src="_images/model_37_1.png" />
 </div>
 </div>
-</section>
-<section id="Autoregressive-/-Beam-Search">
+</div>
+<div class="section" id="Autoregressive-/-Beam-Search">
 <h2>Autoregressive / Beam Search<a class="headerlink" href="#Autoregressive-/-Beam-Search" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.Autoregressive">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">Autoregressive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.Autoregressive" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">Autoregressive</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#Autoregressive"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.Autoregressive" title="Permalink to this definition">¶</a></dt>
 <dd><p>Autoregressive sequence model utilizing beam search.</p>
 <ul class="simple">
 <li><p>batch_shape -&gt; Given by initializer</p></li>
@@ -1073,7 +1052,7 @@ logits (<em>batch x N x C</em>)</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.AutoregressiveModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">AutoregressiveModel</span></span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#AutoregressiveModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.AutoregressiveModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">AutoregressiveModel</span></span><a class="reference internal" href="_modules/torch_struct/autoregressive.html#AutoregressiveModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.AutoregressiveModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>User should implement as their favorite RNN / Transformer / etc.</p>
 </dd></dl>
 
@@ -1082,8 +1061,7 @@ logits (<em>batch x N x C</em>)</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">layer</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">layer</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span>
 <span class="n">init</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="n">H</span><span class="p">))</span>
 <span class="k">def</span> <span class="nf">t</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
@@ -1120,8 +1098,7 @@ logits (<em>batch x N x C</em>)</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">path</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_max</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">path</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_max</span><span class="p">()</span>
 <span class="n">show_ar</span><span class="p">(</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -1146,8 +1123,7 @@ tensor(-11.7909, grad_fn=&lt;SelectBackward&gt;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">dist</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dist</span><span class="o">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1164,8 +1140,7 @@ tensor([[-11.7909, -11.8150, -11.7972]], grad_fn=&lt;ViewBackward&gt;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">beam_topk</span><span class="p">(</span><span class="mi">5</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">beam_topk</span><span class="p">(</span><span class="mi">5</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -1197,8 +1172,7 @@ tensor([[-11.7909, -11.8150, -11.7972]], grad_fn=&lt;ViewBackward&gt;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span> <span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span> <span class="p">]</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -1239,8 +1213,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample_without_replacement</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">sample_without_replacement</span><span class="p">((</span><span class="mi">5</span><span class="p">,))[:,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">show_ar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -1272,8 +1245,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">Autoregressive</span><span class="p">(</span><span class="n">RNN_AR</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">init</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dist</span> <span class="o">=</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">Autoregressive</span><span class="p">(</span><span class="n">RNN_AR</span><span class="p">(</span><span class="n">sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="n">init</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">logits</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">greedy_tempmax</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">show_ar</span><span class="p">(</span><span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">loss</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">long</span><span class="p">()]</span>
@@ -1288,12 +1260,12 @@ torch.Size([5, 10, 4])
 <img alt="_images/model_46_0.png" src="_images/model_46_0.png" />
 </div>
 </div>
-</section>
-<section id="Base-Class">
+</div>
+<div class="section" id="Base-Class">
 <h2>Base Class<a class="headerlink" href="#Base-Class" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StructDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StructDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_potentials</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torch_struct/distributions.html#StructDistribution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StructDistribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base structured distribution class.</p>
 <p>Dynamic distribution for length N of structures <span class="math notranslate nohighlight">\(p(z)\)</span>.</p>
 <p>Implemented based on gradient identities from:</p>
@@ -1312,7 +1284,7 @@ torch.Size([5, 10, 4])
 </dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.argmax">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">argmax</span></span><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">argmax</span></span><a class="headerlink" href="#torch_struct.StructDistribution.argmax" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute an argmax for distribution <span class="math notranslate nohighlight">\(\arg\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1323,7 +1295,7 @@ torch.Size([5, 10, 4])
 
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.count">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">count</span></span><a class="headerlink" href="#torch_struct.StructDistribution.count" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">count</span></span><a class="headerlink" href="#torch_struct.StructDistribution.count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the log-partition function.</p>
 </dd></dl>
 
@@ -1343,7 +1315,7 @@ torch.Size([5, 10, 4])
 
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.entropy">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">entropy</span></span><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">entropy</span></span><a class="headerlink" href="#torch_struct.StructDistribution.entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute entropy for distribution <span class="math notranslate nohighlight">\(H[z]\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1403,7 +1375,7 @@ torch.Size([5, 10, 4])
 
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.marginals">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">marginals</span></span><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">marginals</span></span><a class="headerlink" href="#torch_struct.StructDistribution.marginals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute marginals for distribution <span class="math notranslate nohighlight">\(p(z_t)\)</span>.</p>
 <p>Can be used in higher-order calculations, i.e.</p>
 <ul class="simple">
@@ -1418,7 +1390,7 @@ torch.Size([5, 10, 4])
 
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.max">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#torch_struct.StructDistribution.max" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max</span></span><a class="headerlink" href="#torch_struct.StructDistribution.max" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute an max for distribution <span class="math notranslate nohighlight">\(\max p(z)\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -1429,7 +1401,7 @@ torch.Size([5, 10, 4])
 
 <dl class="py property">
 <dt class="sig sig-object py" id="torch_struct.StructDistribution.partition">
-<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">partition</span></span><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition</span></span><a class="headerlink" href="#torch_struct.StructDistribution.partition" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the log-partition function.</p>
 </dd></dl>
 
@@ -1474,8 +1446,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>
 
 <span class="c1"># batch, N, z_n, z_n_1</span>
 <span class="n">log_potentials</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
@@ -1504,8 +1475,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 <span class="n">show_chain</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">marginals</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 </pre></div>
@@ -1529,8 +1499,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">show_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">show_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
     <span class="n">show_chain</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
     <span class="n">show_chain</span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
@@ -1543,8 +1512,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">sample</span><span class="p">((</span><span class="mi">10</span><span class="p">,)))</span>
 </pre></div>
 </div>
 </div>
@@ -1573,8 +1541,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">show_samples</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1603,8 +1570,7 @@ torch.Size([5, 10, 4])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Enumerate</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enumerate</span>
 <span class="n">x</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">enumerate_support</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
@@ -1695,8 +1661,7 @@ torch.Size([256, 3, 7, 2, 2])
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">entropy</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">entropy</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1716,8 +1681,8 @@ torch.Size([256, 3, 7, 2, 2])
 <img alt="_images/model_55_1.png" src="_images/model_55_1.png" />
 </div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

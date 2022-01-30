@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Advanced: Semirings &mdash; pytorch-struct 0.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,8 +15,8 @@
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -292,7 +291,7 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
@@ -352,14 +351,13 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Advanced:-Semirings">
+<div class="section" id="Advanced:-Semirings">
 <h1>Advanced: Semirings<a class="headerlink" href="#Advanced:-Semirings" title="Permalink to this headline">¶</a></h1>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch_struct</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
@@ -369,8 +367,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># Create two random tensors to experiment with.</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create two random tensors to experiment with.</span>
 <span class="n">v1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">v2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
@@ -406,8 +403,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -432,11 +428,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<section id="Log">
+<div class="section" id="Log">
 <h2>Log<a class="headerlink" href="#Log" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.LogSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LogSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">LogSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#LogSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.LogSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the log-space semiring (logsumexp, +, -inf, 0).</p>
 <p>Gradients give marginals.</p>
 </dd></dl>
@@ -445,8 +441,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">LogSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">LogSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -478,12 +473,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_6_3.png" src="_images/semiring_6_3.png" />
 </div>
 </div>
-</section>
-<section id="Max">
+</div>
+<div class="section" id="Max">
 <h2>Max<a class="headerlink" href="#Max" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.MaxSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#MaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the max semiring (max, +, -inf, 0).</p>
 <p>Gradients give argmax.</p>
 </dd></dl>
@@ -492,8 +487,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">MaxSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">MaxSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -525,15 +519,14 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_9_3.png" src="_images/semiring_9_3.png" />
 </div>
 </div>
-</section>
-<section id="K-Max">
+</div>
+<div class="section" id="K-Max">
 <h2>K-Max<a class="headerlink" href="#K-Max" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">KMaxSemiring</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -565,12 +558,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_11_3.png" src="_images/semiring_11_3.png" />
 </div>
 </div>
-</section>
-<section id="Counting">
+</div>
+<div class="section" id="Counting">
 <h2>Counting<a class="headerlink" href="#Counting" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.StdSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StdSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">StdSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#StdSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.StdSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements the counting semiring (+, <a href="#id1"><span class="problematic" id="id2">*</span></a>, 0, 1).</p>
 </dd></dl>
 
@@ -578,8 +571,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">StdSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">StdSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -611,12 +603,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_14_3.png" src="_images/semiring_14_3.png" />
 </div>
 </div>
-</section>
-<section id="Sampled">
+</div>
+<div class="section" id="Sampled">
 <h2>Sampled<a class="headerlink" href="#Sampled" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SampledSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#SampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give sample.</p>
 <p>This is an exact forward-filtering, backward-sampling approach.</p>
@@ -626,8 +618,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">SampledSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">SampledSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -661,7 +652,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.MultiSampledSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MultiSampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">MultiSampledSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sample.html#MultiSampledSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.MultiSampledSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements a multi-sampling semiring (logsumexp, +, -inf, 0).</p>
 <p>“Gradients” give up to 16 samples with replacement.</p>
 </dd></dl>
@@ -670,8 +661,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">MultiSampledSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">MultiSampledSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -703,12 +693,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_19_3.png" src="_images/semiring_19_3.png" />
 </div>
 </div>
-</section>
-<section id="Entropy">
+</div>
+<div class="section" id="Entropy">
 <h2>Entropy<a class="headerlink" href="#Entropy" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.EntropySemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">EntropySemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">EntropySemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/semirings.html#EntropySemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.EntropySemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements an entropy expectation semiring.</p>
 <p>Computes both the log-values and the running distributional entropy.</p>
 <p>Based on descriptions in:</p>
@@ -723,8 +713,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">EntropySemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">EntropySemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -756,12 +745,12 @@ div.rendered_html tbody tr:hover {
 <img alt="_images/semiring_22_3.png" src="_images/semiring_22_3.png" />
 </div>
 </div>
-</section>
-<section id="Sparsemax">
+</div>
+<div class="section" id="Sparsemax">
 <h2>Sparsemax<a class="headerlink" href="#Sparsemax" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="torch_struct.SparseMaxSemiring">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SparseMaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sparse_max.html#SparseMaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">torch_struct.</span></span><span class="sig-name descname"><span class="pre">SparseMaxSemiring</span></span><a class="reference internal" href="_modules/torch_struct/semirings/sparse_max.html#SparseMaxSemiring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#torch_struct.SparseMaxSemiring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements differentiable dynamic programming with a sparsemax semiring (sparsemax, +, -inf, 0).</p>
 <p>Sparse-max gradients give a more sparse set of marginal like terms.</p>
 <ul class="simple">
@@ -774,8 +763,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">SparseMaxSemiring</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">torch_struct</span><span class="o">.</span><span class="n">SparseMaxSemiring</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -811,8 +799,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[122]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">all_sr</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;marginals&quot;</span><span class="p">,</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">LogSemiring</span><span class="p">),</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">all_sr</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;marginals&quot;</span><span class="p">,</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">LogSemiring</span><span class="p">),</span>
           <span class="p">(</span><span class="s2">&quot;argmax&quot;</span><span class="p">,</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">MaxSemiring</span><span class="p">),</span>
           <span class="p">(</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">SampledSemiring</span><span class="p">),</span>
           <span class="p">(</span><span class="s2">&quot;multi-sample&quot;</span><span class="p">,</span> <span class="n">torch_struct</span><span class="o">.</span><span class="n">MultiSampledSemiring</span><span class="p">),</span>
@@ -880,13 +867,12 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
