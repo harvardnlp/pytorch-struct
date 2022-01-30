@@ -49,6 +49,7 @@ class Semiring:
 
     @staticmethod
     def fill(c, mask, v):
+        mask = mask.to(c.device)
         return torch.where(
             mask, v.type_as(c).view((-1,) + (1,) * (len(c.shape) - 1)), c
         )
