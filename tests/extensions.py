@@ -220,13 +220,6 @@ class SemiMarkovTest:
 
 
 def _is_spanning(parse):
-    """
-    Is the parse tree a valid spanning tree?
-    Returns
-    --------
-    spanning : bool
-    True if a valid spanning tree.
-    """
     d = {}
     for m, h in enumerate(parse):
         if m == h:
@@ -255,13 +248,6 @@ def _is_multi_root(parse):
 
 
 def _is_projective(parse):
-    """
-    Is the parse tree projective?
-    Returns
-    --------
-    projective : bool
-       True if a projective tree.
-    """
     for m, h in enumerate(parse):
         for m2, h2 in enumerate(parse):
             if m2 == m:
