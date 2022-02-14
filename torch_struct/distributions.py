@@ -3,6 +3,7 @@ from torch.distributions import constraints
 from torch.distributions.distribution import Distribution
 from torch.distributions.utils import lazy_property
 from .linearchain import LinearChain
+from .incr_linearchain import IncrementLinearChainFwBw
 from .cky import CKY
 from .semimarkov import SemiMarkov
 from .alignment import Alignment
@@ -243,6 +244,10 @@ class StructDistribution(Distribution):
     def _struct(self, sr=None):
         return self.struct(sr if sr is not None else LogSemiring)
 
+
+class ARLinearChainCRF(StructDistribution):
+
+    struct = IncrementLinearChainFwBw
 
 class LinearChainCRF(StructDistribution):
     r"""
