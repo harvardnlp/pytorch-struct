@@ -11,9 +11,6 @@ from .cky_crf import CKY_CRF
 from .semirings import (
     LogSemiring,
     MaxSemiring,
-    EntropySemiring,
-    CrossEntropySemiring,
-    KLDivergenceSemiring,
     MultiSampledSemiring,
     KMaxSemiring,
     StdSemiring,
@@ -76,14 +73,25 @@ class StructDistribution(Distribution):
 
     @lazy_property
     def entropy(self):
-        """
-        Compute entropy for distribution :math:`H[z]`.
+        r"""
+        Compute entropy for distribution :math:`H[p]`.
+
+        Algorithm derivation:
+        ..math::
+            H[p] &= E_{p(z)}[-\log p(z)]\\
+                 &= -E_{p(z)}\big[ \log [\frac{1}{Z} \prod\limits_{c \in \mathcal{C}} \exp\{\phi_c(z_c)\}] \big]\\
+                 &= -E_{p(z)}\big[  \sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c) - \log Z \big]\\
+                 &= \log Z -E_{p(z)}\big[\sum\limits_{c \in \mathcal{C}} \phi_{c}(z_c)\big]\\
+                 &= \log Z - \sum\limits_{c \in \mathcal{C}} p(z_c) \phi_{c}(z_c)
 
         Returns:
             entropy (*batch_shape*)
         """
-
-        return self._struct(EntropySemiring).sum(self.log_potentials, self.lengths)
+        logZ = self.partition
+        p = self.marginals
+        phi = self.log_potentials
+        Hp = logZ - (p * phi).reshape(p.shape[0], -1).sum(-1)
+        return Hp
 
     def cross_entropy(self, other):
         """
@@ -95,10 +103,11 @@ class StructDistribution(Distribution):
         Returns:
             cross entropy (*batch_shape*)
         """
-
-        return self._struct(CrossEntropySemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        logZ = other.partition
+        p = self.marginals
+        phi_q = other.log_potentials
+        Hq = logZ - (p * phi_q).reshape(p.shape[0], -1).sum(-1)
+        return Hq
 
     def kl(self, other):
         """
@@ -108,11 +117,15 @@ class StructDistribution(Distribution):
             other : Comparison distribution
 
         Returns:
-            cross entropy (*batch_shape*)
+            kl divergence (*batch_shape*)
         """
-        return self._struct(KLDivergenceSemiring).sum(
-            [self.log_potentials, other.log_potentials], self.lengths
-        )
+        logZp = self.partition
+        logZq = other.partition
+        p = self.marginals
+        phi_p = self.log_potentials
+        phi_q = other.log_potentials
+        KLpq = (p * (phi_p - phi_q)).reshape(p.shape[0], -1).sum(-1) - logZp + logZq
+        return KLpq
 
     @lazy_property
     def max(self):
@@ -486,6 +499,23 @@ class NonProjectiveDependencyCRF(StructDistribution):
         super(NonProjectiveDependencyCRF, self).__init__(log_potentials, lengths, args, validate_args=validate_args)
         self.multiroot = multiroot
 
+    def log_prob(self, value):
+        """
+        Compute log probability over values :math:`p(z)`.
+
+        Parameters:
+            value (tensor): One-hot events (*sample_shape x batch_shape x event_shape*)
+
+        Returns:
+            log_probs (*sample_shape x batch_shape*)
+        """
+        s = value.shape
+        # assumes values do not have any 1s outside of the lengths
+        value_total_log_potentials = (
+            (value * self.log_potentials.expand(s)).reshape(*s[:-2], -1).sum(-1)
+        )
+        return value_total_log_potentials - self.partition
+
     @lazy_property
     def marginals(self):
         """
@@ -515,8 +545,4 @@ class NonProjectiveDependencyCRF(StructDistribution):
 
         (Currently not implemented)
         """
-        pass
-
-    @lazy_property
-    def entropy(self):
         pass
