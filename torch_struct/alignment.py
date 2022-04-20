@@ -1,11 +1,14 @@
 import torch
 from .helpers import _Struct
 import math
+import warnings
 
 try:
     import genbmm
+
 except ImportError:
-    pass
+    warnings.warn('Could not import genbmm. '
+                  'However, genbmm is only used for CUDA operations.')
 
 from .semirings import LogSemiring
 from .semirings.fast_semirings import broadcast
@@ -97,9 +100,9 @@ class Alignment(_Struct):
             # Create finalizing paths.
             point = (l + M) // 2
 
-            charta[1][:, b, point:, 1, ind, :, :, Mid] = semiring.one_(
-                charta[1][:, b, point:, 1, ind, :, :, Mid]
-            )
+            init = torch.zeros(charta[1].shape, device=charta[1].device).bool()
+            init[:, b, point:, 1, ind, :, :, Mid].fill_(True)
+            charta[1] = semiring.fill(charta[1], init, semiring.one)
 
         for b in range(lengths.shape[0]):
             point = (lengths[b] + M) // 2

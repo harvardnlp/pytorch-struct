@@ -1,5 +1,5 @@
 import torch
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis.strategies import integers
 
 
@@ -17,6 +17,7 @@ lint = integers(min_value=2, max_value=10)
 
 
 @given(lint, lint, lint)
+@settings(deadline=None)  # Avoid spurious warnings when first run
 def test_max(a, b, c):
     torch.manual_seed(0)
     t1 = torch.rand(a, 1, c).requires_grad_(True)

@@ -167,6 +167,9 @@ class _MultiSampledLogSumExp(torch.autograd.Function):
     def backward(ctx, grad_output):
 
         logits, part, dim = ctx.saved_tensors
+        # Replace infinite logits with max float, otherwise softmax gives NaNs
+        # Perhaps this could be done earlier (during forward pass)?
+        logits[logits == float('inf')] = torch.finfo(logits.dtype).max
         grad_input = None
         if ctx.needs_input_grad[0]:
 
